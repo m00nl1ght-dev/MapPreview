@@ -1,0 +1,7 @@
+
+.idea/
+obj/
+*.txt
+*.pdb
+*.DotSettings.user
+_PublisherPlus.xml

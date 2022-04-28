@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <MapPreview.Title>Map Preview</MapPreview.Title>
+
+  <MapPreview.Settings.PreviewWindowSize>Preview window size</MapPreview.Settings.PreviewWindowSize>
+  <MapPreview.Settings.EnableMapPreview>Map Preview enabled</MapPreview.Settings.EnableMapPreview>
+  <MapPreview.Settings.EnableMapReroll>Map Reroll enabled</MapPreview.Settings.EnableMapReroll>
+
+</LanguageData>
