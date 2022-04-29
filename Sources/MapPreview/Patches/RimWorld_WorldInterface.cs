@@ -27,14 +27,17 @@ public class RimWorld_WorldInterface
 
             if (_tileId != -1)
             {
-                if (!ModInstance.Settings.EnableMapPreview) return;
-                if (MapPreviewWindow.Instance == null) Find.WindowStack.Add(new MapPreviewWindow());
-                MapPreviewWindow.Instance.OnWorldTileSelected(Find.World, _tileId);
+                var tile = Find.World.grid[_tileId];
+                if (!tile.biome.impassable && tile.hilliness != Hilliness.Impassable)
+                {
+                    if (!ModInstance.Settings.EnableMapPreview) return;
+                    if (MapPreviewWindow.Instance == null) Find.WindowStack.Add(new MapPreviewWindow());
+                    MapPreviewWindow.Instance.OnWorldTileSelected(Find.World, _tileId);
+                    return;
+                }
             }
-            else
-            {
-                MapPreviewWindow.Instance?.Close();
-            }
+            
+            MapPreviewWindow.Instance?.Close();
         }
     }
 }

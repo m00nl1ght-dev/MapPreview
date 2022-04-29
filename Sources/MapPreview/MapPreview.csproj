@@ -82,6 +82,7 @@
         <Compile Include="Patches\RimWorld_WorldInterface.cs" />
         <Compile Include="Settings.cs" />
         <Compile Include="MapPreview.cs" />
+        <Compile Include="TrueTerrainColors.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

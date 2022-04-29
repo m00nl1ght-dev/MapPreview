@@ -11,6 +11,7 @@ public class Settings : ModSettings
     private static Vector2 _scrollPos = Vector2.zero;
 
     public float PreviewWindowSize = DefaultPreviewWindowSize;
+    public bool EnableTrueTerrainColors = true;
     public bool EnableMapPreview = true;
     public bool EnableMapReroll = true;
 
@@ -26,7 +27,13 @@ public class Settings : ModSettings
         
         listingStandard.CheckboxLabeled("MapPreview.Settings.EnableMapPreview".Translate(), ref EnableMapPreview);
         listingStandard.CheckboxLabeled("MapPreview.Settings.EnableMapReroll".Translate(), ref EnableMapReroll);
+        
+        listingStandard.Gap();
 
+        listingStandard.CheckboxLabeled("MapPreview.Settings.EnableTrueTerrainColors".Translate(), ref EnableTrueTerrainColors);
+        
+        listingStandard.Gap();
+        
         CenteredLabel(listingStandard, "MapPreview.Settings.PreviewWindowSize".Translate(), PreviewWindowSize.ToString(CultureInfo.InvariantCulture));
         PreviewWindowSize = (int) listingStandard.Slider(PreviewWindowSize, 100f, 800f);
 
@@ -36,6 +43,7 @@ public class Settings : ModSettings
     public override void ExposeData()
     {
         Scribe_Values.Look(ref PreviewWindowSize, "PreviewWindowSize", DefaultPreviewWindowSize);
+        Scribe_Values.Look(ref EnableTrueTerrainColors, "EnableTrueTerrainColors", true);
         Scribe_Values.Look(ref EnableMapPreview, "EnableMapPreview", true);
         Scribe_Values.Look(ref EnableMapReroll, "EnableMapReroll", true);
         base.ExposeData();
@@ -44,6 +52,7 @@ public class Settings : ModSettings
     public void ResetAll()
     {
         PreviewWindowSize = DefaultPreviewWindowSize;
+        EnableTrueTerrainColors = true;
         EnableMapPreview = true;
         EnableMapReroll = true;
     }
