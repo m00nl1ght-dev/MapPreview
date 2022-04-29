@@ -75,7 +75,10 @@
         <Compile Include="Main.cs" />
         <Compile Include="MapPreviewWindow.cs" />
         <Compile Include="ModInstance.cs" />
+        <Compile Include="Patches\MapReroll_MapPreviewGenerator.cs" />
         <Compile Include="Patches\MapReroll_MapRerollUIController.cs" />
+        <Compile Include="Patches\RimWorld_MapGenerator.cs" />
+        <Compile Include="Patches\RimWorld_TerrainPatchMaker.cs" />
         <Compile Include="Patches\RimWorld_WorldInterface.cs" />
         <Compile Include="Settings.cs" />
         <Compile Include="MapPreview.cs" />
