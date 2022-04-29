@@ -21,6 +21,7 @@ No known incompatibilities.
 
 This mod uses "Map Reroll" by UnlimitedHugs to render the previews.
 
+Russian translation created by Dmitry6
 
 # Links
 

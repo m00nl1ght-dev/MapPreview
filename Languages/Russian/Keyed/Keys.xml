@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <MapPreview.Title>Map Preview</MapPreview.Title>
+
+  <MapPreview.Settings.PreviewWindowSize>Размер окна предпросмотра</MapPreview.Settings.PreviewWindowSize>
+  <MapPreview.Settings.EnableMapPreview>Включен предпросмотр карты</MapPreview.Settings.EnableMapPreview>
+  <MapPreview.Settings.EnableMapReroll>Map Reroll включен</MapPreview.Settings.EnableMapReroll>
+
+</LanguageData>
