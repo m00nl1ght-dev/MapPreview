@@ -14,6 +14,8 @@ public class TrueTerrainColors
     private static Dictionary<string, Color> _defaultMapRerollColors;
     private static Dictionary<string, Color> _trueTerrainColors;
 
+    public static IReadOnlyDictionary<string, Color> TrueTerrainColorsReadonly => _trueTerrainColors;
+
     private static bool _trueTerrainColorsApplied;
 
     static TrueTerrainColors()

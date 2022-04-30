@@ -5,6 +5,7 @@
 
   <MapPreview.Settings.PreviewWindowSize>Preview window size</MapPreview.Settings.PreviewWindowSize>
   <MapPreview.Settings.EnableTrueTerrainColors>Use true terrain colors (enables support for terrain added by mods, also affects Map Reroll)</MapPreview.Settings.EnableTrueTerrainColors>
+  <MapPreview.Settings.EnableExactPreviewGenerator>Use experimental exact preview generator (better support for mods with custom map features, but slower)</MapPreview.Settings.EnableExactPreviewGenerator>
   <MapPreview.Settings.EnableMapPreview>Map Preview enabled</MapPreview.Settings.EnableMapPreview>
   <MapPreview.Settings.EnableMapReroll>Map Reroll enabled</MapPreview.Settings.EnableMapReroll>
 

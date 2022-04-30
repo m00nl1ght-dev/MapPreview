@@ -42,6 +42,10 @@
           <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
           <Private>False</Private>
         </Reference>
+        <Reference Include="HugsLib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\..\HugsLib\Assemblies\HugsLib.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
         <Reference Include="MapReroll, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null">
           <HintPath>..\..\..\Map Reroll\v1.3\Assemblies\MapReroll.dll</HintPath>
           <Private>False</Private>
@@ -73,6 +77,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Main.cs" />
+        <Compile Include="ExactMapPreviewGenerator.cs" />
         <Compile Include="MapPreviewWindow.cs" />
         <Compile Include="ModInstance.cs" />
         <Compile Include="Patches\MapReroll_MapPreviewGenerator.cs" />

@@ -16,6 +16,7 @@ public class MapPreviewWindow : Window
     private static float _lastX = -1, _lastY = -1;
     
     private readonly MapPreviewGenerator _previewGenerator;
+    private readonly ExactMapPreviewGenerator _exactPreviewGenerator;
     private MapPreview _preview;
 
     public MapPreviewWindow()
@@ -31,6 +32,7 @@ public class MapPreviewWindow : Window
         resizeable = false;
         draggable = true;
         _previewGenerator = new MapPreviewGenerator();
+        _exactPreviewGenerator = new ExactMapPreviewGenerator();
         if (Instance != this) Instance?.Close();
         Instance = this;
     }
@@ -39,7 +41,10 @@ public class MapPreviewWindow : Window
     {
         _preview?.Dispose();
         string seed = world.info.seedString;
-        IPromise<Texture2D> promise = _previewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x, true);
+        IPromise<Texture2D> promise =
+            ModInstance.Settings.EnableExactPreviewGenerator
+                ? _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x, true)
+                : _previewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x, true);
         _preview = new MapPreview(promise, seed);
     }
 
@@ -54,6 +59,7 @@ public class MapPreviewWindow : Window
     {
         base.PreClose();
         _previewGenerator.Dispose();
+        _exactPreviewGenerator.Dispose();
         _preview.Dispose();
         _preview = null;
         _lastX = windowRect.x;
