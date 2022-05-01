@@ -56,7 +56,7 @@ public class Settings : ModSettings
     {
         PreviewWindowSize = DefaultPreviewWindowSize;
         EnableTrueTerrainColors = true;
-        EnableExactPreviewGenerator = false;
+        EnableExactPreviewGenerator = true;
         EnableMapPreview = true;
         EnableMapReroll = true;
     }

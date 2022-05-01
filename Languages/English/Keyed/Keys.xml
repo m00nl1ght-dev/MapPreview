@@ -4,9 +4,11 @@
   <MapPreview.Title>Map Preview</MapPreview.Title>
 
   <MapPreview.Settings.PreviewWindowSize>Preview window size</MapPreview.Settings.PreviewWindowSize>
-  <MapPreview.Settings.EnableTrueTerrainColors>Use true terrain colors (enables support for terrain added by mods, also affects Map Reroll)</MapPreview.Settings.EnableTrueTerrainColors>
-  <MapPreview.Settings.EnableExactPreviewGenerator>Use experimental exact preview generator (better support for mods with custom map features, but slower)</MapPreview.Settings.EnableExactPreviewGenerator>
+  <MapPreview.Settings.EnableTrueTerrainColors>Use true terrain colors (enables support for terrain added by mods, also applies to Map Reroll)</MapPreview.Settings.EnableTrueTerrainColors>
+  <MapPreview.Settings.EnableExactPreviewGenerator>Use exact preview generator (slightly slower, but more accurate and supports custom map features added by mods)</MapPreview.Settings.EnableExactPreviewGenerator>
   <MapPreview.Settings.EnableMapPreview>Map Preview enabled</MapPreview.Settings.EnableMapPreview>
   <MapPreview.Settings.EnableMapReroll>Map Reroll enabled</MapPreview.Settings.EnableMapReroll>
+  
+  <MapPreview.World.WaitForPreview>There is a map preview currently generating, please wait before continuing...</MapPreview.World.WaitForPreview>
 
 </LanguageData>

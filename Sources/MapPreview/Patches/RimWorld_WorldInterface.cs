@@ -28,7 +28,7 @@ public class RimWorld_WorldInterface
             if (_tileId != -1)
             {
                 var tile = Find.World.grid[_tileId];
-                if (!tile.biome.impassable && tile.hilliness != Hilliness.Impassable)
+                if (!tile.biome.impassable && (tile.hilliness != Hilliness.Impassable || TileFinder.IsValidTileForNewSettlement(_tileId)))
                 {
                     if (!ModInstance.Settings.EnableMapPreview) return;
                     if (MapPreviewWindow.Instance == null) Find.WindowStack.Add(new MapPreviewWindow());

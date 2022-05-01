@@ -1,7 +1,10 @@
 using HarmonyLib;
+using MapPreview.Patches;
 using Verse;
 
-namespace MapPreview.Patches;
+// ReSharper disable All
+
+namespace GeologicalLandforms.Patches;
 
 [HarmonyPatch(typeof(MapGenerator))]
 internal static class RimWorld_MapGenerator
