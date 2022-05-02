@@ -1,3 +1,4 @@
+using MapPreview.Patches;
 using UnityEngine;
 using Verse;
 
@@ -10,6 +11,7 @@ public class ModInstance : Mod
     public ModInstance(ModContentPack content) : base(content)
     {
         Settings = GetSettings<Settings>();
+        ModCompat_PerformanceOptimizer.Apply();
     }
 
     public override void DoSettingsWindowContents(Rect inRect)

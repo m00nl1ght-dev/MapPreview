@@ -12,7 +12,7 @@ public class Settings : ModSettings
 
     public float PreviewWindowSize = DefaultPreviewWindowSize;
     public bool EnableTrueTerrainColors = true;
-    public bool EnableExactPreviewGenerator = true;
+    public bool EnableExactPreviewGenerator = false;
     public bool EnableMapPreview = true;
     public bool EnableMapReroll = true;
 
@@ -46,7 +46,7 @@ public class Settings : ModSettings
     {
         Scribe_Values.Look(ref PreviewWindowSize, "PreviewWindowSize", DefaultPreviewWindowSize);
         Scribe_Values.Look(ref EnableTrueTerrainColors, "EnableTrueTerrainColors", true);
-        Scribe_Values.Look(ref EnableExactPreviewGenerator, "EnableExactPreviewGenerator", true);
+        Scribe_Values.Look(ref EnableExactPreviewGenerator, "EnableExactPreviewGenerator_Exp", false);
         Scribe_Values.Look(ref EnableMapPreview, "EnableMapPreview", true);
         Scribe_Values.Look(ref EnableMapReroll, "EnableMapReroll", true);
         base.ExposeData();
@@ -56,7 +56,7 @@ public class Settings : ModSettings
     {
         PreviewWindowSize = DefaultPreviewWindowSize;
         EnableTrueTerrainColors = true;
-        EnableExactPreviewGenerator = true;
+        EnableExactPreviewGenerator = false;
         EnableMapPreview = true;
         EnableMapReroll = true;
     }

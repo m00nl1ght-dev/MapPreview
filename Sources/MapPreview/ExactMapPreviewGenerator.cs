@@ -33,399 +33,403 @@ using System.Reflection;
 using System.Threading;
 using HarmonyLib;
 using HugsLib;
-using MapPreview;
 using MapPreview.Patches;
+using MapReroll;
 using MapReroll.Promises;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 
-namespace MapReroll
+namespace MapPreview;
+
+/// <summary>
+/// Modified version of MapReroll.MapPreviewGenerator that uses original TerrainAt method for better mod compat.
+/// </summary>
+public class ExactMapPreviewGenerator : IDisposable
 {
-    /// <summary>
-    /// Modified version of MapReroll.MapPreviewGenerator that uses original TerrainAt method for better mod compat.
-    /// </summary>
-    public class ExactMapPreviewGenerator : IDisposable
+    private readonly Queue<QueuedPreviewRequest> _queuedRequests = new();
+    private Thread _workerThread;
+    private EventWaitHandle _workHandle = new AutoResetEvent(false);
+    private EventWaitHandle _disposeHandle = new AutoResetEvent(false);
+    private EventWaitHandle _mainThreadHandle = new AutoResetEvent(false);
+    private bool _disposed;
+
+    private static readonly Color MissingTerrainColor = new(0.38f, 0.38f, 0.38f);
+    private static readonly Color SolidStoneColor = GenColor.FromHex("36271C");
+    private static readonly Color SolidStoneHighlightColor = GenColor.FromHex("4C3426");
+    private static readonly Color SolidStoneShadowColor = GenColor.FromHex("1C130E");
+    private static readonly Color CaveColor = GenColor.FromHex("42372b");
+
+    private static MethodInfo GenStepTerrainTerrainAt { get; set; }
+
+    private static readonly IReadOnlyCollection<string> IncludedGenStepDefs = new HashSet<string>
     {
-        private readonly Queue<QueuedPreviewRequest> _queuedRequests = new();
-        private Thread _workerThread;
-        private EventWaitHandle _workHandle = new AutoResetEvent(false);
-        private EventWaitHandle _disposeHandle = new AutoResetEvent(false);
-        private EventWaitHandle _mainThreadHandle = new AutoResetEvent(false);
-        private bool _disposed;
+        // Vanilla
+        "ElevationFertility",
+        "Caves",
+        "Terrain",
 
-        private static readonly Color MissingTerrainColor = new(0.38f, 0.38f, 0.38f);
-        private static readonly Color SolidStoneColor = GenColor.FromHex("36271C");
-        private static readonly Color SolidStoneHighlightColor = GenColor.FromHex("4C3426");
-        private static readonly Color SolidStoneShadowColor = GenColor.FromHex("1C130E");
-        private static readonly Color CaveColor = GenColor.FromHex("42372b");
+        // CaveBiomes
+        "CaveElevation",
+        "CaveRiver",
 
-        private static MethodInfo GenStepTerrainTerrainAt { get; set; }
+        // TerraProjectCore
+        "ElevationFertilityPost",
+        "BetterCaves"
+    };
 
-        private static readonly IReadOnlyCollection<string> IncludedGenStepDefs = new HashSet<string>
+    public static void InitReflection()
+    {
+        GenStepTerrainTerrainAt = AccessTools.Method(typeof(GenStep_Terrain), "TerrainFrom");
+    }
+
+    public IPromise<Texture2D> QueuePreviewForSeed(string seed, int mapTile, int mapSize, bool revealCaves)
+    {
+        if (_disposeHandle == null)
         {
-            // Vanilla
-            "ElevationFertility",
-            "Caves",
-            "Terrain",
-
-            // CaveBiomes
-            "CaveElevation",
-            "CaveRiver",
-
-            // TerraProjectCore
-            "ElevationFertilityPost",
-            "BetterCaves"
-        };
-
-        public static void InitReflection()
-        {
-            GenStepTerrainTerrainAt = AccessTools.Method(typeof(GenStep_Terrain), "TerrainFrom");
+            throw new Exception("MapPreviewGenerator has already been disposed.");
         }
 
-        public IPromise<Texture2D> QueuePreviewForSeed(string seed, int mapTile, int mapSize, bool revealCaves)
+        var promise = new Promise<Texture2D>();
+        if (_workerThread == null)
         {
-            if (_disposeHandle == null)
-            {
-                throw new Exception("MapPreviewGenerator has already been disposed.");
-            }
-
-            var promise = new Promise<Texture2D>();
-            if (_workerThread == null)
-            {
-                _workerThread = new Thread(DoThreadWork);
-                _workerThread.Start();
-            }
-
-            _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, seed, mapTile, mapSize, revealCaves));
-            _workHandle.Set();
-            return promise;
+            _workerThread = new Thread(DoThreadWork);
+            _workerThread.Start();
         }
 
-        private void DoThreadWork()
+        _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, seed, mapTile, mapSize, revealCaves));
+        _workHandle.Set();
+        return promise;
+    }
+
+    private void DoThreadWork()
+    {
+        QueuedPreviewRequest request = null;
+        try
         {
-            QueuedPreviewRequest request = null;
-            try
+            while (_queuedRequests.Count > 0 ||
+                   WaitHandle.WaitAny(new WaitHandle[] { _workHandle, _disposeHandle }) == 0)
             {
-                while (_queuedRequests.Count > 0 ||
-                       WaitHandle.WaitAny(new WaitHandle[] { _workHandle, _disposeHandle }) == 0)
+                Exception rejectException = null;
+                if (_queuedRequests.Count > 0)
                 {
-                    Exception rejectException = null;
-                    if (_queuedRequests.Count > 0)
+                    var req = _queuedRequests.Dequeue();
+                    request = req;
+                    Texture2D texture = null;
+                    int width = 0, height = 0;
+                    WaitForExecutionInMainThread(() =>
                     {
-                        var req = _queuedRequests.Dequeue();
-                        request = req;
-                        Texture2D texture = null;
-                        int width = 0, height = 0;
+                        // textures must be instantiated in the main thread
+                        texture = new Texture2D(req.MapSize, req.MapSize, TextureFormat.RGB24, false);
+                        width = texture.width;
+                        height = texture.height;
+                    });
+                    ThreadableTexture placeholderTex = null;
+                    try
+                    {
+                        if (texture == null)
+                        {
+                            throw new Exception("Could not create required texture.");
+                        }
+
+                        placeholderTex = new ThreadableTexture(width, height);
+                        GeneratePreviewForSeed(req.Seed, req.MapTile, req.MapSize, req.RevealCaves, placeholderTex);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error("Failed to generate map preview: " + e);
+                        rejectException = e;
+                        texture = null;
+                    }
+
+                    if (texture != null && placeholderTex != null)
+                    {
                         WaitForExecutionInMainThread(() =>
                         {
-                            // textures must be instantiated in the main thread
-                            texture = new Texture2D(req.MapSize, req.MapSize, TextureFormat.RGB24, false);
-                            width = texture.width;
-                            height = texture.height;
-                        });
-                        ThreadableTexture placeholderTex = null;
-                        try
-                        {
-                            if (texture == null)
-                            {
-                                throw new Exception("Could not create required texture.");
-                            }
-
-                            placeholderTex = new ThreadableTexture(width, height);
-                            GeneratePreviewForSeed(req.Seed, req.MapTile, req.MapSize, req.RevealCaves, placeholderTex);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Error("Failed to generate map preview: " + e);
-                            rejectException = e;
-                            texture = null;
-                        }
-
-                        if (texture != null && placeholderTex != null)
-                        {
-                            WaitForExecutionInMainThread(() =>
-                            {
-                                // upload in main thread
-                                placeholderTex.CopyToTexture(texture);
-                                texture.Apply();
-                            });
-                        }
-
-                        WaitForExecutionInMainThread(() =>
-                        {
-                            if (texture == null)
-                            {
-                                req.Promise.Reject(rejectException);
-                            }
-                            else
-                            {
-                                req.Promise.Resolve(texture);
-                            }
+                            // upload in main thread
+                            placeholderTex.CopyToTexture(texture);
+                            texture.Apply();
                         });
                     }
+
+                    WaitForExecutionInMainThread(() =>
+                    {
+                        if (texture == null)
+                        {
+                            req.Promise.Reject(rejectException);
+                        }
+                        else
+                        {
+                            req.Promise.Resolve(texture);
+                        }
+                    });
                 }
-
-                _workHandle.Close();
-                _mainThreadHandle.Close();
-                _disposeHandle.Close();
-                _mainThreadHandle = _disposeHandle = _workHandle = null;
             }
-            catch (Exception e)
+
+            _workHandle.Close();
+            _mainThreadHandle.Close();
+            _disposeHandle.Close();
+            _mainThreadHandle = _disposeHandle = _workHandle = null;
+        }
+        catch (Exception e)
+        {
+            Log.Error("Exception in preview generator thread: " + e);
+            if (request != null)
             {
-                Log.Error("Exception in preview generator thread: " + e);
-                if (request != null)
-                {
-                    request.Promise.Reject(e);
-                }
+                request.Promise.Reject(e);
             }
         }
+    }
 
-        public void Dispose()
+    public void Dispose()
+    {
+        if (_disposed)
         {
-            if (_disposed)
-            {
-                throw new Exception("MapPreviewGenerator has already been disposed.");
-            }
-
-            _disposed = true;
-            _queuedRequests.Clear();
-            _disposeHandle.Set();
+            throw new Exception("MapPreviewGenerator has already been disposed.");
         }
 
-        /// <summary>
-        /// The worker cannot be aborted- wait for the worker to complete before generating map
-        /// </summary>
-        public void WaitForDisposal()
+        _disposed = true;
+        _queuedRequests.Clear();
+        _disposeHandle.Set();
+    }
+        
+    public void ClearQueue()
+    {
+        _queuedRequests.Clear();
+    }
+
+    /// <summary>
+    /// The worker cannot be aborted- wait for the worker to complete before generating map
+    /// </summary>
+    public void WaitForDisposal()
+    {
+        if (!_disposed || !_workerThread.IsAlive || _workerThread.ThreadState == ThreadState.WaitSleepJoin) return;
+        LongEventHandler.QueueLongEvent(() => _workerThread.Join(60 * 1000), "Reroll2_finishingPreview", true,
+            null);
+    }
+
+    /// <summary>
+    /// Block until delegate is executed or times out
+    /// </summary>
+    private void WaitForExecutionInMainThread(Action action)
+    {
+        if (_mainThreadHandle == null) return;
+        HugsLibController.Instance.DoLater.DoNextUpdate(() =>
         {
-            if (!_disposed || !_workerThread.IsAlive || _workerThread.ThreadState == ThreadState.WaitSleepJoin) return;
-            LongEventHandler.QueueLongEvent(() => _workerThread.Join(60 * 1000), "Reroll2_finishingPreview", true,
-                null);
+            action();
+            _mainThreadHandle.Set();
+        });
+        _mainThreadHandle.WaitOne(1000);
+    }
+
+    private static void GeneratePreviewForSeed(string seed, int mapTile, int mapSize, bool revealCaves, ThreadableTexture texture)
+    {
+        var prevSeed = Find.World.info.seedString;
+
+        try
+        {
+            Main.IsGeneratingPreview = true;
+
+            MapRerollController.HasCavesOverride.HasCaves = Find.World.HasCaves(mapTile);
+            MapRerollController.HasCavesOverride.OverrideEnabled = true;
+            RimWorld_TerrainPatchMaker.Reset();
+
+            Find.World.info.seedString = seed;
+            MapRerollController.RandStateStackCheckingPaused = true;
+            Find.TickManager.gameStartAbsTick = 1;
+
+            var mapParent = new MapParent { Tile = mapTile, def = WorldObjectDefOf.Settlement };
+            GenerateMap(new IntVec3(mapSize, 1, mapSize), mapParent, MapGeneratorDefOf.Base_Player, texture);
+
+            AddBevelToSolidStone(texture);
         }
-
-        /// <summary>
-        /// Block until delegate is executed or times out
-        /// </summary>
-        private void WaitForExecutionInMainThread(Action action)
+        catch (Exception e)
         {
-            if (_mainThreadHandle == null) return;
-            HugsLibController.Instance.DoLater.DoNextUpdate(() =>
-            {
-                action();
-                _mainThreadHandle.Set();
-            });
-            _mainThreadHandle.WaitOne(1000);
+            Log.Error("Error in preview generation: " + e);
+            Debug.LogException(e);
         }
-
-        private static void GeneratePreviewForSeed(string seed, int mapTile, int mapSize, bool revealCaves, ThreadableTexture texture)
+        finally
         {
-            var prevSeed = Find.World.info.seedString;
-
-            try
-            {
-                Main.IsGeneratingPreview = true;
-
-                MapRerollController.HasCavesOverride.HasCaves = Find.World.HasCaves(mapTile);
-                MapRerollController.HasCavesOverride.OverrideEnabled = true;
-                RimWorld_TerrainPatchMaker.Reset();
-
-                Find.World.info.seedString = seed;
-                MapRerollController.RandStateStackCheckingPaused = true;
-                Find.TickManager.gameStartAbsTick = 1;
-
-                var mapParent = new MapParent { Tile = mapTile, def = WorldObjectDefOf.Settlement };
-                GenerateMap(new IntVec3(mapSize, 1, mapSize), mapParent, MapGeneratorDefOf.Base_Player, texture);
-
-                AddBevelToSolidStone(texture);
-            }
-            catch (Exception e)
-            {
-                Log.Error("Error in preview generation: " + e);
-                Debug.LogException(e);
-            }
-            finally
-            {
-                RockNoises.Reset();
-                BeachMaker.Cleanup();
-                RimWorld_TerrainPatchMaker.Reset();
-                Find.World.info.seedString = prevSeed;
-                Find.TickManager.gameStartAbsTick = 0;
-                MapRerollController.RandStateStackCheckingPaused = false;
-                MapRerollController.HasCavesOverride.OverrideEnabled = false;
-                Main.IsGeneratingPreview = false;
-            }
+            RockNoises.Reset();
+            BeachMaker.Cleanup();
+            RimWorld_TerrainPatchMaker.Reset();
+            Find.World.info.seedString = prevSeed;
+            Find.TickManager.gameStartAbsTick = 0;
+            MapRerollController.RandStateStackCheckingPaused = false;
+            MapRerollController.HasCavesOverride.OverrideEnabled = false;
+            Main.IsGeneratingPreview = false;
         }
+    }
 
-        private static void GenerateMap(
-            IntVec3 mapSize,
-            MapParent parent,
-            MapGeneratorDef mapGenerator,
-            ThreadableTexture texture)
+    private static void GenerateMap(
+        IntVec3 mapSize,
+        MapParent parent,
+        MapGeneratorDef mapGenerator,
+        ThreadableTexture texture)
+    {
+        var mapGeneratorData = (Dictionary<string, object>)ReflectionCache.MapGenerator_Data.GetValue(null);
+        mapGeneratorData.Clear();
+
+        Rand.PushState();
+        int seed = Gen.HashCombineInt(Find.World.info.Seed, parent.Tile);
+        Rand.Seed = seed;
+
+        try
         {
-            var mapGeneratorData = (Dictionary<string, object>)ReflectionCache.MapGenerator_Data.GetValue(null);
-            mapGeneratorData.Clear();
+            var map = new Map { generationTick = GenTicks.TicksGame };
+            MapGenerator.mapBeingGenerated = map;
+            map.info.Size = mapSize;
+            map.info.parent = parent;
+            map.ConstructComponents();
+            Current.Game.Maps.Add(map);
 
-            Rand.PushState();
-            int seed = Gen.HashCombineInt(Find.World.info.Seed, parent.Tile);
-            Rand.Seed = seed;
-
-            try
-            {
-                var map = new Map { generationTick = GenTicks.TicksGame };
-                MapGenerator.mapBeingGenerated = map;
-                map.info.Size = mapSize;
-                map.info.parent = parent;
-                map.ConstructComponents();
-                Current.Game.Maps.Add(map);
-
-                var previewGenStep = new GenStepDef { genStep = new PreviewTextureGenStep(texture), order = 9999 };
-                var genStepWithParamses = mapGenerator.genSteps
-                    .Where(d => IncludedGenStepDefs.Contains(d.defName))
-                    .Select(x => new GenStepWithParams(x, new GenStepParams()))
-                    .Append(new GenStepWithParams(previewGenStep, new GenStepParams()));
+            var previewGenStep = new GenStepDef { genStep = new PreviewTextureGenStep(texture), order = 9999 };
+            var genStepWithParamses = mapGenerator.genSteps
+                .Where(d => IncludedGenStepDefs.Contains(d.defName))
+                .Select(x => new GenStepWithParams(x, new GenStepParams()))
+                .Append(new GenStepWithParams(previewGenStep, new GenStepParams()));
                 
-                MapGenerator.GenerateContentsIntoMap(genStepWithParamses, map, seed);
-                Current.Game.DeinitAndRemoveMap(map);
-            }
-            finally
-            {
-                MapGenerator.mapBeingGenerated = null;
-                Rand.PopState();
-            }
+            MapGenerator.GenerateContentsIntoMap(genStepWithParamses, map, seed);
+            Current.Game.DeinitAndRemoveMap(map);
+        }
+        finally
+        {
+            MapGenerator.mapBeingGenerated = null;
+            Rand.PopState();
+        }
+    }
+
+    private class PreviewTextureGenStep : GenStep
+    {
+        private readonly ThreadableTexture _texture;
+
+        public PreviewTextureGenStep(ThreadableTexture texture)
+        {
+            _texture = texture;
         }
 
-        private class PreviewTextureGenStep : GenStep
+        public override int SeedPart => 0;
+
+        public override void Generate(Map map, GenStepParams parms)
         {
-            private readonly ThreadableTexture _texture;
-
-            public PreviewTextureGenStep(ThreadableTexture texture)
+            var mapBounds = CellRect.WholeMap(map);
+            var colors = TrueTerrainColors.CurrentTerrainColors;
+            foreach (var cell in mapBounds)
             {
-                _texture = texture;
-            }
+                var terrainDef = map.terrainGrid.TerrainAt(cell);
 
-            public override int SeedPart => 0;
-
-            public override void Generate(Map map, GenStepParams parms)
-            {
-                var mapBounds = CellRect.WholeMap(map);
-                var colors = TrueTerrainColors.CurrentTerrainColors;
-                foreach (var cell in mapBounds)
+                Color pixelColor;
+                if (MapGenerator.Elevation[cell] >= 0.7 && !terrainDef.IsRiver)
                 {
-                    var terrainDef = map.terrainGrid.TerrainAt(cell);
+                    pixelColor = MapGenerator.Caves[cell] > 0 ? CaveColor : SolidStoneColor;
+                }
+                else if (!colors.TryGetValue(terrainDef.defName, out pixelColor))
+                {
+                    pixelColor = MissingTerrainColor;
+                }
 
-                    Color pixelColor;
-                    if (MapGenerator.Elevation[cell] >= 0.7 && !terrainDef.IsRiver)
-                    {
-                        pixelColor = MapGenerator.Caves[cell] > 0 ? CaveColor : SolidStoneColor;
-                    }
-                    else if (!colors.TryGetValue(terrainDef.defName, out pixelColor))
-                    {
-                        pixelColor = MissingTerrainColor;
-                    }
+                _texture.SetPixel(cell.x, cell.z, pixelColor);
+            }
+        }
+    }
 
-                    _texture.SetPixel(cell.x, cell.z, pixelColor);
+    /// <summary>
+    /// Adds highlights and shadows to the solid stone color in the texture
+    /// </summary>
+    private static void AddBevelToSolidStone(ThreadableTexture tex)
+    {
+        for (int x = 0; x < tex.Width; x++)
+        {
+            for (int y = 0; y < tex.Height; y++)
+            {
+                var isStone = tex.GetPixel(x, y) == SolidStoneColor;
+                if (isStone)
+                {
+                    var colorBelow = y > 0 ? tex.GetPixel(x, y - 1) : Color.clear;
+                    var isStoneBelow = colorBelow == SolidStoneColor || colorBelow == SolidStoneHighlightColor ||
+                                       colorBelow == SolidStoneShadowColor;
+                    var isStoneAbove = y < tex.Height - 1 && tex.GetPixel(x, y + 1) == SolidStoneColor;
+                    if (!isStoneAbove)
+                    {
+                        tex.SetPixel(x, y, SolidStoneHighlightColor);
+                    }
+                    else if (!isStoneBelow)
+                    {
+                        tex.SetPixel(x, y, SolidStoneShadowColor);
+                    }
                 }
             }
         }
+    }
 
-        /// <summary>
-        /// Adds highlights and shadows to the solid stone color in the texture
-        /// </summary>
-        private static void AddBevelToSolidStone(ThreadableTexture tex)
+    /// <summary>
+    /// Make an absolute bare minimum map instance for grid generation.
+    /// </summary>
+    private static Map CreateMapStub(int mapSize, int mapTile)
+    {
+        var parent = new MapParent { Tile = mapTile };
+        var map = new Map
         {
-            for (int x = 0; x < tex.Width; x++)
+            info =
             {
-                for (int y = 0; y < tex.Height; y++)
-                {
-                    var isStone = tex.GetPixel(x, y) == SolidStoneColor;
-                    if (isStone)
-                    {
-                        var colorBelow = y > 0 ? tex.GetPixel(x, y - 1) : Color.clear;
-                        var isStoneBelow = colorBelow == SolidStoneColor || colorBelow == SolidStoneHighlightColor ||
-                                           colorBelow == SolidStoneShadowColor;
-                        var isStoneAbove = y < tex.Height - 1 && tex.GetPixel(x, y + 1) == SolidStoneColor;
-                        if (!isStoneAbove)
-                        {
-                            tex.SetPixel(x, y, SolidStoneHighlightColor);
-                        }
-                        else if (!isStoneBelow)
-                        {
-                            tex.SetPixel(x, y, SolidStoneShadowColor);
-                        }
-                    }
-                }
+                parent = parent,
+                Size = new IntVec3(mapSize, 1, mapSize)
             }
+        };
+        map.cellIndices = new CellIndices(map);
+        map.floodFiller = new FloodFiller(map);
+        map.waterInfo = new WaterInfo(map);
+        return map;
+    }
+
+    private class QueuedPreviewRequest
+    {
+        public readonly Promise<Texture2D> Promise;
+        public readonly string Seed;
+        public readonly int MapTile;
+        public readonly int MapSize;
+        public readonly bool RevealCaves;
+
+        public QueuedPreviewRequest(Promise<Texture2D> promise, string seed, int mapTile, int mapSize,
+            bool revealCaves)
+        {
+            Promise = promise;
+            Seed = seed;
+            MapTile = mapTile;
+            MapSize = mapSize;
+            RevealCaves = revealCaves;
+        }
+    }
+
+    // A placeholder for Texture2D that can be used in threads other than the main one (required since 1.0)
+    private class ThreadableTexture
+    {
+        // pixels are laid out left to right, top to bottom
+        private readonly Color[] _pixels;
+        public readonly int Width;
+        public readonly int Height;
+
+        public ThreadableTexture(int width, int height)
+        {
+            this.Width = width;
+            this.Height = height;
+            _pixels = new Color[width * height];
         }
 
-        /// <summary>
-        /// Make an absolute bare minimum map instance for grid generation.
-        /// </summary>
-        private static Map CreateMapStub(int mapSize, int mapTile)
+        public void SetPixel(int x, int y, Color color)
         {
-            var parent = new MapParent { Tile = mapTile };
-            var map = new Map
-            {
-                info =
-                {
-                    parent = parent,
-                    Size = new IntVec3(mapSize, 1, mapSize)
-                }
-            };
-            map.cellIndices = new CellIndices(map);
-            map.floodFiller = new FloodFiller(map);
-            map.waterInfo = new WaterInfo(map);
-            return map;
+            _pixels[y * Height + x] = color;
         }
 
-        private class QueuedPreviewRequest
+        public Color GetPixel(int x, int y)
         {
-            public readonly Promise<Texture2D> Promise;
-            public readonly string Seed;
-            public readonly int MapTile;
-            public readonly int MapSize;
-            public readonly bool RevealCaves;
-
-            public QueuedPreviewRequest(Promise<Texture2D> promise, string seed, int mapTile, int mapSize,
-                bool revealCaves)
-            {
-                Promise = promise;
-                Seed = seed;
-                MapTile = mapTile;
-                MapSize = mapSize;
-                RevealCaves = revealCaves;
-            }
+            return _pixels[y * Height + x];
         }
 
-        // A placeholder for Texture2D that can be used in threads other than the main one (required since 1.0)
-        private class ThreadableTexture
+        public void CopyToTexture(Texture2D tex)
         {
-            // pixels are laid out left to right, top to bottom
-            private readonly Color[] _pixels;
-            public readonly int Width;
-            public readonly int Height;
-
-            public ThreadableTexture(int width, int height)
-            {
-                this.Width = width;
-                this.Height = height;
-                _pixels = new Color[width * height];
-            }
-
-            public void SetPixel(int x, int y, Color color)
-            {
-                _pixels[y * Height + x] = color;
-            }
-
-            public Color GetPixel(int x, int y)
-            {
-                return _pixels[y * Height + x];
-            }
-
-            public void CopyToTexture(Texture2D tex)
-            {
-                tex.SetPixels(_pixels);
-            }
+            tex.SetPixels(_pixels);
         }
     }
 }

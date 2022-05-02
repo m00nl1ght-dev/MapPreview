@@ -15,8 +15,8 @@ public class MapPreviewWindow : Window
 
     private static float _lastX = -1, _lastY = -1;
     
-    private readonly MapPreviewGenerator _previewGenerator;
-    private readonly ExactMapPreviewGenerator _exactPreviewGenerator;
+    private static MapPreviewGenerator _previewGenerator;
+    private static ExactMapPreviewGenerator _exactPreviewGenerator;
     private MapPreview _preview;
 
     public MapPreviewWindow()
@@ -31,8 +31,8 @@ public class MapPreviewWindow : Window
         forcePause = false;
         resizeable = false;
         draggable = true;
-        _previewGenerator = new MapPreviewGenerator();
-        _exactPreviewGenerator = new ExactMapPreviewGenerator();
+        _previewGenerator ??= new MapPreviewGenerator();
+        _exactPreviewGenerator ??= new ExactMapPreviewGenerator();
         if (Instance != this) Instance?.Close();
         Instance = this;
     }
@@ -40,6 +40,7 @@ public class MapPreviewWindow : Window
     public void OnWorldTileSelected(World world, int tileId)
     {
         _preview?.Dispose();
+        _exactPreviewGenerator.ClearQueue();
         string seed = world.info.seedString;
         IPromise<Texture2D> promise =
             ModInstance.Settings.EnableExactPreviewGenerator
@@ -53,13 +54,14 @@ public class MapPreviewWindow : Window
         base.PreOpen();
         windowRect.x = _lastX >= 0 ? _lastX : _lastX = UI.screenWidth - InitialSize.x - 50f;
         windowRect.y = _lastY >= 0 ? _lastY : _lastY = 100f;
+        
+        if (windowRect.x + windowRect.width > UI.screenWidth) windowRect.x = UI.screenWidth - InitialSize.x - 50f;
+        if (windowRect.y + windowRect.height > UI.screenHeight) windowRect.y = 100f;
     }
 
     public override void PreClose()
     {
         base.PreClose();
-        _previewGenerator.Dispose();
-        _exactPreviewGenerator.Dispose();
         _preview.Dispose();
         _preview = null;
         _lastX = windowRect.x;
