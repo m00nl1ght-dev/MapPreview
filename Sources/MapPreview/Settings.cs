@@ -12,7 +12,7 @@ public class Settings : ModSettings
 
     public float PreviewWindowSize = DefaultPreviewWindowSize;
     public bool EnableTrueTerrainColors = true;
-    public bool EnableExactPreviewGenerator = false;
+    public bool EnableExactPreviewGenerator;
     public bool EnableMapPreview = true;
     public bool EnableMapReroll = true;
 
@@ -39,6 +39,11 @@ public class Settings : ModSettings
         CenteredLabel(listingStandard, "MapPreview.Settings.PreviewWindowSize".Translate(), PreviewWindowSize.ToString(CultureInfo.InvariantCulture));
         PreviewWindowSize = (int) listingStandard.Slider(PreviewWindowSize, 100f, 800f);
 
+        if (Prefs.DevMode && listingStandard.ButtonText("[DEV] Clear cache and recalculate all terrain colors"))
+        {
+            TrueTerrainColors.CalculateTrueTerrainColors(true);
+        }
+
         Widgets.EndScrollView();
     }
 
@@ -46,7 +51,7 @@ public class Settings : ModSettings
     {
         Scribe_Values.Look(ref PreviewWindowSize, "PreviewWindowSize", DefaultPreviewWindowSize);
         Scribe_Values.Look(ref EnableTrueTerrainColors, "EnableTrueTerrainColors", true);
-        Scribe_Values.Look(ref EnableExactPreviewGenerator, "EnableExactPreviewGenerator_Exp", false);
+        Scribe_Values.Look(ref EnableExactPreviewGenerator, "EnableExactPreviewGenerator_Exp");
         Scribe_Values.Look(ref EnableMapPreview, "EnableMapPreview", true);
         Scribe_Values.Look(ref EnableMapReroll, "EnableMapReroll", true);
         base.ExposeData();

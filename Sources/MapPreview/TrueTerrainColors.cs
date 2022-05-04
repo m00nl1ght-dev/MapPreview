@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Xml.Serialization;
 using UnityEngine;
 using Verse;
 using Debug = UnityEngine.Debug;
@@ -11,6 +14,10 @@ namespace MapPreview;
 [StaticConstructorOnStartup]
 public class TrueTerrainColors
 {
+    private static string CacheFile => Path.Combine(GenFilePaths.ConfigFolderPath, "TrueTerrainColorsCache.xml");
+
+    private static readonly HashSet<string> ExcludeList = new() { "fluffy.stuffedfloors" };
+
     private static readonly Color DefaultTerrainColor = GenColor.FromHex("6D5B49");
     private static readonly Color MissingTerrainColor = new(0.38f, 0.38f, 0.38f);
     private static readonly Color SolidStoneColor = GenColor.FromHex("36271C");
@@ -46,9 +53,30 @@ public class TrueTerrainColors
 
     static TrueTerrainColors()
     {
+        if (File.Exists(CacheFile))
+        {
+            try
+            {
+                var xmlSerializer = new XmlSerializer(typeof(List<CacheEntry>));
+                using var streamReader = File.OpenText(CacheFile);
+                if (xmlSerializer.Deserialize(streamReader) is List<CacheEntry> cacheData)
+                {
+                    _trueTerrainColors = new Dictionary<string, Color>();
+                    foreach (var cacheEntry in cacheData) _trueTerrainColors.Add(cacheEntry.DefName, cacheEntry.Color);
+                    Log.Message($"[Map Preview] Loaded cached true colors for {cacheData.Count} terrain defs from file.");
+                }
+            }
+            catch (Exception e)
+            {
+                _trueTerrainColors = null;
+                Log.Warning("[Map Preview] Failed to read TrueTerrainColorsCache from file: " + e);
+                Debug.LogException(e);
+            }
+        }
+        
         CalculateTrueTerrainColors();
     }
-    
+
     public static void UpdateTerrainColorsIfNeeded(Dictionary<string, Color> terrainColors)
     {
         if (ModInstance.Settings.EnableTrueTerrainColors != _trueTerrainColorsApplied)
@@ -68,46 +96,82 @@ public class TrueTerrainColors
         }
     }
 
-    public static void CalculateTrueTerrainColors()
+    public static void CalculateTrueTerrainColors(bool clear = false)
     {
-        Dictionary<string, Color> trueTerrainColors = new();
+        int maxW = 0, maxH = 0, count = 0;
+
+        _trueTerrainColors ??= new Dictionary<string, Color>();
+        if (clear) _trueTerrainColors.Clear();
+
+        var missingDefs = DefDatabase<TerrainDef>.AllDefsListForReading
+            .Where(def => !_trueTerrainColors.ContainsKey(def.defName) && !ExcludeList.Contains(def.modContentPack?.PackageId))
+            .ToList();
+        
+        if (missingDefs.Count <= 0) return;
+
+        foreach (var texture in missingDefs.Select(def => def.graphic?.MatSingle?.mainTexture).OfType<Texture2D>())
+        {
+            if (texture.width > maxW) maxW = texture.width;
+            if (texture.height > maxH) maxH = texture.height;
+            count++;
+        }
 
         var stopwatch = new Stopwatch();
         stopwatch.Start();
+        
+        var renderTex = RenderTexture.GetTemporary(maxW, maxH, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
+        var readableTex = new Texture2D(maxW, maxH);
+        var previous = RenderTexture.active;
+        RenderTexture.active = renderTex;
 
         foreach (var def in DefDatabase<TerrainDef>.AllDefsListForReading)
         {
             try
             {
-                var texture = def.graphic.MatSingle.mainTexture;
+                var texture = def.graphic?.MatSingle?.mainTexture;
                 if (texture is Texture2D texture2D)
                 {
-                    var readableTex = DuplicateTexture(texture2D);
+                    Graphics.Blit(texture2D, renderTex);
+                    readableTex.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
+                    readableTex.Apply();
                     var rawColor = AverageColorFromTexture(readableTex);
                     var combinedColor = rawColor * def.graphic.MatSingle.color * def.graphic.color;
-                    trueTerrainColors.Add(def.defName, combinedColor);
-                    Object.Destroy(readableTex);
+                    _trueTerrainColors.Add(def.defName, combinedColor);
                 }
             }
             catch (Exception e)
             {
-                Log.Message($"Failed to extract true color from terrain {def.defName}.");
+                Log.Message($"[Map Preview] Failed to extract true color from terrain {def.defName}.");
                 Debug.LogException(e);
             }
         }
         
+        RenderTexture.active = previous;
+        RenderTexture.ReleaseTemporary(renderTex);
+        Object.Destroy(readableTex);
+        
         stopwatch.Stop();
-        var count = DefDatabase<TerrainDef>.AllDefsListForReading.Count;
+        
         var time = Math.Round(stopwatch.Elapsed.TotalSeconds, 2);
-        Log.Message($"[Map Preview] Extracted true colors from {count} terrain defs in {time} s.");
-
-        _trueTerrainColors = trueTerrainColors;
+        Log.Message($"[Map Preview] Extracted true colors from {count} terrain defs in {time} seconds using a RenderTexture of size {maxW}x{maxH}.");
+        
+        try
+        {
+            var cacheEntries = _trueTerrainColors.Select(p => new CacheEntry { DefName = p.Key, Color = p.Value }).ToList();
+            var xmlSerializer = new XmlSerializer(typeof(List<CacheEntry>));
+            using var streamWriter = File.CreateText(CacheFile);
+            xmlSerializer.Serialize(streamWriter, cacheEntries);
+        }
+        catch (Exception e)
+        {
+            Log.Warning("[Map Preview] Failed to write TrueTerrainColorsCache to file: " + e);
+            Debug.LogException(e);
+        }
     }
     
     private static Color32 AverageColorFromTexture(Texture2D tex, int stepSize = 1)
     {
-        Color32[] texColors = tex.GetPixels32();
- 
+        var texColors = tex.GetPixels32();
         int total = texColors.Length;
  
         float r = 0;
@@ -124,23 +188,10 @@ public class TrueTerrainColors
         return new Color32((byte)(r / total), (byte)(g / total), (byte)(b / total), 0);
     }
     
-    private static Texture2D DuplicateTexture(Texture2D source)
+    [Serializable]
+    public class CacheEntry
     {
-        var renderTex = RenderTexture.GetTemporary(
-            source.width,
-            source.height,
-            0,
-            RenderTextureFormat.Default,
-            RenderTextureReadWrite.Linear);
-
-        Graphics.Blit(source, renderTex);
-        var previous = RenderTexture.active;
-        RenderTexture.active = renderTex;
-        var readableText = new Texture2D(source.width, source.height);
-        readableText.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
-        readableText.Apply();
-        RenderTexture.active = previous;
-        RenderTexture.ReleaseTemporary(renderTex);
-        return readableText;
+        public string DefName;
+        public Color Color;
     }
 }
