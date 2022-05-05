@@ -1,3 +1,4 @@
+using System.Threading;
 using HarmonyLib;
 using MapReroll;
 using Verse;
@@ -8,7 +9,7 @@ namespace MapPreview;
 public static class Main
 {
     public static bool IsGeneratingPreview { get; set; }
-    
+
     static Main()
     {
         new Harmony("Map Preview").PatchAll();

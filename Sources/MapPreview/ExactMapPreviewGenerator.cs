@@ -48,6 +48,11 @@ namespace MapPreview;
 /// </summary>
 public class ExactMapPreviewGenerator : IDisposable
 {
+    public static Map GeneratingMapOnCurrentThread => Main.IsGeneratingPreview ? GeneratingPreviewMap.Value : null;
+    public static bool IsGeneratingOnCurrentThread => Main.IsGeneratingPreview && GeneratingPreviewMap.Value != null;
+    
+    private static readonly ThreadLocal<Map> GeneratingPreviewMap = new();
+    
     private readonly Queue<QueuedPreviewRequest> _queuedRequests = new();
     private Thread _workerThread;
     private EventWaitHandle _workHandle = new AutoResetEvent(false);
@@ -231,13 +236,9 @@ public class ExactMapPreviewGenerator : IDisposable
         {
             Main.IsGeneratingPreview = true;
 
-            MapRerollController.HasCavesOverride.HasCaves = Find.World.HasCaves(mapTile);
-            MapRerollController.HasCavesOverride.OverrideEnabled = true;
             RimWorld_TerrainPatchMaker.Reset();
 
             Find.World.info.seedString = seed;
-            MapRerollController.RandStateStackCheckingPaused = true;
-            Find.TickManager.gameStartAbsTick = 1;
 
             var mapParent = new MapParent { Tile = mapTile, def = WorldObjectDefOf.Settlement };
             GenerateMap(new IntVec3(mapSize, 1, mapSize), mapParent, MapGeneratorDefOf.Base_Player, texture);
@@ -251,13 +252,8 @@ public class ExactMapPreviewGenerator : IDisposable
         }
         finally
         {
-            RockNoises.Reset();
-            BeachMaker.Cleanup();
             RimWorld_TerrainPatchMaker.Reset();
             Find.World.info.seedString = prevSeed;
-            Find.TickManager.gameStartAbsTick = 0;
-            MapRerollController.RandStateStackCheckingPaused = false;
-            MapRerollController.HasCavesOverride.OverrideEnabled = false;
             Main.IsGeneratingPreview = false;
         }
     }
@@ -279,10 +275,10 @@ public class ExactMapPreviewGenerator : IDisposable
         {
             var map = new Map { generationTick = GenTicks.TicksGame };
             MapGenerator.mapBeingGenerated = map;
+            GeneratingPreviewMap.Value = map;
             map.info.Size = mapSize;
             map.info.parent = parent;
             map.ConstructComponents();
-            Current.Game.Maps.Add(map);
 
             var previewGenStep = new GenStepDef { genStep = new PreviewTextureGenStep(texture), order = 9999 };
             var genStepWithParamses = mapGenerator.genSteps
@@ -291,11 +287,16 @@ public class ExactMapPreviewGenerator : IDisposable
                 .Append(new GenStepWithParams(previewGenStep, new GenStepParams()));
                 
             MapGenerator.GenerateContentsIntoMap(genStepWithParamses, map, seed);
-            Current.Game.DeinitAndRemoveMap(map);
+            
+            map.weatherManager.EndAllSustainers();
+            Find.SoundRoot.sustainerManager.EndAllInMap(map);
+            Find.TickManager.RemoveAllFromMap(map);
+            Find.Archive.Notify_MapRemoved(map);
         }
         finally
         {
             MapGenerator.mapBeingGenerated = null;
+            GeneratingPreviewMap.Value = null;
             Rand.PopState();
         }
     }
