@@ -8,7 +8,7 @@ namespace MapPreview;
 
 public class MapPreviewWindow : Window
 {
-    public static MapPreviewWindow Instance { get; private set; }
+    public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
     
     public override Vector2 InitialSize => new(ModInstance.Settings.PreviewWindowSize, ModInstance.Settings.PreviewWindowSize);
     protected override float Margin => 0f;
@@ -34,7 +34,7 @@ public class MapPreviewWindow : Window
         _previewGenerator ??= new MapPreviewGenerator();
         _exactPreviewGenerator ??= new ExactMapPreviewGenerator();
         if (Instance != this) Instance?.Close();
-        Instance = this;
+        Log.Message("new");
     }
 
     public void OnWorldTileSelected(World world, int tileId)
@@ -47,10 +47,12 @@ public class MapPreviewWindow : Window
                 ? _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x, true)
                 : _previewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x, true);
         _preview = new MapPreview(promise, seed);
+        Log.Message("sel: " + tileId);
     }
 
     public override void PreOpen()
     {
+        Log.Message("preopen");
         base.PreOpen();
         windowRect.x = _lastX >= 0 ? _lastX : _lastX = UI.screenWidth - InitialSize.x - 50f;
         windowRect.y = _lastY >= 0 ? _lastY : _lastY = 100f;
@@ -66,7 +68,7 @@ public class MapPreviewWindow : Window
         _preview = null;
         _lastX = windowRect.x;
         _lastY = windowRect.y;
-        if (Instance == this) Instance = null;
+        Log.Message("close");
     }
     
     public override void DoWindowContents(Rect inRect)

@@ -11,13 +11,18 @@ namespace MapPreview.Patches;
 public class RimWorld_WorldInterface
 {
     private static int _tileId = -1;
+    private static bool _openedPreviewSinceEnteringMap;
     
     [HarmonyPatch("WorldInterfaceUpdate")]
     private static void Postfix(WorldInterface __instance)
     {
         if (!WorldRendererUtility.WorldRenderedNow)
         {
-            MapPreviewWindow.Instance?.Close();
+            if (_openedPreviewSinceEnteringMap)
+            {
+                MapPreviewWindow.Instance?.Close();
+                _openedPreviewSinceEnteringMap = false;
+            }
             return;
         }
         
@@ -31,8 +36,10 @@ public class RimWorld_WorldInterface
                 if (!tile.biome.impassable && (tile.hilliness != Hilliness.Impassable || TileFinder.IsValidTileForNewSettlement(_tileId)))
                 {
                     if (!ModInstance.Settings.EnableMapPreview) return;
-                    if (MapPreviewWindow.Instance == null) Find.WindowStack.Add(new MapPreviewWindow());
-                    MapPreviewWindow.Instance.OnWorldTileSelected(Find.World, _tileId);
+                    var window = MapPreviewWindow.Instance;
+                    if (window == null) Find.WindowStack.Add(window = new MapPreviewWindow());
+                    window.OnWorldTileSelected(Find.World, _tileId);
+                    _openedPreviewSinceEnteringMap = true;
                     return;
                 }
             }
