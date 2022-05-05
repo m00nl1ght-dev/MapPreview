@@ -124,7 +124,7 @@ public class TrueTerrainColors
         var previous = RenderTexture.active;
         RenderTexture.active = renderTex;
 
-        foreach (var def in DefDatabase<TerrainDef>.AllDefsListForReading)
+        foreach (var def in missingDefs)
         {
             try
             {
