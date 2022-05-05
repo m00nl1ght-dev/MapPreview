@@ -10,5 +10,6 @@
   <MapPreview.Settings.EnableMapReroll>Map Reroll enabled</MapPreview.Settings.EnableMapReroll>
   
   <MapPreview.World.WaitForPreview>There is a map preview currently generating, please wait before continuing...</MapPreview.World.WaitForPreview>
+  <MapPreview.World.ShowHidePreview>Toggle map preview.</MapPreview.World.ShowHidePreview>
 
 </LanguageData>

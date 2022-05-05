@@ -1,6 +1,4 @@
-using System.Threading;
 using HarmonyLib;
-using MapReroll;
 using Verse;
 
 namespace MapPreview;

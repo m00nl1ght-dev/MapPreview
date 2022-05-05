@@ -47,4 +47,10 @@ public class RimWorld_WorldInterface
             MapPreviewWindow.Instance?.Close();
         }
     }
+
+    public static void Refresh()
+    {
+        if (ModInstance.Settings.EnableMapPreview) _tileId = -1;
+        else MapPreviewWindow.Instance?.Close();
+    }
 }

@@ -85,6 +85,7 @@
         <Compile Include="Patches\MapReroll_MapRerollUIController.cs" />
         <Compile Include="Patches\RimWorld_MapGenerator.cs" />
         <Compile Include="Patches\RimWorld_Page_SelectStartingSite.cs" />
+        <Compile Include="Patches\RimWorld_PlaySettings.cs" />
         <Compile Include="Patches\RimWorld_PreviewGenShortcuts.cs" />
         <Compile Include="Patches\RimWorld_Rand.cs" />
         <Compile Include="Patches\RimWorld_TerrainPatchMaker.cs" />
