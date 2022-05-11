@@ -2,7 +2,9 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-// ReSharper disable All
+// ReSharper disable UnusedType.Global
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
 
 namespace MapPreview.Patches;
 
@@ -15,7 +17,7 @@ public class RimWorld_PlaySettings
         if (worldView)
         {
             bool prev = ModInstance.Settings.EnableMapPreview;
-            row.ToggleableIcon(ref ModInstance.Settings.EnableMapPreview, TexButton.TogglePauseOnError, (string) "MapPreview.World.ShowHidePreview".Translate(), SoundDefOf.Mouseover_ButtonToggle);
+            row.ToggleableIcon(ref ModInstance.Settings.EnableMapPreview, TexButton.TogglePauseOnError, "MapPreview.World.ShowHidePreview".Translate(), SoundDefOf.Mouseover_ButtonToggle);
             if (prev != ModInstance.Settings.EnableMapPreview) RimWorld_WorldInterface.Refresh();
         }
     }

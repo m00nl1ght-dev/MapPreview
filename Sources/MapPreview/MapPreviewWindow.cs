@@ -1,5 +1,3 @@
-using MapReroll;
-using MapReroll.Promises;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
@@ -15,7 +13,6 @@ public class MapPreviewWindow : Window
 
     private static float _lastX = -1, _lastY = -1;
     
-    private static MapPreviewGenerator _previewGenerator;
     private static ExactMapPreviewGenerator _exactPreviewGenerator;
     private MapPreview _preview;
 
@@ -31,7 +28,6 @@ public class MapPreviewWindow : Window
         forcePause = false;
         resizeable = false;
         draggable = true;
-        _previewGenerator ??= new MapPreviewGenerator();
         _exactPreviewGenerator ??= new ExactMapPreviewGenerator();
         if (Instance != this) Instance?.Close();
     }
@@ -41,10 +37,7 @@ public class MapPreviewWindow : Window
         _preview?.Dispose();
         _exactPreviewGenerator.ClearQueue();
         string seed = world.info.seedString;
-        IPromise<Texture2D> promise =
-            ModInstance.Settings.EnableExactPreviewGenerator
-                ? _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x, true)
-                : _previewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x, true);
+        var promise = _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x, true);
         _preview = new MapPreview(promise, seed);
     }
 

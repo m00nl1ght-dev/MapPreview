@@ -29,11 +29,12 @@ SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
+using HarmonyLib;
 using HugsLib;
 using MapPreview.Patches;
-using MapReroll;
-using MapReroll.Promises;
+using MapPreview.Promises;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
@@ -57,6 +58,8 @@ public class ExactMapPreviewGenerator : IDisposable
     private EventWaitHandle _disposeHandle = new AutoResetEvent(false);
     private EventWaitHandle _mainThreadHandle = new AutoResetEvent(false);
     private bool _disposed;
+
+    private static FieldInfo _fieldMapGenData;
 
     private static readonly Color MissingTerrainColor = new(0.38f, 0.38f, 0.38f);
     private static readonly Color SolidStoneColor = GenColor.FromHex("36271C");
@@ -90,6 +93,9 @@ public class ExactMapPreviewGenerator : IDisposable
         var promise = new Promise<Texture2D>();
         if (_workerThread == null)
         {
+            _fieldMapGenData ??= AccessTools.Field(typeof(MapGenerator), "data");
+            if (_fieldMapGenData == null) throw new Exception("Failed to reflect MapGenerator.data");
+            
             _workerThread = new Thread(DoThreadWork);
             _workerThread.Start();
         }
@@ -225,10 +231,8 @@ public class ExactMapPreviewGenerator : IDisposable
         try
         {
             Main.IsGeneratingPreview = true;
-
-            RimWorld_TerrainPatchMaker.Reset();
-
             Find.World.info.seedString = seed;
+            RimWorld_TerrainPatchMaker.Reset();
 
             var mapParent = new MapParent { Tile = mapTile, def = WorldObjectDefOf.Settlement };
             GenerateMap(new IntVec3(mapSize, 1, mapSize), mapParent, MapGeneratorDefOf.Base_Player, texture);
@@ -254,10 +258,9 @@ public class ExactMapPreviewGenerator : IDisposable
         MapGeneratorDef mapGenerator,
         ThreadableTexture texture)
     {
-        var mapGeneratorData = (Dictionary<string, object>)ReflectionCache.MapGenerator_Data.GetValue(null);
+        var mapGeneratorData = (Dictionary<string, object>) _fieldMapGenData.GetValue(null);
         mapGeneratorData.Clear();
-
-        RimWorld_Rand.debug.Value = true;
+        
         Rand.PushState();
         int seed = Gen.HashCombineInt(Find.World.info.Seed, parent.Tile);
         Rand.Seed = seed;
@@ -289,7 +292,6 @@ public class ExactMapPreviewGenerator : IDisposable
             MapGenerator.mapBeingGenerated = null;
             GeneratingPreviewMap.Value = null;
             Rand.PopState();
-            RimWorld_Rand.debug.Value = false;
         }
     }
 

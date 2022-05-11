@@ -4,6 +4,10 @@ using Verse;
 
 namespace MapPreview.Patches;
 
+// ReSharper disable UnusedType.Global
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
+
 /// <summary>
 /// Patch to disable WorldGrid:LongLatOf chache optimization  during preview generation.
 /// That feature otherwise causes the game to freeze.

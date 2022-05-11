@@ -27,25 +27,26 @@ SOFTWARE.
  */
 
 using System;
-using MapReroll.Interpolation;
-using MapReroll.Promises;
-using MapReroll.UI;
+using MapPreview.Interpolation;
+using MapPreview.Promises;
 using UnityEngine;
 using Verse;
 
 namespace MapPreview;
 
+[StaticConstructorOnStartup]
 public class MapPreview : IDisposable, IEquatable<MapPreview> {
 	
 	private const float SpawnInterpolationDuration = .3f;
 
 	private static readonly Color OutlineColor = GenColor.FromHex("616C7A");
 
+	private static readonly Texture2D UIPreviewLoading = ContentFinder<Texture2D>.Get("UIPreviewLoadingMP");
+
 	private readonly string _seed;
 	private readonly IPromise<Texture2D> _promise;
 		
 	private ValueInterpolator _spawnInterpolator;
-	private ValueInterpolator _zoomInterpolator;
 	private Texture2D _previewTex;
 
 	public MapPreview(IPromise<Texture2D> promise, string seed) {
@@ -64,7 +65,6 @@ public class MapPreview : IDisposable, IEquatable<MapPreview> {
 
 	private void PrepareComponents() {
 		_spawnInterpolator = new ValueInterpolator();
-		_zoomInterpolator = new ValueInterpolator();
 	}
 
 	public void Dispose() {
@@ -75,9 +75,8 @@ public class MapPreview : IDisposable, IEquatable<MapPreview> {
 	public void Draw(Rect inRect, int index, bool interactive) {
 		if (Event.current.type == EventType.Repaint) {
 			_spawnInterpolator.Update();
-			_zoomInterpolator.Update();
 			if (_spawnInterpolator.value < 1) {
-				Widget_RerollPreloader.Draw(inRect.center, index);
+				DrawPreloader(inRect.center, index);
 			}
 		}
 		DrawOutline(inRect);
@@ -117,5 +116,19 @@ public class MapPreview : IDisposable, IEquatable<MapPreview> {
 
 	public override int GetHashCode() {
 		return (_seed != null ? _seed.GetHashCode() : 0);
+	}
+	
+	public static void DrawPreloader(Vector2 center, int index) {
+		var waveBase = Mathf.Abs(Time.time - index / 2f);
+		var wave = Mathf.Sin((Time.time - index / 6f) * 3f);
+		var tex = UIPreviewLoading;
+		var texAlpha = 1f - (1+wave) * .4f;
+		var texScale = 1f;
+		var rect = new Rect(center.x - (tex.width / 2f) * texScale, center.y - (tex.height / 2f) * texScale, tex.width * texScale, tex.height * texScale);
+		var prevColor = GUI.color;
+		var baseColor = Color.HSVToRGB((waveBase / 16f) % 1f, 1f, 1f);
+		GUI.color = new Color(baseColor.r, baseColor.g, baseColor.b, texAlpha);
+		GUI.DrawTexture(rect, tex);
+		GUI.color = prevColor;
 	}
 }

@@ -19,7 +19,7 @@ No known incompatibilities.
 
 # Credit
 
-This mod uses modified code originally from "Map Reroll" created by UnlimitedHugs to render the previews.
+This mod uses modified code (and one texture) originally from "Map Reroll" created by UnlimitedHugs to render the previews.
 
 Russian translation created by Dmitry6
 

@@ -12,6 +12,7 @@ public class ModInstance : Mod
     {
         Settings = GetSettings<Settings>();
         ModCompat_PerformanceOptimizer.Apply();
+        ModCompat_MapReroll.Apply();
     }
 
     public override void DoSettingsWindowContents(Rect inRect)

@@ -8,10 +8,10 @@ using Verse.Noise;
 namespace MapPreview.Patches;
 
 /// <summary>
-/// Fixes an inconsistency in Map Reroll code that causes all TerrainPatchMakers to have the same seed,
-/// making biomes with multiple of them (e.g. swamps) look ugly.
+/// Ensures that TerrainPatchMakers get a deterministic seed.
+/// Has priority over the buggy patches from Map Reroll that cause all TerrainPatchMakers to have the same seed.
 /// </summary>
-//[HarmonyPatch(typeof(TerrainPatchMaker), "Init")]
+[HarmonyPatch(typeof(TerrainPatchMaker), "Init")]
 internal static class RimWorld_TerrainPatchMaker
 {
     private static int _instanceIdx;

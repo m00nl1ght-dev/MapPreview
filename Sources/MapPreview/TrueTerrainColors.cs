@@ -18,31 +18,22 @@ public class TrueTerrainColors
 
     private static readonly HashSet<string> ExcludeList = new() { "fluffy.stuffedfloors" };
 
-    private static readonly Color DefaultTerrainColor = GenColor.FromHex("6D5B49");
-    private static readonly Color MissingTerrainColor = new(0.38f, 0.38f, 0.38f);
-    private static readonly Color SolidStoneColor = GenColor.FromHex("36271C");
-    private static readonly Color SolidStoneHighlightColor = GenColor.FromHex("4C3426");
-    private static readonly Color SolidStoneShadowColor = GenColor.FromHex("1C130E");
-    private static readonly Color WaterColorDeep = GenColor.FromHex("3A434D");
-    private static readonly Color WaterColorShallow = GenColor.FromHex("434F50");
-    private static readonly Color CaveColor = GenColor.FromHex("42372b");
-
     private static readonly Dictionary<string, Color> DefaultMapRerollColors = new Dictionary<string, Color> {
         {"Sand", GenColor.FromHex("806F54")},
-        {"Soil", DefaultTerrainColor},
+        {"Soil", GenColor.FromHex("6D5B49")},
         {"MarshyTerrain", GenColor.FromHex("3F412B")},
         {"SoilRich", GenColor.FromHex("42362A")},
-        {"Gravel", DefaultTerrainColor},
+        {"Gravel", GenColor.FromHex("6D5B49")},
         {"Mud", GenColor.FromHex("403428")},
         {"Marsh", GenColor.FromHex("363D30")},
-        {"MossyTerrain", DefaultTerrainColor},
+        {"MossyTerrain", GenColor.FromHex("6D5B49")},
         {"Ice", GenColor.FromHex("9CA7AC")},
-        {"WaterDeep", WaterColorDeep},
-        {"WaterOceanDeep", WaterColorDeep},
-        {"WaterMovingDeep", WaterColorDeep},
-        {"WaterShallow", WaterColorShallow},
-        {"WaterOceanShallow", WaterColorShallow},
-        {"WaterMovingShallow", WaterColorShallow}
+        {"WaterDeep", GenColor.FromHex("3A434D")},
+        {"WaterOceanDeep", GenColor.FromHex("3A434D")},
+        {"WaterMovingDeep", GenColor.FromHex("3A434D")},
+        {"WaterShallow", GenColor.FromHex("434F50")},
+        {"WaterOceanShallow", GenColor.FromHex("434F50")},
+        {"WaterMovingShallow", GenColor.FromHex("434F50")}
     };
 
     public static IReadOnlyDictionary<string, Color> CurrentTerrainColors => 

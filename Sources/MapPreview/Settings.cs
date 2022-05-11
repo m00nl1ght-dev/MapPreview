@@ -27,12 +27,10 @@ public class Settings : ModSettings
         Widgets.BeginScrollView(inRect, ref _scrollPos, rect);
         
         listingStandard.CheckboxLabeled("MapPreview.Settings.EnableMapPreview".Translate(), ref EnableMapPreview, "MapPreview.Settings.EnableMapPreview".Translate());
-        listingStandard.CheckboxLabeled("MapPreview.Settings.EnableMapReroll".Translate(), ref EnableMapReroll, "MapPreview.Settings.EnableMapReroll".Translate());
         
         listingStandard.Gap();
 
         listingStandard.CheckboxLabeled("MapPreview.Settings.EnableTrueTerrainColors".Translate(), ref EnableTrueTerrainColors, "MapPreview.Settings.EnableTrueTerrainColors".Translate());
-        listingStandard.CheckboxLabeled("MapPreview.Settings.EnableExactPreviewGenerator".Translate(), ref EnableExactPreviewGenerator, "MapPreview.Settings.EnableExactPreviewGenerator".Translate());
         
         listingStandard.Gap();
         
