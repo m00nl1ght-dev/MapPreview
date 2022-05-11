@@ -11,7 +11,7 @@ namespace MapPreview.Patches;
 /// Fixes an inconsistency in Map Reroll code that causes all TerrainPatchMakers to have the same seed,
 /// making biomes with multiple of them (e.g. swamps) look ugly.
 /// </summary>
-[HarmonyPatch(typeof(TerrainPatchMaker), "Init")]
+//[HarmonyPatch(typeof(TerrainPatchMaker), "Init")]
 internal static class RimWorld_TerrainPatchMaker
 {
     private static int _instanceIdx;

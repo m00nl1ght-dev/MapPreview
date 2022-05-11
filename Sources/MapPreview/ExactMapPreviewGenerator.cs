@@ -29,9 +29,7 @@ SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
-using HarmonyLib;
 using HugsLib;
 using MapPreview.Patches;
 using MapReroll;
@@ -66,8 +64,6 @@ public class ExactMapPreviewGenerator : IDisposable
     private static readonly Color SolidStoneShadowColor = GenColor.FromHex("1C130E");
     private static readonly Color CaveColor = GenColor.FromHex("42372b");
 
-    private static MethodInfo GenStepTerrainTerrainAt { get; set; }
-
     private static readonly IReadOnlyCollection<string> IncludedGenStepDefs = new HashSet<string>
     {
         // Vanilla
@@ -83,11 +79,6 @@ public class ExactMapPreviewGenerator : IDisposable
         "ElevationFertilityPost",
         "BetterCaves"
     };
-
-    public static void InitReflection()
-    {
-        GenStepTerrainTerrainAt = AccessTools.Method(typeof(GenStep_Terrain), "TerrainFrom");
-    }
 
     public IPromise<Texture2D> QueuePreviewForSeed(string seed, int mapTile, int mapSize, bool revealCaves)
     {
@@ -205,13 +196,12 @@ public class ExactMapPreviewGenerator : IDisposable
     }
 
     /// <summary>
-    /// The worker cannot be aborted- wait for the worker to complete before generating map
+    /// The worker cannot be aborted - wait for the worker to complete before generating map
     /// </summary>
     public void WaitForDisposal()
     {
         if (!_disposed || !_workerThread.IsAlive || _workerThread.ThreadState == ThreadState.WaitSleepJoin) return;
-        LongEventHandler.QueueLongEvent(() => _workerThread.Join(60 * 1000), "Reroll2_finishingPreview", true,
-            null);
+        LongEventHandler.QueueLongEvent(() => _workerThread.Join(60 * 1000), "Reroll2_finishingPreview", true, null);
     }
 
     /// <summary>
@@ -267,6 +257,7 @@ public class ExactMapPreviewGenerator : IDisposable
         var mapGeneratorData = (Dictionary<string, object>)ReflectionCache.MapGenerator_Data.GetValue(null);
         mapGeneratorData.Clear();
 
+        RimWorld_Rand.debug.Value = true;
         Rand.PushState();
         int seed = Gen.HashCombineInt(Find.World.info.Seed, parent.Tile);
         Rand.Seed = seed;
@@ -298,6 +289,7 @@ public class ExactMapPreviewGenerator : IDisposable
             MapGenerator.mapBeingGenerated = null;
             GeneratingPreviewMap.Value = null;
             Rand.PopState();
+            RimWorld_Rand.debug.Value = false;
         }
     }
 
@@ -362,26 +354,6 @@ public class ExactMapPreviewGenerator : IDisposable
                 }
             }
         }
-    }
-
-    /// <summary>
-    /// Make an absolute bare minimum map instance for grid generation.
-    /// </summary>
-    private static Map CreateMapStub(int mapSize, int mapTile)
-    {
-        var parent = new MapParent { Tile = mapTile };
-        var map = new Map
-        {
-            info =
-            {
-                parent = parent,
-                Size = new IntVec3(mapSize, 1, mapSize)
-            }
-        };
-        map.cellIndices = new CellIndices(map);
-        map.floodFiller = new FloodFiller(map);
-        map.waterInfo = new WaterInfo(map);
-        return map;
     }
 
     private class QueuedPreviewRequest
