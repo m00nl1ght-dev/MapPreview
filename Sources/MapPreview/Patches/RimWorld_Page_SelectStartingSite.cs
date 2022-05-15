@@ -14,7 +14,7 @@ namespace MapPreview.Patches;
 public class RimWorld_Page_SelectStartingSite
 {
     [HarmonyPatch("CanDoNext")]
-    private static bool Prefix(bool __result)
+    private static bool Prefix(ref bool __result)
     {
         if (Main.IsGeneratingPreview)
         {

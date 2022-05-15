@@ -26,7 +26,10 @@ internal static class RimWorld_Map
         "AlphaBiomes.MapComponentExtender",
         
         // Dubs Bad Hygiene
-        "DubsBadHygiene.MapComponent_Hygiene"
+        "DubsBadHygiene.MapComponent_Hygiene",
+        
+        // Dubs Paint Shop
+        "DubRoss.MapComponent_PaintShop"
     };
     
     [HarmonyPatch("FillComponents")]
