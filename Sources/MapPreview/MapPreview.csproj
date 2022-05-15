@@ -86,6 +86,7 @@
         <Compile Include="Patches\RimWorld_PreviewGenShortcuts.cs" />
         <Compile Include="Patches\RimWorld_Rand.cs" />
         <Compile Include="Patches\RimWorld_TerrainPatchMaker.cs" />
+        <Compile Include="Patches\RimWorld_World.cs" />
         <Compile Include="Patches\RimWorld_WorldInterface.cs" />
         <Compile Include="Promises\EnumerableExt.cs" />
         <Compile Include="Promises\IPromise.cs" />

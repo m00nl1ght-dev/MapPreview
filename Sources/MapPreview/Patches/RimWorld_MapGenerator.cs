@@ -4,7 +4,7 @@ using Verse;
 
 // ReSharper disable All
 
-namespace GeologicalLandforms.Patches;
+namespace MapPreview.Patches;
 
 [HarmonyPatch(typeof(MapGenerator))]
 internal static class RimWorld_MapGenerator

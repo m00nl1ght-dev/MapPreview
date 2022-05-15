@@ -11,8 +11,6 @@ public class MapPreviewWindow : Window
     public override Vector2 InitialSize => new(ModInstance.Settings.PreviewWindowSize, ModInstance.Settings.PreviewWindowSize);
     protected override float Margin => 0f;
 
-    private static float _lastX = -1, _lastY = -1;
-    
     private static ExactMapPreviewGenerator _exactPreviewGenerator;
     private MapPreview _preview;
 
@@ -39,13 +37,23 @@ public class MapPreviewWindow : Window
         string seed = world.info.seedString;
         var promise = _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x, true);
         _preview = new MapPreview(promise, seed);
+        var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
+        if (pos != ModInstance.Settings.PreviewWindowPosition)
+        {
+            ModInstance.Settings.PreviewWindowPosition = pos;
+            ModInstance.Settings.Write();
+        }
     }
 
     public override void PreOpen()
     {
         base.PreOpen();
-        windowRect.x = _lastX >= 0 ? _lastX : _lastX = UI.screenWidth - InitialSize.x - 50f;
-        windowRect.y = _lastY >= 0 ? _lastY : _lastY = 100f;
+        
+        float lastX = ModInstance.Settings.PreviewWindowPosition.x;
+        float lastY = ModInstance.Settings.PreviewWindowPosition.y;
+        
+        windowRect.x = lastX >= 0 ? lastX : UI.screenWidth - InitialSize.x - 50f;
+        windowRect.y = lastY >= 0 ? lastY : 100f;
         
         if (windowRect.x + windowRect.width > UI.screenWidth) windowRect.x = UI.screenWidth - InitialSize.x - 50f;
         if (windowRect.y + windowRect.height > UI.screenHeight) windowRect.y = 100f;
@@ -56,8 +64,12 @@ public class MapPreviewWindow : Window
         base.PreClose();
         _preview.Dispose();
         _preview = null;
-        _lastX = windowRect.x;
-        _lastY = windowRect.y;
+        var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
+        if (pos != ModInstance.Settings.PreviewWindowPosition)
+        {
+            ModInstance.Settings.PreviewWindowPosition = pos;
+            ModInstance.Settings.Write();
+        }
     }
     
     public override void DoWindowContents(Rect inRect)

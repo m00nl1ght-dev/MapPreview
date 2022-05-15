@@ -15,6 +15,8 @@ public class Settings : ModSettings
     public bool EnableExactPreviewGenerator;
     public bool EnableMapPreview = true;
     public bool EnableMapReroll = true;
+    
+    public Vector2 PreviewWindowPosition = new Vector2(-1, -1);
 
     public void DoSettingsWindowContents(Rect inRect)
     {
@@ -52,6 +54,7 @@ public class Settings : ModSettings
         Scribe_Values.Look(ref EnableExactPreviewGenerator, "EnableExactPreviewGenerator_Exp");
         Scribe_Values.Look(ref EnableMapPreview, "EnableMapPreview", true);
         Scribe_Values.Look(ref EnableMapReroll, "EnableMapReroll", true);
+        Scribe_Values.Look(ref PreviewWindowPosition, "PreviewWindowPosition", new Vector2(-1, -1));
         base.ExposeData();
     }
 
@@ -62,6 +65,7 @@ public class Settings : ModSettings
         EnableExactPreviewGenerator = false;
         EnableMapPreview = true;
         EnableMapReroll = true;
+        PreviewWindowPosition = new Vector2(-1, -1);
     }
     
     private static void CenteredLabel(Listing_Standard listingStandard, string left, string center)
