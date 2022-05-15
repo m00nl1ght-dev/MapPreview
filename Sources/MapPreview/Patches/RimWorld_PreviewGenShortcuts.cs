@@ -62,4 +62,11 @@ internal static class RimWorld_PreviewGenShortcuts
         __result = 0;
         return false;
     }
+    
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(Root), "Shutdown")]
+    private static void Root_Shutdown()
+    {
+        MapPreviewWindow.Dispose();
+    }
 }

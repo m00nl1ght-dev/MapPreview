@@ -195,28 +195,23 @@ public class ExactMapPreviewGenerator : IDisposable
 
     public void Dispose()
     {
-        if (_disposed)
+        if (!_disposed)
         {
-            throw new Exception("MapPreviewGenerator has already been disposed.");
+            _disposed = true;
+            _queuedRequests.Clear();
+            _disposeHandle.Set();
         }
-
-        _disposed = true;
-        _queuedRequests.Clear();
-        _disposeHandle.Set();
     }
         
     public void ClearQueue()
     {
         _queuedRequests.Clear();
     }
-
-    /// <summary>
-    /// The worker cannot be aborted - wait for the worker to complete before generating map
-    /// </summary>
+    
     public void WaitForDisposal()
     {
         if (!_disposed || !_workerThread.IsAlive || _workerThread.ThreadState == ThreadState.WaitSleepJoin) return;
-        LongEventHandler.QueueLongEvent(() => _workerThread.Join(60 * 1000), "Reroll2_finishingPreview", true, null);
+        _workerThread.Join(5 * 1000);
     }
 
     /// <summary>

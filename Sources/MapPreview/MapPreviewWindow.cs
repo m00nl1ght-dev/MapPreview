@@ -76,4 +76,14 @@ public class MapPreviewWindow : Window
     {
         _preview?.Draw(inRect.ContractedBy(5f), 0, false);
     }
+
+    public static void Dispose()
+    {
+        if (_exactPreviewGenerator != null)
+        {
+            _exactPreviewGenerator.Dispose();
+            _exactPreviewGenerator.WaitForDisposal();
+            _exactPreviewGenerator = null;
+        }
+    }
 }
