@@ -79,7 +79,9 @@
         <Compile Include="MapPreviewWindow.cs" />
         <Compile Include="ModCompat\ModCompat_MapReroll.cs" />
         <Compile Include="ModCompat\ModCompat_PerformanceOptimizer.cs" />
+        <Compile Include="ModCompat\ModCompat_RimThreaded.cs" />
         <Compile Include="ModInstance.cs" />
+        <Compile Include="Patches\RimWorld_Map.cs" />
         <Compile Include="Patches\RimWorld_MapGenerator.cs" />
         <Compile Include="Patches\RimWorld_Page_SelectStartingSite.cs" />
         <Compile Include="Patches\RimWorld_PlaySettings.cs" />

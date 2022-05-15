@@ -49,6 +49,8 @@ public class ExactMapPreviewGenerator : IDisposable
 {
     public static Map GeneratingMapOnCurrentThread => Main.IsGeneratingPreview ? GeneratingPreviewMap.Value : null;
     public static bool IsGeneratingOnCurrentThread => Main.IsGeneratingPreview && GeneratingPreviewMap.Value != null;
+
+    public static event Action OnPreviewThreadInit;
     
     private static readonly ThreadLocal<Map> GeneratingPreviewMap = new();
     
@@ -110,6 +112,8 @@ public class ExactMapPreviewGenerator : IDisposable
         QueuedPreviewRequest request = null;
         try
         {
+            OnPreviewThreadInit?.Invoke();
+            
             while (_queuedRequests.Count > 0 ||
                    WaitHandle.WaitAny(new WaitHandle[] { _workHandle, _disposeHandle }) == 0)
             {
@@ -137,6 +141,11 @@ public class ExactMapPreviewGenerator : IDisposable
 
                         placeholderTex = new ThreadableTexture(width, height);
                         GeneratePreviewForSeed(req.Seed, req.MapTile, req.MapSize, req.RevealCaves, placeholderTex);
+
+                        if (placeholderTex.Errored)
+                        {
+                            throw new Exception("No terrain was generated for at least one map cell.");
+                        }
                     }
                     catch (Exception e)
                     {
@@ -243,6 +252,7 @@ public class ExactMapPreviewGenerator : IDisposable
         {
             Log.Error("Error in preview generation: " + e);
             Debug.LogException(e);
+            texture.Errored = true;
         }
         finally
         {
@@ -315,7 +325,12 @@ public class ExactMapPreviewGenerator : IDisposable
                 var terrainDef = map.terrainGrid.TerrainAt(cell);
 
                 Color pixelColor;
-                if (MapGenerator.Elevation[cell] >= 0.7 && !terrainDef.IsRiver)
+                if (terrainDef == null)
+                {
+                    pixelColor = Color.black;
+                    _texture.Errored = true;
+                } 
+                else if (MapGenerator.Elevation[cell] >= 0.7 && !terrainDef.IsRiver)
                 {
                     pixelColor = MapGenerator.Caves[cell] > 0 ? CaveColor : SolidStoneColor;
                 }
@@ -384,6 +399,8 @@ public class ExactMapPreviewGenerator : IDisposable
         private readonly Color[] _pixels;
         public readonly int Width;
         public readonly int Height;
+
+        public bool Errored;
 
         public ThreadableTexture(int width, int height)
         {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
@@ -37,9 +38,10 @@ public static class ModCompat_MapReroll
                 IsPresent = true;
             }
         }
-        catch
+        catch (Exception e)
         {
             Log.Error("[Map Preview] Failed to apply compatibility patches for Map Reroll!");
+            Debug.LogException(e);
         }
     }
     

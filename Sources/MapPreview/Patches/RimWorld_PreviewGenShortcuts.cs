@@ -36,7 +36,7 @@ internal static class RimWorld_PreviewGenShortcuts
     [HarmonyPatch(typeof(District), "Map", MethodType.Getter)]
     private static bool District_Map(ref Map __result)
     {
-        if (!Main.IsGeneratingPreview) return true;
+        if (!ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         var map = ExactMapPreviewGenerator.GeneratingMapOnCurrentThread;
         if (map == null) return true;
         __result = map;
@@ -47,10 +47,19 @@ internal static class RimWorld_PreviewGenShortcuts
     [HarmonyPatch(typeof(Region), "Map", MethodType.Getter)]
     private static bool Region_Map(ref Map __result)
     {
-        if (!Main.IsGeneratingPreview) return true;
+        if (!ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         var map = ExactMapPreviewGenerator.GeneratingMapOnCurrentThread;
         if (map == null) return true;
         __result = map;
+        return false;
+    }
+    
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(TickManager), "TicksAbs", MethodType.Getter)]
+    private static bool TickManager_TicksAbs(ref int __result)
+    {
+        if (!ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        __result = 0;
         return false;
     }
 }

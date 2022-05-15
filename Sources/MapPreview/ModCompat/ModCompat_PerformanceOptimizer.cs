@@ -1,5 +1,7 @@
+using System;
 using System.Reflection;
 using HarmonyLib;
+using UnityEngine;
 using Verse;
 
 namespace MapPreview.Patches;
@@ -14,6 +16,8 @@ namespace MapPreview.Patches;
 /// </summary>
 public static class ModCompat_PerformanceOptimizer
 {
+    public static bool IsPresent { get; private set; }
+    
     public static void Apply()
     {
         try
@@ -32,11 +36,13 @@ public static class ModCompat_PerformanceOptimizer
                 HarmonyMethod methodPatchPrefix = new(self.GetMethod(nameof(Optimization_WorldGrid_LongLatOf_Prefix), bindingFlags));
 
                 harmony.Patch(opPrefix, methodPatchPrefix);
+                IsPresent = true;
             }
         }
-        catch
+        catch (Exception e)
         {
             Log.Error("[Map Preview] Failed to apply compatibility patches for Performance Optimizer!");
+            Debug.LogException(e);
         }
     }
     

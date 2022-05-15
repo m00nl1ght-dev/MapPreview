@@ -27,6 +27,7 @@ SOFTWARE.
  */
 
 using System;
+using HugsLib;
 using MapPreview.Interpolation;
 using MapPreview.Promises;
 using UnityEngine;
@@ -44,23 +45,14 @@ public class MapPreview : IDisposable, IEquatable<MapPreview> {
 	private static readonly Texture2D UIPreviewLoading = ContentFinder<Texture2D>.Get("UIPreviewLoadingMP");
 
 	private readonly string _seed;
-	private readonly IPromise<Texture2D> _promise;
 		
 	private ValueInterpolator _spawnInterpolator;
 	private Texture2D _previewTex;
 
 	public MapPreview(IPromise<Texture2D> promise, string seed) {
 		PrepareComponents();
-		_promise = promise;
-		promise.Done(OnPromiseResolved);
+		promise.Done(OnPromiseResolved, OnPromiseRejected);
 		_seed = seed;
-	}
-
-	public MapPreview(MapPreview copyFrom) {
-		PrepareComponents();
-		_promise = copyFrom._promise;
-		_promise.Done(OnPromiseResolved);
-		_seed = copyFrom._seed;
 	}
 
 	private void PrepareComponents() {
@@ -91,6 +83,18 @@ public class MapPreview : IDisposable, IEquatable<MapPreview> {
 		_previewTex = tex;
 		_spawnInterpolator.value = 0f;
 		_spawnInterpolator.StartInterpolation(1f, SpawnInterpolationDuration, CurveType.CubicOut);
+	}
+	
+	private void OnPromiseRejected(Exception ex) {
+		_previewTex = null;
+		_spawnInterpolator.value = 0f;
+		Find.WindowStack.Add(new Dialog_MessageBox(
+			"MapPreview.PreviewGenerationFailed".Translate(),
+			null, () =>
+			{
+				HugsLibController.Instance.LogUploader.ShowPublishPrompt();
+			}
+		));
 	}
 
 	private void DrawOutline(Rect rect)
