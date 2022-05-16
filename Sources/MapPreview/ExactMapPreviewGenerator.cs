@@ -219,13 +219,22 @@ public class ExactMapPreviewGenerator : IDisposable
     /// </summary>
     private void WaitForExecutionInMainThread(Action action)
     {
-        if (_mainThreadHandle == null) return;
+        if (_mainThreadHandle == null)
+        {
+            Debug.LogError("Task scheduled for execution in main thread but preview generator is already disposed!");
+            return;
+        }
+        
         HugsLibController.Instance.DoLater.DoNextUpdate(() =>
         {
             action();
             _mainThreadHandle.Set();
         });
-        _mainThreadHandle.WaitOne(1000);
+        
+        if (!_mainThreadHandle.WaitOne(10 * 1000))
+        {
+            Debug.LogError("Task executing in main thread timed out!");
+        }
     }
 
     private static void GeneratePreviewForSeed(string seed, int mapTile, int mapSize, bool revealCaves, ThreadableTexture texture)
