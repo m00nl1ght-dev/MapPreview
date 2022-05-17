@@ -85,7 +85,7 @@ public class ExactMapPreviewGenerator : IDisposable
         "BetterCaves"
     };
 
-    public IPromise<Texture2D> QueuePreviewForSeed(string seed, int mapTile, int mapSize, bool revealCaves)
+    public IPromise<Texture2D> QueuePreviewForSeed(string seed, int mapTile, int mapSize)
     {
         if (_disposeHandle == null)
         {
@@ -102,7 +102,7 @@ public class ExactMapPreviewGenerator : IDisposable
             _workerThread.Start();
         }
 
-        _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, seed, mapTile, mapSize, revealCaves));
+        _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, seed, mapTile, mapSize));
         _workHandle.Set();
         return promise;
     }
@@ -140,7 +140,7 @@ public class ExactMapPreviewGenerator : IDisposable
                         }
 
                         placeholderTex = new ThreadableTexture(width, height);
-                        GeneratePreviewForSeed(req.Seed, req.MapTile, req.MapSize, req.RevealCaves, placeholderTex);
+                        GeneratePreviewForSeed(req.Seed, req.MapTile, req.MapSize, placeholderTex);
 
                         if (placeholderTex.Errored)
                         {
@@ -237,7 +237,7 @@ public class ExactMapPreviewGenerator : IDisposable
         }
     }
 
-    private static void GeneratePreviewForSeed(string seed, int mapTile, int mapSize, bool revealCaves, ThreadableTexture texture)
+    private static void GeneratePreviewForSeed(string seed, int mapTile, int mapSize, ThreadableTexture texture)
     {
         var prevSeed = Find.World.info.seedString;
 
@@ -247,7 +247,9 @@ public class ExactMapPreviewGenerator : IDisposable
             Find.World.info.seedString = seed;
             RimWorld_TerrainPatchMaker.Reset();
 
-            var mapParent = new MapParent { Tile = mapTile, def = WorldObjectDefOf.Settlement };
+            var mapParent = new MapParent { Tile = mapTile, def = WorldObjectDefOf.Settlement};
+            mapParent.SetFaction(Faction.OfPlayer);
+            
             GenerateMap(new IntVec3(mapSize, 1, mapSize), mapParent, MapGeneratorDefOf.Base_Player, texture);
 
             AddBevelToSolidStone(texture);
@@ -383,16 +385,13 @@ public class ExactMapPreviewGenerator : IDisposable
         public readonly string Seed;
         public readonly int MapTile;
         public readonly int MapSize;
-        public readonly bool RevealCaves;
 
-        public QueuedPreviewRequest(Promise<Texture2D> promise, string seed, int mapTile, int mapSize,
-            bool revealCaves)
+        public QueuedPreviewRequest(Promise<Texture2D> promise, string seed, int mapTile, int mapSize)
         {
             Promise = promise;
             Seed = seed;
             MapTile = mapTile;
             MapSize = mapSize;
-            RevealCaves = revealCaves;
         }
     }
 

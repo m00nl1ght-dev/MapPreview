@@ -80,6 +80,7 @@
         <Compile Include="ModCompat\ModCompat_MapReroll.cs" />
         <Compile Include="ModCompat\ModCompat_PerformanceOptimizer.cs" />
         <Compile Include="ModCompat\ModCompat_RimThreaded.cs" />
+        <Compile Include="ModCompat\ModCompat_SmashTools.cs" />
         <Compile Include="ModInstance.cs" />
         <Compile Include="Patches\RimWorld_Map.cs" />
         <Compile Include="Patches\RimWorld_MapGenerator.cs" />

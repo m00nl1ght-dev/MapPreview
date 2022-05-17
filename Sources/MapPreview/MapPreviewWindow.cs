@@ -35,7 +35,7 @@ public class MapPreviewWindow : Window
         _preview?.Dispose();
         _exactPreviewGenerator.ClearQueue();
         string seed = world.info.seedString;
-        var promise = _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x, true);
+        var promise = _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x);
         _preview = new MapPreview(promise, seed);
         var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
         if (pos != ModInstance.Settings.PreviewWindowPosition)

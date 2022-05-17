@@ -6,12 +6,17 @@ namespace MapPreview;
 
 public class ModInstance : Mod
 {
+    public const string Version = "1.8.0";
+
+    public static string LogPrefix => "[Map Preview v" + Version + "] ";
+    
     public static Settings Settings;
 
     public ModInstance(ModContentPack content) : base(content)
     {
         Settings = GetSettings<Settings>();
         ModCompat_PerformanceOptimizer.Apply();
+        ModCompat_SmashTools.Apply();
         ModCompat_RimThreaded.Apply();
         ModCompat_MapReroll.Apply();
     }

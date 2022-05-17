@@ -23,7 +23,7 @@ public static class ModCompat_MapReroll
             var genType = GenTypes.GetTypeInAnyAssembly("MapReroll.MapPreviewGenerator");
             if (genType != null)
             {
-                Log.Message("[Map Preview] Applying compatibility patches for Map Reroll.");
+                Log.Message(ModInstance.LogPrefix + "Applying compatibility patches for Map Reroll.");
                 Harmony harmony = new("Map Preview Map Reroll Compat");
                 
                 var genMethod = AccessTools.Method(genType, "GeneratePreviewForSeed");
@@ -40,7 +40,7 @@ public static class ModCompat_MapReroll
         }
         catch (Exception e)
         {
-            Log.Error("[Map Preview] Failed to apply compatibility patches for Map Reroll!");
+            Log.Error(ModInstance.LogPrefix + "Failed to apply compatibility patches for Map Reroll!");
             Debug.LogException(e);
         }
     }

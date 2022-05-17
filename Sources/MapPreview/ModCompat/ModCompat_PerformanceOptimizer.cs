@@ -11,7 +11,7 @@ namespace MapPreview.Patches;
 // ReSharper disable InconsistentNaming
 
 /// <summary>
-/// Patch to disable WorldGrid:LongLatOf chache optimization  during preview generation.
+/// Patch to disable WorldGrid:LongLatOf chache optimization during preview generation.
 /// That feature otherwise causes the game to freeze.
 /// </summary>
 public static class ModCompat_PerformanceOptimizer
@@ -25,7 +25,7 @@ public static class ModCompat_PerformanceOptimizer
             var opType = GenTypes.GetTypeInAnyAssembly("PerformanceOptimizer.Optimization_WorldGrid_LongLatOf");
             if (opType != null)
             {
-                Log.Message("[Map Preview] Applying compatibility patches for Performance Optimizer.");
+                Log.Message(ModInstance.LogPrefix + "Applying compatibility patches for Performance Optimizer.");
                 Harmony harmony = new("Map Preview Performance Optimizer Compat");
 
                 var opPrefix = AccessTools.Method(opType, "Prefix");
@@ -41,7 +41,7 @@ public static class ModCompat_PerformanceOptimizer
         }
         catch (Exception e)
         {
-            Log.Error("[Map Preview] Failed to apply compatibility patches for Performance Optimizer!");
+            Log.Error(ModInstance.LogPrefix + "Failed to apply compatibility patches for Performance Optimizer!");
             Debug.LogException(e);
         }
     }

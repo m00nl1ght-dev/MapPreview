@@ -54,13 +54,13 @@ public class TrueTerrainColors
                 {
                     _trueTerrainColors = new Dictionary<string, Color>();
                     foreach (var cacheEntry in cacheData) _trueTerrainColors.Add(cacheEntry.DefName, cacheEntry.Color);
-                    Log.Message($"[Map Preview] Loaded cached true colors for {cacheData.Count} terrain defs from file.");
+                    Log.Message(ModInstance.LogPrefix + $"Loaded cached true colors for {cacheData.Count} terrain defs from file.");
                 }
             }
             catch (Exception e)
             {
                 _trueTerrainColors = null;
-                Log.Warning("[Map Preview] Failed to read TrueTerrainColorsCache from file: " + e);
+                Log.Warning(ModInstance.LogPrefix + $" Failed to read TrueTerrainColorsCache from file: " + e);
                 Debug.LogException(e);
             }
         }
@@ -132,7 +132,7 @@ public class TrueTerrainColors
             }
             catch (Exception e)
             {
-                Log.Message($"[Map Preview] Failed to extract true color from terrain {def.defName}.");
+                Log.Message(ModInstance.LogPrefix + $"Failed to extract true color from terrain {def.defName}.");
                 Debug.LogException(e);
             }
         }
@@ -144,7 +144,7 @@ public class TrueTerrainColors
         stopwatch.Stop();
         
         var time = Math.Round(stopwatch.Elapsed.TotalSeconds, 2);
-        Log.Message($"[Map Preview] Extracted true colors from {count} terrain defs in {time} seconds using a RenderTexture of size {maxW}x{maxH}.");
+        Log.Message(ModInstance.LogPrefix + $"Extracted true colors from {count} terrain defs in {time} seconds using a RenderTexture of size {maxW}x{maxH}.");
         
         try
         {
@@ -155,7 +155,7 @@ public class TrueTerrainColors
         }
         catch (Exception e)
         {
-            Log.Warning("[Map Preview] Failed to write TrueTerrainColorsCache to file: " + e);
+            Log.Warning(ModInstance.LogPrefix + "Failed to write TrueTerrainColorsCache to file: " + e);
             Debug.LogException(e);
         }
     }

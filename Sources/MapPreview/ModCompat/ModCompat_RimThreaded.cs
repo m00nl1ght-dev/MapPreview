@@ -19,7 +19,7 @@ public static class ModCompat_RimThreaded
             var rtType = GenTypes.GetTypeInAnyAssembly("RimThreaded.RimThreaded");
             if (rtType != null)
             {
-                Log.Message("[Map Preview] Applying compatibility patches for RimThreaded.");
+                Log.Message(ModInstance.LogPrefix + "Applying compatibility patches for RimThreaded.");
 
                 InitializeAllThreadStatics = AccessTools.Method(rtType, "InitializeAllThreadStatics");
                 if (InitializeAllThreadStatics == null) throw new Exception("InitializeAllThreadStatics not found");
@@ -30,7 +30,7 @@ public static class ModCompat_RimThreaded
         }
         catch (Exception e)
         {
-            Log.Error("[Map Preview] Failed to apply compatibility patches for RimThreaded!");
+            Log.Error(ModInstance.LogPrefix + "Failed to apply compatibility patches for RimThreaded!");
             Debug.LogException(e);
         }
     }
