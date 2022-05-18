@@ -48,7 +48,8 @@ public class MapPreview : IDisposable
 
     private Rect _texCoords;
     private int _awaitingMapTile = -1;
-
+    
+    public Color[] Buffer { get; private set; }
     public Texture2D Texture { get; private set; }
 
     public MapPreview(int maxMapSize)
@@ -99,11 +100,13 @@ public class MapPreview : IDisposable
     private void OnPromiseResolved(ExactMapPreviewGenerator.ThreadableTexture result)
     {
         if (Texture == null || result == null || _awaitingMapTile != result.MapTile) return;
-
-        _awaitingMapTile = -1;
+        
         _texCoords = result.TexCoords;
         result.CopyToTexture(Texture);
         Texture.Apply();
+        
+        _awaitingMapTile = -1;
+        Buffer = result.Pixels;
         
         _spawnInterpolator.value = 0f;
         _spawnInterpolator.StartInterpolation(1f, SpawnInterpolationDuration, CurveType.CubicOut);

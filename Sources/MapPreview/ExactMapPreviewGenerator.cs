@@ -84,7 +84,7 @@ public class ExactMapPreviewGenerator : IDisposable
         "BetterCaves"
     };
 
-    public IPromise<ThreadableTexture> QueuePreviewForSeed(string seed, int mapTile, int mapSize, int targetTextureSize)
+    public IPromise<ThreadableTexture> QueuePreviewForSeed(string seed, int mapTile, int mapSize, int targetTextureSize, Color[] existingBuffer = null)
     {
         if (_disposeHandle == null)
         {
@@ -106,7 +106,7 @@ public class ExactMapPreviewGenerator : IDisposable
         }
 
         var promise = new Promise<ThreadableTexture>();
-        _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, targetTextureSize, seed, mapTile, mapSize));
+        _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, targetTextureSize, seed, mapTile, mapSize, existingBuffer));
         _workHandle.Set();
         
         return promise;
@@ -130,7 +130,7 @@ public class ExactMapPreviewGenerator : IDisposable
                     ThreadableTexture placeholderTex = null;
                     try
                     {
-                        placeholderTex = new ThreadableTexture(request.MapTile, request.MapSize, request.TargetTextureSize);
+                        placeholderTex = new ThreadableTexture(request.MapTile, request.MapSize, request.TargetTextureSize, request.ExistingBuffer);
                         GeneratePreviewForSeed(request.Seed, request.MapTile, request.MapSize, placeholderTex);
 
                         if (placeholderTex.MapGenErrored)
@@ -340,15 +340,17 @@ public class ExactMapPreviewGenerator : IDisposable
     {
         public readonly Promise<ThreadableTexture> Promise;
         public readonly int TargetTextureSize;
+        public Color[] ExistingBuffer;
         
         public readonly string Seed;
         public readonly int MapTile;
         public readonly int MapSize;
 
-        public QueuedPreviewRequest(Promise<ThreadableTexture> promise, int targetTextureSize, string seed, int mapTile, int mapSize)
+        public QueuedPreviewRequest(Promise<ThreadableTexture> promise, int targetTextureSize, string seed, int mapTile, int mapSize, Color[] existingBuffer = null)
         {
             Promise = promise;
             TargetTextureSize = targetTextureSize;
+            ExistingBuffer = existingBuffer;
             Seed = seed;
             MapTile = mapTile;
             MapSize = mapSize;
@@ -359,7 +361,7 @@ public class ExactMapPreviewGenerator : IDisposable
     // Pixels are laid out left to right, top to bottom
     public class ThreadableTexture
     {
-        private readonly Color[] _pixels;
+        public readonly Color[] Pixels;
         
         public readonly int TextureSize;
         public readonly int MapSize;
@@ -369,27 +371,28 @@ public class ExactMapPreviewGenerator : IDisposable
 
         public bool MapGenErrored;
 
-        public ThreadableTexture(int mapTile, int mapSize, int textureSize)
+        public ThreadableTexture(int mapTile, int mapSize, int textureSize, Color[] existingBuffer = null)
         {
             MapTile = mapTile;
             MapSize = mapSize;
             TextureSize = textureSize;
-            _pixels = new Color[textureSize * textureSize];
+            if (existingBuffer != null && existingBuffer.Length == textureSize * textureSize) Pixels = existingBuffer;
+            else Pixels = new Color[textureSize * textureSize];
         }
 
         public void SetPixel(int x, int y, Color color)
         {
-            _pixels[y * TextureSize + x] = color;
+            Pixels[y * TextureSize + x] = color;
         }
 
         public Color GetPixel(int x, int y)
         {
-            return _pixels[y * TextureSize + x];
+            return Pixels[y * TextureSize + x];
         }
 
         public void CopyToTexture(Texture2D tex)
         {
-            tex.SetPixels(_pixels);
+            tex.SetPixels(Pixels);
         }
     }
 }

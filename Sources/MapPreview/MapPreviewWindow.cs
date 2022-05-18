@@ -40,7 +40,7 @@ public class MapPreviewWindow : Window
         string seed = world.info.seedString;
         int mapSize = world.info.initialMapSize.x;
         
-        var promise = _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, mapSize, MaxMapSize);
+        var promise = _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, mapSize, MaxMapSize, _preview.Buffer);
         _preview.Await(promise, tileId);
         
         var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
