@@ -6,13 +6,15 @@ namespace MapPreview;
 
 public class MapPreviewWindow : Window
 {
+    public const int MaxMapSize = 500;
+    
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
     
     public override Vector2 InitialSize => new(ModInstance.Settings.PreviewWindowSize, ModInstance.Settings.PreviewWindowSize);
     protected override float Margin => 0f;
 
     private static ExactMapPreviewGenerator _exactPreviewGenerator;
-    private MapPreview _preview;
+    private readonly MapPreview _preview = new(MaxMapSize);
 
     public MapPreviewWindow()
     {
@@ -26,18 +28,22 @@ public class MapPreviewWindow : Window
         forcePause = false;
         resizeable = false;
         draggable = true;
+        
         _exactPreviewGenerator ??= new ExactMapPreviewGenerator();
         if (Instance != this) Instance?.Close();
     }
 
     public void OnWorldTileSelected(World world, int tileId)
     {
-        _preview?.Dispose();
         _exactPreviewGenerator.ClearQueue();
+        
         string seed = world.info.seedString;
-        var promise = _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, world.info.initialMapSize.x);
-        _preview = new MapPreview(promise, seed);
-        var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
+        int mapSize = world.info.initialMapSize.x;
+        
+        var promise = _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, mapSize, MaxMapSize);
+        _preview.Await(promise, tileId);
+        
+        var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
         if (pos != ModInstance.Settings.PreviewWindowPosition)
         {
             ModInstance.Settings.PreviewWindowPosition = pos;
@@ -63,7 +69,6 @@ public class MapPreviewWindow : Window
     {
         base.PreClose();
         _preview.Dispose();
-        _preview = null;
         var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
         if (pos != ModInstance.Settings.PreviewWindowPosition)
         {
@@ -74,7 +79,7 @@ public class MapPreviewWindow : Window
     
     public override void DoWindowContents(Rect inRect)
     {
-        _preview?.Draw(inRect.ContractedBy(5f), 0, false);
+        _preview.Draw(inRect.ContractedBy(5f), 0);
     }
 
     public static void Dispose()

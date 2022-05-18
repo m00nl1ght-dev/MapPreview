@@ -43,7 +43,7 @@ using Verse;
 namespace MapPreview;
 
 /// <summary>
-/// Modified version of MapReroll.MapPreviewGenerator that uses original TerrainAt method for better mod compat.
+/// Modified version of MapReroll.MapPreviewGenerator that uses full Map Generator mechanics for better mod compat.
 /// </summary>
 public class ExactMapPreviewGenerator : IDisposable
 {
@@ -58,7 +58,6 @@ public class ExactMapPreviewGenerator : IDisposable
     private Thread _workerThread;
     private EventWaitHandle _workHandle = new AutoResetEvent(false);
     private EventWaitHandle _disposeHandle = new AutoResetEvent(false);
-    private EventWaitHandle _mainThreadHandle = new AutoResetEvent(false);
     private bool _disposed;
 
     private static FieldInfo _fieldMapGenData;
@@ -85,14 +84,18 @@ public class ExactMapPreviewGenerator : IDisposable
         "BetterCaves"
     };
 
-    public IPromise<Texture2D> QueuePreviewForSeed(string seed, int mapTile, int mapSize)
+    public IPromise<ThreadableTexture> QueuePreviewForSeed(string seed, int mapTile, int mapSize, int targetTextureSize)
     {
         if (_disposeHandle == null)
         {
-            throw new Exception("MapPreviewGenerator has already been disposed.");
+            throw new Exception("ExactMapPreviewGenerator has already been disposed.");
+        }
+        
+        if (mapSize > targetTextureSize)
+        {
+            throw new Exception("Map size exceeds max preview size: " + mapSize + " > " + targetTextureSize);
         }
 
-        var promise = new Promise<Texture2D>();
         if (_workerThread == null)
         {
             _fieldMapGenData ??= AccessTools.Field(typeof(MapGenerator), "data");
@@ -102,8 +105,10 @@ public class ExactMapPreviewGenerator : IDisposable
             _workerThread.Start();
         }
 
-        _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, seed, mapTile, mapSize));
+        var promise = new Promise<ThreadableTexture>();
+        _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, targetTextureSize, seed, mapTile, mapSize));
         _workHandle.Set();
+        
         return promise;
     }
 
@@ -113,36 +118,22 @@ public class ExactMapPreviewGenerator : IDisposable
         try
         {
             OnPreviewThreadInit?.Invoke();
-            
-            while (_queuedRequests.Count > 0 ||
-                   WaitHandle.WaitAny(new WaitHandle[] { _workHandle, _disposeHandle }) == 0)
+
+            var waitHandles = new WaitHandle[] { _workHandle, _disposeHandle };
+            while (_queuedRequests.Count > 0 || WaitHandle.WaitAny(waitHandles) == 0)
             {
                 Exception rejectException = null;
                 if (_queuedRequests.Count > 0)
                 {
-                    var req = _queuedRequests.Dequeue();
-                    request = req;
-                    Texture2D texture = null;
-                    int width = 0, height = 0;
-                    WaitForExecutionInMainThread(() =>
-                    {
-                        // textures must be instantiated in the main thread
-                        texture = new Texture2D(req.MapSize, req.MapSize, TextureFormat.RGB24, false);
-                        width = texture.width;
-                        height = texture.height;
-                    });
+                    request = _queuedRequests.Dequeue();
+
                     ThreadableTexture placeholderTex = null;
                     try
                     {
-                        if (texture == null)
-                        {
-                            throw new Exception("Could not create required texture.");
-                        }
+                        placeholderTex = new ThreadableTexture(request.MapTile, request.MapSize, request.TargetTextureSize);
+                        GeneratePreviewForSeed(request.Seed, request.MapTile, request.MapSize, placeholderTex);
 
-                        placeholderTex = new ThreadableTexture(width, height);
-                        GeneratePreviewForSeed(req.Seed, req.MapTile, req.MapSize, placeholderTex);
-
-                        if (placeholderTex.Errored)
+                        if (placeholderTex.MapGenErrored)
                         {
                             throw new Exception("No terrain was generated for at least one map cell.");
                         }
@@ -151,45 +142,34 @@ public class ExactMapPreviewGenerator : IDisposable
                     {
                         Log.Error("Failed to generate map preview: " + e);
                         rejectException = e;
-                        texture = null;
                     }
 
-                    if (texture != null && placeholderTex != null)
+                    var promise = request.Promise;
+                    HugsLibController.Instance.DoLater.DoNextUpdate(() =>
                     {
-                        WaitForExecutionInMainThread(() =>
+                        if (rejectException == null)
                         {
-                            // upload in main thread
-                            placeholderTex.CopyToTexture(texture);
-                            texture.Apply();
-                        });
-                    }
-
-                    WaitForExecutionInMainThread(() =>
-                    {
-                        if (texture == null)
-                        {
-                            req.Promise.Reject(rejectException);
+                            promise.Resolve(placeholderTex);
                         }
                         else
                         {
-                            req.Promise.Resolve(texture);
+                            promise.Reject(rejectException);
                         }
                     });
                 }
             }
 
             _workHandle.Close();
-            _mainThreadHandle.Close();
             _disposeHandle.Close();
-            _mainThreadHandle = _disposeHandle = _workHandle = null;
+            _disposeHandle = _workHandle = null;
         }
         catch (Exception e)
         {
-            Log.Error("Exception in preview generator thread: " + e);
-            if (request != null)
+            HugsLibController.Instance.DoLater.DoNextUpdate(() =>
             {
-                request.Promise.Reject(e);
-            }
+                Log.Error("Exception in preview generator thread: " + e);
+                request?.Promise.Reject(e);
+            });
         }
     }
 
@@ -214,29 +194,6 @@ public class ExactMapPreviewGenerator : IDisposable
         _workerThread.Join(5 * 1000);
     }
 
-    /// <summary>
-    /// Block until delegate is executed or times out
-    /// </summary>
-    private void WaitForExecutionInMainThread(Action action)
-    {
-        if (_mainThreadHandle == null)
-        {
-            Debug.LogError("Task scheduled for execution in main thread but preview generator is already disposed!");
-            return;
-        }
-        
-        HugsLibController.Instance.DoLater.DoNextUpdate(() =>
-        {
-            action();
-            _mainThreadHandle.Set();
-        });
-        
-        if (!_mainThreadHandle.WaitOne(10 * 1000))
-        {
-            Debug.LogError("Task executing in main thread timed out!");
-        }
-    }
-
     private static void GeneratePreviewForSeed(string seed, int mapTile, int mapSize, ThreadableTexture texture)
     {
         var prevSeed = Find.World.info.seedString;
@@ -252,13 +209,13 @@ public class ExactMapPreviewGenerator : IDisposable
             
             GenerateMap(new IntVec3(mapSize, 1, mapSize), mapParent, MapGeneratorDefOf.Base_Player, texture);
 
-            AddBevelToSolidStone(texture);
+            AddBevelToSolidStone(texture, mapSize);
         }
         catch (Exception e)
         {
             Log.Error("Error in preview generation: " + e);
             Debug.LogException(e);
-            texture.Errored = true;
+            texture.MapGenErrored = true;
         }
         finally
         {
@@ -334,7 +291,7 @@ public class ExactMapPreviewGenerator : IDisposable
                 if (terrainDef == null)
                 {
                     pixelColor = Color.black;
-                    _texture.Errored = true;
+                    _texture.MapGenErrored = true;
                 } 
                 else if (MapGenerator.Elevation[cell] >= 0.7 && !terrainDef.IsRiver)
                 {
@@ -353,11 +310,11 @@ public class ExactMapPreviewGenerator : IDisposable
     /// <summary>
     /// Adds highlights and shadows to the solid stone color in the texture
     /// </summary>
-    private static void AddBevelToSolidStone(ThreadableTexture tex)
+    private static void AddBevelToSolidStone(ThreadableTexture tex, int mapSize)
     {
-        for (int x = 0; x < tex.Width; x++)
+        for (int x = 0; x < mapSize; x++)
         {
-            for (int y = 0; y < tex.Height; y++)
+            for (int y = 0; y < mapSize; y++)
             {
                 var isStone = tex.GetPixel(x, y) == SolidStoneColor;
                 if (isStone)
@@ -365,7 +322,7 @@ public class ExactMapPreviewGenerator : IDisposable
                     var colorBelow = y > 0 ? tex.GetPixel(x, y - 1) : Color.clear;
                     var isStoneBelow = colorBelow == SolidStoneColor || colorBelow == SolidStoneHighlightColor ||
                                        colorBelow == SolidStoneShadowColor;
-                    var isStoneAbove = y < tex.Height - 1 && tex.GetPixel(x, y + 1) == SolidStoneColor;
+                    var isStoneAbove = y < mapSize - 1 && tex.GetPixel(x, y + 1) == SolidStoneColor;
                     if (!isStoneAbove)
                     {
                         tex.SetPixel(x, y, SolidStoneHighlightColor);
@@ -381,14 +338,17 @@ public class ExactMapPreviewGenerator : IDisposable
 
     private class QueuedPreviewRequest
     {
-        public readonly Promise<Texture2D> Promise;
+        public readonly Promise<ThreadableTexture> Promise;
+        public readonly int TargetTextureSize;
+        
         public readonly string Seed;
         public readonly int MapTile;
         public readonly int MapSize;
 
-        public QueuedPreviewRequest(Promise<Texture2D> promise, string seed, int mapTile, int mapSize)
+        public QueuedPreviewRequest(Promise<ThreadableTexture> promise, int targetTextureSize, string seed, int mapTile, int mapSize)
         {
             Promise = promise;
+            TargetTextureSize = targetTextureSize;
             Seed = seed;
             MapTile = mapTile;
             MapSize = mapSize;
@@ -396,30 +356,35 @@ public class ExactMapPreviewGenerator : IDisposable
     }
 
     // A placeholder for Texture2D that can be used in threads other than the main one (required since 1.0)
-    private class ThreadableTexture
+    // Pixels are laid out left to right, top to bottom
+    public class ThreadableTexture
     {
-        // pixels are laid out left to right, top to bottom
         private readonly Color[] _pixels;
-        public readonly int Width;
-        public readonly int Height;
+        
+        public readonly int TextureSize;
+        public readonly int MapSize;
+        public readonly int MapTile;
+        
+        public Rect TexCoords => new(0, 0, MapSize / (float) TextureSize, MapSize / (float) TextureSize);
 
-        public bool Errored;
+        public bool MapGenErrored;
 
-        public ThreadableTexture(int width, int height)
+        public ThreadableTexture(int mapTile, int mapSize, int textureSize)
         {
-            this.Width = width;
-            this.Height = height;
-            _pixels = new Color[width * height];
+            MapTile = mapTile;
+            MapSize = mapSize;
+            TextureSize = textureSize;
+            _pixels = new Color[textureSize * textureSize];
         }
 
         public void SetPixel(int x, int y, Color color)
         {
-            _pixels[y * Height + x] = color;
+            _pixels[y * TextureSize + x] = color;
         }
 
         public Color GetPixel(int x, int y)
         {
-            return _pixels[y * Height + x];
+            return _pixels[y * TextureSize + x];
         }
 
         public void CopyToTexture(Texture2D tex)
