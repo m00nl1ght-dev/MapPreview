@@ -38,7 +38,8 @@ public class MapPreviewWindow : Window
         _exactPreviewGenerator.ClearQueue();
         
         string seed = world.info.seedString;
-        int mapSize = world.info.initialMapSize.x;
+        var gameInitData = Find.GameInitData;
+        int mapSize = gameInitData?.mapSize ?? world.info.initialMapSize.x;
         
         var promise = _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, mapSize, MaxMapSize, _preview.Buffer);
         _preview.Await(promise, tileId);
