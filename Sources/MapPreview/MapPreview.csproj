@@ -77,6 +77,7 @@
         <Compile Include="Main.cs" />
         <Compile Include="ExactMapPreviewGenerator.cs" />
         <Compile Include="MapPreviewWindow.cs" />
+        <Compile Include="ModCompat\ModCompat_GeologicalLandforms.cs" />
         <Compile Include="ModCompat\ModCompat_MapReroll.cs" />
         <Compile Include="ModCompat\ModCompat_PerformanceOptimizer.cs" />
         <Compile Include="ModCompat\ModCompat_RimThreaded.cs" />

@@ -38,8 +38,7 @@ public class MapPreviewWindow : Window
         _exactPreviewGenerator.ClearQueue();
         
         string seed = world.info.seedString;
-        var gameInitData = Find.GameInitData;
-        int mapSize = gameInitData?.mapSize ?? world.info.initialMapSize.x;
+        int mapSize = DetermineMapSize(world);
         
         var promise = _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, mapSize, MaxMapSize, _preview.Buffer);
         _preview.Await(promise, tileId);
@@ -50,6 +49,15 @@ public class MapPreviewWindow : Window
             ModInstance.Settings.PreviewWindowPosition = pos;
             ModInstance.Settings.Write();
         }
+    }
+
+    private int DetermineMapSize(World world)
+    {
+        var gameInitData = Find.GameInitData;
+        if (gameInitData is { mapSize: >= 100 and <= 1000 }) return gameInitData.mapSize;
+        var fromWorld = world.info.initialMapSize.x;
+        if (fromWorld is >= 100 and <= 1000) return fromWorld;
+        return 250;
     }
 
     public override void PreOpen()

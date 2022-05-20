@@ -6,7 +6,7 @@ namespace MapPreview;
 
 public class ModInstance : Mod
 {
-    public const string Version = "1.9.1";
+    public const string Version = "1.9.2";
 
     public static string LogPrefix => "[Map Preview v" + Version + "] ";
     
@@ -16,6 +16,7 @@ public class ModInstance : Mod
     {
         Settings = GetSettings<Settings>();
         ModCompat_PerformanceOptimizer.Apply();
+        ModCompat_GeologicalLandforms.Apply();
         ModCompat_SmashTools.Apply();
         ModCompat_RimThreaded.Apply();
         ModCompat_MapReroll.Apply();
