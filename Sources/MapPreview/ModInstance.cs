@@ -6,7 +6,7 @@ namespace MapPreview;
 
 public class ModInstance : Mod
 {
-    public const string Version = "1.9.2";
+    public const string Version = "1.9.3";
 
     public static string LogPrefix => "[Map Preview v" + Version + "] ";
     
