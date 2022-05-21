@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using HarmonyLib;
 using HugsLib;
@@ -197,6 +198,7 @@ public class ExactMapPreviewGenerator : IDisposable
     private static void GeneratePreviewForSeed(string seed, int mapTile, int mapSize, ThreadableTexture texture)
     {
         var prevSeed = Find.World.info.seedString;
+        var debugPre = PrintMapTileInfo(mapTile);
 
         try
         {
@@ -216,6 +218,9 @@ public class ExactMapPreviewGenerator : IDisposable
             Log.Error("Error in preview generation: " + e);
             Debug.LogException(e);
             texture.MapGenErrored = true;
+            var debugPost = PrintMapTileInfo(mapTile);
+            Log.Message("Map Info at start: \n" + debugPre);
+            Log.Message("Map Info at error: \n" + debugPost);
         }
         finally
         {
@@ -266,6 +271,28 @@ public class ExactMapPreviewGenerator : IDisposable
             GeneratingPreviewMap.Value = null;
             Rand.PopState();
         }
+    }
+
+    private static string PrintMapTileInfo(int tileId)
+    {
+        var worldGrid = Find.WorldGrid;
+        if (worldGrid == null) return "No WorldGrid";
+
+        var tile = worldGrid[tileId];
+        if (tile == null) return "No Tile";
+
+        var str = new StringBuilder();
+
+        str.AppendLine("World Seed: " + Find.World?.info?.seedString);
+        str.AppendLine("World Tile: " + tileId);
+        str.AppendLine("Biome: " + tile.biome?.defName);
+        str.AppendLine("Biome TPMs: " + tile.biome?.terrainPatchMakers?.Count);
+        str.AppendLine("Biome TTresh: " + tile.biome?.terrainsByFertility?.Count);
+        str.AppendLine("Biome MCP: " + tile.biome?.modContentPack?.Name);
+        str.AppendLine("River: " + tile.Rivers?.Count);
+        str.AppendLine("Road: " + tile.Roads?.Count);
+        
+        return str.ToString();
     }
 
     private class PreviewTextureGenStep : GenStep
@@ -340,7 +367,7 @@ public class ExactMapPreviewGenerator : IDisposable
     {
         public readonly Promise<ThreadableTexture> Promise;
         public readonly int TargetTextureSize;
-        public Color[] ExistingBuffer;
+        public readonly Color[] ExistingBuffer;
         
         public readonly string Seed;
         public readonly int MapTile;
