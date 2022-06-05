@@ -69,6 +69,8 @@ public class ExactMapPreviewGenerator : IDisposable
     private static readonly Color SolidStoneShadowColor = GenColor.FromHex("1C130E");
     private static readonly Color CaveColor = GenColor.FromHex("42372b");
 
+    private static string debugPre, debugPost;
+
     private static readonly IReadOnlyCollection<string> IncludedGenStepDefs = new HashSet<string>
     {
         // Vanilla
@@ -105,6 +107,8 @@ public class ExactMapPreviewGenerator : IDisposable
             _workerThread = new Thread(DoThreadWork);
             _workerThread.Start();
         }
+        
+        Log.ResetMessageCount();
 
         var promise = new Promise<ThreadableTexture>();
         _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, targetTextureSize, seed, mapTile, mapSize, existingBuffer));
@@ -141,7 +145,11 @@ public class ExactMapPreviewGenerator : IDisposable
                     }
                     catch (Exception e)
                     {
+                        Log.ResetMessageCount();
                         Log.Error("Failed to generate map preview: " + e);
+                        debugPost = PrintMapTileInfo(request.MapTile);
+                        Log.Message("Map Info at start: \n" + debugPre);
+                        Log.Message("Map Info at error: \n" + debugPost);
                         rejectException = e;
                     }
 
@@ -168,6 +176,7 @@ public class ExactMapPreviewGenerator : IDisposable
         {
             HugsLibController.Instance.DoLater.DoNextUpdate(() =>
             {
+                Log.ResetMessageCount();
                 Log.Error("Exception in preview generator thread: " + e);
                 request?.Promise.Reject(e);
             });
@@ -197,14 +206,18 @@ public class ExactMapPreviewGenerator : IDisposable
 
     private static void GeneratePreviewForSeed(string seed, int mapTile, int mapSize, ThreadableTexture texture)
     {
+        var tickManager = Find.TickManager;
+        var speedWas = tickManager?.CurTimeSpeed ?? TimeSpeed.Paused;
         var prevSeed = Find.World.info.seedString;
-        var debugPre = PrintMapTileInfo(mapTile);
+        debugPre = PrintMapTileInfo(mapTile);
 
         try
         {
             Main.IsGeneratingPreview = true;
             Find.World.info.seedString = seed;
             RimWorld_TerrainPatchMaker.Reset();
+            
+            tickManager?.Pause();
 
             var mapParent = new MapParent { Tile = mapTile, def = WorldObjectDefOf.Settlement};
             mapParent.SetFaction(Faction.OfPlayer);
@@ -215,10 +228,11 @@ public class ExactMapPreviewGenerator : IDisposable
         }
         catch (Exception e)
         {
+            Log.ResetMessageCount();
             Log.Error("Error in preview generation: " + e);
             Debug.LogException(e);
             texture.MapGenErrored = true;
-            var debugPost = PrintMapTileInfo(mapTile);
+            debugPost = PrintMapTileInfo(mapTile);
             Log.Message("Map Info at start: \n" + debugPre);
             Log.Message("Map Info at error: \n" + debugPost);
         }
@@ -227,6 +241,11 @@ public class ExactMapPreviewGenerator : IDisposable
             RimWorld_TerrainPatchMaker.Reset();
             Find.World.info.seedString = prevSeed;
             Main.IsGeneratingPreview = false;
+            
+            if (tickManager is { CurTimeSpeed: TimeSpeed.Paused })
+            {
+                tickManager.CurTimeSpeed = speedWas;
+            }
         }
     }
 
@@ -251,6 +270,7 @@ public class ExactMapPreviewGenerator : IDisposable
             map.info.Size = mapSize;
             map.info.parent = parent;
             map.ConstructComponents();
+            map.regionAndRoomUpdater.Enabled = false;
 
             var previewGenStep = new GenStepDef { genStep = new PreviewTextureGenStep(texture), order = 9999 };
             var genStepWithParamses = mapGenerator.genSteps
@@ -269,6 +289,7 @@ public class ExactMapPreviewGenerator : IDisposable
         {
             MapGenerator.mapBeingGenerated = null;
             GeneratingPreviewMap.Value = null;
+            mapGeneratorData.Clear();
             Rand.PopState();
         }
     }
