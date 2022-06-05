@@ -65,7 +65,16 @@ public class TrueTerrainColors
             }
         }
         
-        CalculateTrueTerrainColors();
+        try
+        {
+            CalculateTrueTerrainColors();
+        }
+        catch (Exception e)
+        {
+            ModInstance.Settings.EnableTrueTerrainColors = false;
+            Log.Error(ModInstance.LogPrefix + "Unknown error occured while extracting colors from terrain textures. Disabling true terrain colors feature.");
+            Debug.LogException(e);
+        }
     }
 
     public static void UpdateTerrainColorsIfNeeded(Dictionary<string, Color> terrainColors)
@@ -106,6 +115,8 @@ public class TrueTerrainColors
             if (texture.height > maxH) maxH = texture.height;
             count++;
         }
+        
+        if (count <= 0 || maxW <= 0 || maxH <= 0) return;
 
         var stopwatch = new Stopwatch();
         stopwatch.Start();
