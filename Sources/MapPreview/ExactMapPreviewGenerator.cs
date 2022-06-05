@@ -270,7 +270,6 @@ public class ExactMapPreviewGenerator : IDisposable
             map.info.Size = mapSize;
             map.info.parent = parent;
             map.ConstructComponents();
-            map.regionAndRoomUpdater.Enabled = false;
 
             var previewGenStep = new GenStepDef { genStep = new PreviewTextureGenStep(texture), order = 9999 };
             var genStepWithParamses = mapGenerator.genSteps
