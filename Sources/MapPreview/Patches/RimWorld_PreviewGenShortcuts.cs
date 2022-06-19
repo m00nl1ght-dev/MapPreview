@@ -33,6 +33,13 @@ internal static class RimWorld_PreviewGenShortcuts
     }
     
     [HarmonyPrefix]
+    [HarmonyPatch(typeof(RegionAndRoomUpdater), "TryRebuildDirtyRegionsAndRooms")]
+    private static bool RegionAndRoomUpdater_TryRebuildDirtyRegionsAndRooms()
+    {
+        return !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread;
+    }
+    
+    [HarmonyPrefix]
     [HarmonyPatch(typeof(District), "Map", MethodType.Getter)]
     private static bool District_Map(ref Map __result)
     {
