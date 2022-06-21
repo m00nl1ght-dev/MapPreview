@@ -95,6 +95,7 @@
         <Compile Include="Promises\EnumerableExt.cs" />
         <Compile Include="Promises\IPromise.cs" />
         <Compile Include="Promises\Promise.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Settings.cs" />
         <Compile Include="MapPreview.cs" />
         <Compile Include="TrueTerrainColors.cs" />

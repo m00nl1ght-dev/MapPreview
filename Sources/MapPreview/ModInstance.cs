@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Reflection;
 using MapPreview.Patches;
 using UnityEngine;
 using Verse;
@@ -6,7 +8,7 @@ namespace MapPreview;
 
 public class ModInstance : Mod
 {
-    public const string Version = "1.9.8";
+    public static string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
     public static string LogPrefix => "[Map Preview v" + Version + "] ";
     

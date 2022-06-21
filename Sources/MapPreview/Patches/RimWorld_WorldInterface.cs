@@ -24,6 +24,7 @@ public class RimWorld_WorldInterface
             {
                 MapPreviewWindow.Instance?.Close();
                 _openedPreviewSinceEnteringMap = false;
+                _tileId = -1;
             }
             return;
         }
@@ -52,7 +53,7 @@ public class RimWorld_WorldInterface
 
     public static void Refresh()
     {
-        if (ModInstance.Settings.EnableMapPreview) _tileId = -1;
-        else MapPreviewWindow.Instance?.Close();
+        _tileId = -1;
+        if (!ModInstance.Settings.EnableMapPreview) MapPreviewWindow.Instance?.Close();
     }
 }

@@ -44,6 +44,8 @@ public class TrueTerrainColors
 
     static TrueTerrainColors()
     {
+        Log.ResetMessageCount();
+        
         if (File.Exists(CacheFile))
         {
             try
