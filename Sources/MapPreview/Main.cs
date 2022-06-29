@@ -6,7 +6,7 @@ namespace MapPreview;
 [StaticConstructorOnStartup]
 public static class Main
 {
-    public static bool IsGeneratingPreview { get; set; }
+    public static bool IsGeneratingPreview;
 
     static Main()
     {

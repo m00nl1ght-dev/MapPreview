@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using HarmonyLib;
 using Verse;
 
@@ -13,23 +12,34 @@ using Verse;
 namespace MapPreview.Patches;
 
 /// <summary>
-/// Makes Verse.Rand thread-safe.
+/// Holds a separate state for Verse.Rand on the preview thread.
+/// All patches are conditional and only run while a preview is actually generating.
 /// </summary>
 [HarmonyPatch(typeof(Rand))]
 internal static class RimWorld_Rand
 {
-    private static uint InitialSeed => (uint) DateTime.Now.GetHashCode();
+    private static uint seed = (uint) DateTime.Now.GetHashCode();
+    private static uint iterations;
     
-    private static readonly ThreadLocal<ulong> data = new(() => InitialSeed);
-    private static readonly ThreadLocal<Stack<ulong>> stateStack = new(() => new Stack<ulong>());
+    private static readonly Stack<ulong> stateStack = new();
     
-    private static void SetData(uint seed, uint iterations) => data.Value = seed | (ulong) iterations << 32;
+    private static ulong StateCompressed
+    {
+        get => seed | (ulong) iterations << 32;
+        set
+        {
+            seed = (uint) (value & uint.MaxValue);
+            iterations = (uint) (value >> 32 & uint.MaxValue);
+        }
+    }
 
     [HarmonyPrefix]
     [HarmonyPatch("Seed", MethodType.Setter)]
     private static bool Seed(int value)
     {
-        SetData((uint) value, 0U);
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        seed = (uint) value;
+        iterations = 0U;
         return false;
     }
     
@@ -37,11 +47,8 @@ internal static class RimWorld_Rand
     [HarmonyPatch("Value", MethodType.Getter)]
     private static bool Value(ref float __result)
     {
-        ulong state = data.Value;
-        uint seed = (uint) (state & uint.MaxValue);
-        uint iterations = (uint) (state >> 32 & uint.MaxValue);
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         __result = (float) ((MurmurHash.GetInt(seed, iterations++) - (double) int.MinValue) / uint.MaxValue);
-        SetData(seed, iterations);
         return false;
     }
     
@@ -49,19 +56,28 @@ internal static class RimWorld_Rand
     [HarmonyPatch("Int", MethodType.Getter)]
     private static bool Int(ref int __result)
     {
-        ulong state = data.Value;
-        uint seed = (uint) (state & uint.MaxValue);
-        uint iterations = (uint) (state >> 32 & uint.MaxValue);
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         __result = MurmurHash.GetInt(seed, iterations++);
-        SetData(seed, iterations);
         return false;
     }
-    
+
     [HarmonyPrefix]
     [HarmonyPatch("PushState", new Type[0])]
     private static bool PushState()
     {
-        stateStack.Value.Push(data.Value);
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        stateStack.Push(StateCompressed);
+        return false;
+    }
+    
+    [HarmonyPrefix]
+    [HarmonyPatch("PushState", typeof(int))]
+    private static bool PushState(int replacementSeed)
+    {
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        stateStack.Push(StateCompressed);
+        seed = (uint) replacementSeed;
+        iterations = 0U;
         return false;
     }
     
@@ -69,7 +85,8 @@ internal static class RimWorld_Rand
     [HarmonyPatch("PopState")]
     private static bool PopState()
     {
-        data.Value = stateStack.Value.Pop();
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        StateCompressed = stateStack.Pop();
         return false;
     }
 }

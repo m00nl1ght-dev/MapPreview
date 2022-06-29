@@ -48,8 +48,8 @@ namespace MapPreview;
 /// </summary>
 public class ExactMapPreviewGenerator : IDisposable
 {
-    public static Map GeneratingMapOnCurrentThread => Main.IsGeneratingPreview ? GeneratingPreviewMap.Value : null;
-    public static bool IsGeneratingOnCurrentThread => Main.IsGeneratingPreview && GeneratingPreviewMap.Value != null;
+    public static Map GeneratingMapOnCurrentThread => GeneratingPreviewMap.Value;
+    public static bool IsGeneratingOnCurrentThread => GeneratingPreviewMap.Value != null;
 
     public static event Action OnPreviewThreadInit;
     
@@ -257,16 +257,21 @@ public class ExactMapPreviewGenerator : IDisposable
     {
         var mapGeneratorData = (Dictionary<string, object>) _fieldMapGenData.GetValue(null);
         mapGeneratorData.Clear();
+
+        var tickManager = Current.Game.tickManager;
+        int startTick = tickManager.gameStartAbsTick;
         
-        Rand.PushState();
+        var map = new Map { generationTick = GenTicks.TicksGame };
+        GeneratingPreviewMap.Value = map;
+        
         int seed = Gen.HashCombineInt(Find.World.info.Seed, parent.Tile);
-        Rand.Seed = seed;
+        Rand.PushState(seed);
 
         try
         {
-            var map = new Map { generationTick = GenTicks.TicksGame };
             MapGenerator.mapBeingGenerated = map;
-            GeneratingPreviewMap.Value = map;
+            if (startTick == 0) tickManager.gameStartAbsTick = GenTicks.ConfiguredTicksAbsAtGameStart;
+
             map.info.Size = mapSize;
             map.info.parent = parent;
             map.ConstructComponents();
@@ -276,7 +281,7 @@ public class ExactMapPreviewGenerator : IDisposable
                 .Where(d => IncludedGenStepDefs.Contains(d.defName))
                 .Select(x => new GenStepWithParams(x, new GenStepParams()))
                 .Append(new GenStepWithParams(previewGenStep, new GenStepParams()));
-                
+            
             MapGenerator.GenerateContentsIntoMap(genStepWithParamses, map, seed);
             
             map.weatherManager.EndAllSustainers();
@@ -286,10 +291,11 @@ public class ExactMapPreviewGenerator : IDisposable
         }
         finally
         {
+            Rand.PopState();
             MapGenerator.mapBeingGenerated = null;
+            if (startTick == 0) tickManager.gameStartAbsTick = 0;
             GeneratingPreviewMap.Value = null;
             mapGeneratorData.Clear();
-            Rand.PopState();
         }
     }
 

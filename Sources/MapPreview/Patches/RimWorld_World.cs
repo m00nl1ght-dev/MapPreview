@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
@@ -6,65 +5,63 @@ using RimWorld;
 using RimWorld.Planet;
 using Verse;
 
-// ReSharper disable All
+// ReSharper disable RedundantAssignment
+// ReSharper disable UnusedParameter.Local
+// ReSharper disable UnusedType.Global
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
 
 namespace MapPreview.Patches;
 
 /// <summary>
-/// Makes World methods thread-safe.
+/// Holds a separate state for World caches on the preview thread.
+/// All patches are conditional and are only active while a preview is actually generating.
 /// </summary>
 [HarmonyPatch]
 internal static class RimWorld_World
 {
-    [ThreadStatic]
-    private static List<ThingDef> _tsc_naturalRockDefs;
-
-    [ThreadStatic]
-    private static List<Rot4> _tsc_oceanDirs;
-    
-    [ThreadStatic]
-    private static List<int> _tsc_neighbors;
+    private static readonly List<ThingDef> tmpNaturalRockDefs = new();
+    private static readonly List<int> tmpNeighbors = new();
+    private static readonly List<Rot4> tmpOceanDirs = new();
 
     [HarmonyPatch(typeof(World), nameof(World.CoastDirectionAt))]
     [HarmonyPriority(Priority.VeryLow)]
     [HarmonyPrefix]
     private static bool CoastDirectionAt(World __instance, int tileID, ref Rot4 __result)
     {
-        if (!__instance.grid[tileID].biome.canBuildBase)
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        
+        var grid = __instance.grid;
+        if (!grid[tileID].biome.canBuildBase)
         {
             __result = Rot4.Invalid;
             return false;
         }
 
-        var oceanDirs = _tsc_oceanDirs ??= new List<Rot4>(4);
-        var neighbors = _tsc_neighbors ??= new List<int>(6);
-
-        __instance.grid.GetTileNeighbors(tileID, neighbors);
+        tmpOceanDirs.Clear();
+        grid.GetTileNeighbors(tileID, tmpNeighbors);
         
         int index1 = 0;
-        oceanDirs.Clear();
-        for (int count = neighbors.Count; index1 < count; ++index1)
+        for (int count = tmpNeighbors.Count; index1 < count; ++index1)
         {
-            if (__instance.grid[neighbors[index1]].biome == BiomeDefOf.Ocean)
+            if (grid[tmpNeighbors[index1]].biome == BiomeDefOf.Ocean)
             {
-                Rot4 rotFromTo = __instance.grid.GetRotFromTo(tileID, neighbors[index1]);
-                if (!oceanDirs.Contains(rotFromTo))
-                    oceanDirs.Add(rotFromTo);
+                var rotFromTo = grid.GetRotFromTo(tileID, tmpNeighbors[index1]);
+                if (!tmpOceanDirs.Contains(rotFromTo)) tmpOceanDirs.Add(rotFromTo);
             }
         }
         
-        if (oceanDirs.Count == 0)
+        if (tmpOceanDirs.Count == 0)
         {
             __result = Rot4.Invalid;
             return false;
         }
-        
-        Rand.PushState();
-        Rand.Seed = tileID;
-        int index2 = Rand.Range(0, oceanDirs.Count);
+
+        Rand.PushState(tileID);
+        int index2 = Rand.Range(0, tmpOceanDirs.Count);
         Rand.PopState();
         
-        __result = oceanDirs[index2];
+        __result = tmpOceanDirs[index2];
         return false;
     }
     
@@ -73,30 +70,29 @@ internal static class RimWorld_World
     [HarmonyPrefix]
     private static bool NaturalRockTypesIn(int tile, ref IEnumerable<ThingDef> __result, ref List<ThingDef> ___allNaturalRockDefs)
     {
-        Rand.PushState();
-        Rand.Seed = tile;
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         
-        if (___allNaturalRockDefs == null)
-            ___allNaturalRockDefs = DefDatabase<ThingDef>.AllDefs.Where<ThingDef>((Func<ThingDef, bool>) (d => d.IsNonResourceNaturalRock)).ToList<ThingDef>();
+        Rand.PushState(tile);
+        
+        ___allNaturalRockDefs ??= DefDatabase<ThingDef>.AllDefs.Where(d => d.IsNonResourceNaturalRock).ToList();
         
         int num = Rand.RangeInclusive(2, 3);
-        if (num > ___allNaturalRockDefs.Count) num = ___allNaturalRockDefs.Count;
-
-        var rockDefs = _tsc_naturalRockDefs ??= new List<ThingDef>(___allNaturalRockDefs.Count);
-
-        rockDefs.Clear();
-        rockDefs.AddRange(___allNaturalRockDefs);
+        if (num > ___allNaturalRockDefs.Count)
+            num = ___allNaturalRockDefs.Count;
+        
+        tmpNaturalRockDefs.Clear();
+        tmpNaturalRockDefs.AddRange(___allNaturalRockDefs);
         
         var thingDefList = new List<ThingDef>();
-        
         for (int index = 0; index < num; ++index)
         {
-            ThingDef thingDef = rockDefs.RandomElement<ThingDef>();
-            rockDefs.Remove(thingDef);
+            var thingDef = tmpNaturalRockDefs.RandomElement();
+            tmpNaturalRockDefs.Remove(thingDef);
             thingDefList.Add(thingDef);
         }
         
         Rand.PopState();
+        
         __result = thingDefList;
         return false;
     }
@@ -106,9 +102,9 @@ internal static class RimWorld_World
     [HarmonyPrefix]
     private static bool IsNeighbor(int tile1, int tile2, ref bool __result, WorldGrid __instance)
     {
-        var neighbors = _tsc_neighbors ??= new List<int>(6);
-        __instance.GetTileNeighbors(tile1, neighbors);
-        __result = neighbors.Contains(tile2);
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        __instance.GetTileNeighbors(tile1, tmpNeighbors);
+        __result = tmpNeighbors.Contains(tile2);
         return false;
     }
     
@@ -117,9 +113,9 @@ internal static class RimWorld_World
     [HarmonyPrefix]
     private static bool GetNeighborId(int tile1, int tile2, ref int __result, WorldGrid __instance)
     {
-        var neighbors = _tsc_neighbors ??= new List<int>(6);
-        __instance.GetTileNeighbors(tile1, neighbors);
-        __result = neighbors.IndexOf(tile2);
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        __instance.GetTileNeighbors(tile1, tmpNeighbors);
+        __result = tmpNeighbors.IndexOf(tile2);
         return false;
     }
     
@@ -128,9 +124,9 @@ internal static class RimWorld_World
     [HarmonyPrefix]
     private static bool GetTileNeighbor(int tileID, int adjacentId, ref int __result, WorldGrid __instance)
     {
-        var neighbors = _tsc_neighbors ??= new List<int>(6);
-        __instance.GetTileNeighbors(tileID, neighbors);
-        __result = neighbors[adjacentId];
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        __instance.GetTileNeighbors(tileID, tmpNeighbors);
+        __result = tmpNeighbors[adjacentId];
         return false;
     }
 }

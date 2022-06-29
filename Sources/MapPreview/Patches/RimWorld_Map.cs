@@ -36,7 +36,7 @@ internal static class RimWorld_Map
     [HarmonyPrefix]
     private static bool FillComponents(Map __instance)
     {
-        if (!ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         
         __instance.components.RemoveAll((Predicate<MapComponent>) (component => component == null));
         foreach (System.Type type in typeof (MapComponent).AllSubclassesNonAbstract())

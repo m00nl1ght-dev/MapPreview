@@ -48,6 +48,6 @@ public static class ModCompat_SmashTools
     
     private static bool ComponentCache_MapGenerated()
     {
-        return !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
 }
