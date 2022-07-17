@@ -10,7 +10,7 @@ using Verse;
 namespace MapPreview.Patches;
 
 [HarmonyPatch(typeof(WorldInterface))]
-public class RimWorld_WorldInterface
+internal class RimWorld_WorldInterface
 {
     private static int _tileId = -1;
     private static bool _openedPreviewSinceEnteringMap;

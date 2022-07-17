@@ -11,11 +11,12 @@ namespace MapPreview.Patches;
 // ReSharper disable InconsistentNaming
 // ReSharper disable RedundantAssignment
 
-public static class ModCompat_GeologicalLandforms
+[StaticConstructorOnStartup]
+internal static class ModCompat_GeologicalLandforms
 {
-    public static bool IsPresent { get; private set; }
+    public static bool IsPresent { get; }
     
-    public static void Apply()
+    static ModCompat_GeologicalLandforms()
     {
         try
         {

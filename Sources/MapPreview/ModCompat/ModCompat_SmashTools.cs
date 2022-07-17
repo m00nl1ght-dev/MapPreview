@@ -14,11 +14,12 @@ namespace MapPreview.Patches;
 /// Patch to conditionally disable ComponentCache from the SmashTools utility mod used by The Vehicle Framework.
 /// That feature otherwise causes preview generation to fail.
 /// </summary>
-public static class ModCompat_SmashTools
+[StaticConstructorOnStartup]
+internal static class ModCompat_SmashTools
 {
-    public static bool IsPresent { get; private set; }
+    public static bool IsPresent { get; }
     
-    public static void Apply()
+    static ModCompat_SmashTools()
     {
         try
         {

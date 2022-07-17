@@ -32,6 +32,7 @@ using MapPreview.Interpolation;
 using MapPreview.Promises;
 using UnityEngine;
 using Verse;
+using Object = UnityEngine.Object;
 
 namespace MapPreview;
 
@@ -69,7 +70,7 @@ public class MapPreview : IDisposable
 
     public void Dispose()
     {
-        UnityEngine.Object.Destroy(Texture);
+        Object.Destroy(Texture);
         _awaitingMapTile = -1;
         Texture = null;
     }

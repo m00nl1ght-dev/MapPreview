@@ -9,7 +9,7 @@ using Verse;
 namespace MapPreview.Patches;
 
 [HarmonyPatch(typeof(PlaySettings))]
-public class RimWorld_PlaySettings
+internal class RimWorld_PlaySettings
 {
     [HarmonyPatch("DoPlaySettingsGlobalControls")]
     private static void Postfix(WidgetRow row, bool worldView)

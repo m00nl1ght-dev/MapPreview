@@ -12,11 +12,12 @@ using Verse;
 
 namespace MapPreview.Patches;
 
-public static class ModCompat_MapReroll
+[StaticConstructorOnStartup]
+internal static class ModCompat_MapReroll
 {
-    public static bool IsPresent { get; private set; }
+    public static bool IsPresent { get; }
     
-    public static void Apply()
+    static ModCompat_MapReroll()
     {
         try
         {

@@ -39,7 +39,7 @@ internal static class RimWorld_Map
         if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         
         __instance.components.RemoveAll((Predicate<MapComponent>) (component => component == null));
-        foreach (System.Type type in typeof (MapComponent).AllSubclassesNonAbstract())
+        foreach (Type type in typeof (MapComponent).AllSubclassesNonAbstract())
         {
             if (__instance.GetComponent(type) == null)
             {

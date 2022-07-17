@@ -14,11 +14,12 @@ namespace MapPreview.Patches;
 /// Patch to disable WorldGrid:LongLatOf chache optimization.
 /// That feature otherwise causes the game to freeze and all sorts of other problems during preview generation.
 /// </summary>
-public static class ModCompat_PerformanceOptimizer
+[StaticConstructorOnStartup]
+internal static class ModCompat_PerformanceOptimizer
 {
-    public static bool IsPresent { get; private set; }
+    public static bool IsPresent { get; }
     
-    public static void Apply()
+    static ModCompat_PerformanceOptimizer()
     {
         try
         {

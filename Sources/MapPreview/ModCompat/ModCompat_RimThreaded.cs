@@ -6,13 +6,18 @@ using Verse;
 
 namespace MapPreview.Patches;
 
-public static class ModCompat_RimThreaded
-{
-    public static bool IsPresent { get; private set; }
+// ReSharper disable UnusedType.Global
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
 
-    private static MethodInfo InitializeAllThreadStatics;
+[StaticConstructorOnStartup]
+internal static class ModCompat_RimThreaded
+{
+    public static bool IsPresent { get; }
+
+    private static readonly MethodInfo InitializeAllThreadStatics;
     
-    public static void Apply()
+    static ModCompat_RimThreaded()
     {
         try
         {

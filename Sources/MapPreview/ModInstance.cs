@@ -1,6 +1,5 @@
-using System.Diagnostics;
+using System;
 using System.Reflection;
-using MapPreview.Patches;
 using UnityEngine;
 using Verse;
 
@@ -8,7 +7,7 @@ namespace MapPreview;
 
 public class ModInstance : Mod
 {
-    public static string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
+    public static Version Version => Assembly.GetExecutingAssembly().GetName().Version;
 
     public static string LogPrefix => "[Map Preview v" + Version + "] ";
     
@@ -17,11 +16,6 @@ public class ModInstance : Mod
     public ModInstance(ModContentPack content) : base(content)
     {
         Settings = GetSettings<Settings>();
-        ModCompat_PerformanceOptimizer.Apply();
-        ModCompat_GeologicalLandforms.Apply();
-        ModCompat_SmashTools.Apply();
-        ModCompat_RimThreaded.Apply();
-        ModCompat_MapReroll.Apply();
     }
 
     public override void DoSettingsWindowContents(Rect inRect)

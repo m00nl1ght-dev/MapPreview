@@ -11,7 +11,7 @@ using Verse;
 namespace MapPreview.Patches;
 
 [HarmonyPatch(typeof(Page_SelectStartingSite))]
-public class RimWorld_Page_SelectStartingSite
+internal class RimWorld_Page_SelectStartingSite
 {
     [HarmonyPatch("CanDoNext")]
     private static bool Prefix(ref bool __result)
