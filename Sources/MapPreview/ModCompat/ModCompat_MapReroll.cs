@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using MapPreview.Patches;
 using UnityEngine;
 using Verse;
 
@@ -10,7 +11,7 @@ using Verse;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable InconsistentNaming
 
-namespace MapPreview.Patches;
+namespace MapPreview.ModCompat;
 
 [StaticConstructorOnStartup]
 internal static class ModCompat_MapReroll
@@ -24,7 +25,7 @@ internal static class ModCompat_MapReroll
             var genType = GenTypes.GetTypeInAnyAssembly("MapReroll.MapPreviewGenerator");
             if (genType != null)
             {
-                Log.Message(ModInstance.LogPrefix + "Applying compatibility patches for Map Reroll.");
+                Log.Message(Main.LogPrefix + "Applying compatibility patches for Map Reroll.");
                 Harmony harmony = new("Map Preview Map Reroll Compat");
                 
                 var genMethod = AccessTools.Method(genType, "GeneratePreviewForSeed");
@@ -41,15 +42,29 @@ internal static class ModCompat_MapReroll
         }
         catch (Exception e)
         {
-            Log.Error(ModInstance.LogPrefix + "Failed to apply compatibility patches for Map Reroll!");
+            Log.Error(Main.LogPrefix + "Failed to apply compatibility patches for Map Reroll!");
             Debug.LogException(e);
+        }
+    }
+    
+    private static bool _trueTerrainColorsApplied;
+    
+    private static void UpdateTerrainColorsIfNeeded(Dictionary<string, Color> terrainColors)
+    {
+        var enabled = TrueTerrainColors.EnabledFunc.Invoke();
+        if (enabled != _trueTerrainColorsApplied)
+        {
+            terrainColors.Clear();
+            var activeColors = TrueTerrainColors.ActiveColors;
+            foreach (var pair in activeColors) terrainColors.Add(pair.Key, pair.Value);
+            _trueTerrainColorsApplied = enabled;
         }
     }
     
     private static void GeneratePreviewForSeed_Prefix(Dictionary<string, Color> ___terrainColors)
     {
         Main.IsGeneratingPreview = true;
-        TrueTerrainColors.UpdateTerrainColorsIfNeeded(___terrainColors);
+        UpdateTerrainColorsIfNeeded(___terrainColors);
         RimWorld_TerrainPatchMaker.Reset();
     }
     

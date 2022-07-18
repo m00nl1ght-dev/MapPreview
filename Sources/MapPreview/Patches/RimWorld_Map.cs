@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using HarmonyLib;
 using Verse;
 
-// ReSharper disable All
+// ReSharper disable UnusedType.Global
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
 
 namespace MapPreview.Patches;
 
@@ -36,10 +38,10 @@ internal static class RimWorld_Map
     [HarmonyPrefix]
     private static bool FillComponents(Map __instance)
     {
-        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         
-        __instance.components.RemoveAll((Predicate<MapComponent>) (component => component == null));
-        foreach (Type type in typeof (MapComponent).AllSubclassesNonAbstract())
+        __instance.components.RemoveAll(component => component == null);
+        foreach (var type in typeof (MapComponent).AllSubclassesNonAbstract())
         {
             if (__instance.GetComponent(type) == null)
             {
@@ -47,11 +49,11 @@ internal static class RimWorld_Map
                 {
                     try
                     {
-                        __instance.components.Add((MapComponent) Activator.CreateInstance(type, (object) __instance));
+                        __instance.components.Add((MapComponent) Activator.CreateInstance(type, __instance));
                     }
                     catch (Exception ex)
                     {
-                        Log.Error("Could not instantiate a MapComponent of type " + (object) type + ": " + (object) ex);
+                        Log.Error("Could not instantiate a MapComponent of type " + type + ": " + ex);
                     }
                 }
             }

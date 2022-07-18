@@ -1,4 +1,5 @@
 using HarmonyLib;
+using MapPreview.Util;
 using RimWorld;
 using RimWorld.Planet;
 using Verse;
@@ -14,6 +15,8 @@ internal class RimWorld_WorldInterface
 {
     private static int _tileId = -1;
     private static bool _openedPreviewSinceEnteringMap;
+
+    static RimWorld_WorldInterface() => LifecycleHooks.OnWorldChanged += Refresh;
     
     [HarmonyPatch("WorldInterfaceUpdate")]
     private static void Postfix(WorldInterface __instance)

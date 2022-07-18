@@ -4,7 +4,7 @@ using HarmonyLib;
 using UnityEngine;
 using Verse;
 
-namespace MapPreview.Patches;
+namespace MapPreview.ModCompat;
 
 // ReSharper disable UnusedType.Global
 // ReSharper disable UnusedMember.Local
@@ -26,7 +26,7 @@ internal static class ModCompat_SmashTools
             var ccType = GenTypes.GetTypeInAnyAssembly("SmashTools.ComponentCache");
             if (ccType != null)
             {
-                Log.Message(ModInstance.LogPrefix + "Applying compatibility patches for SmashTools from The Vehicle Framework.");
+                Log.Message(Main.LogPrefix + "Applying compatibility patches for SmashTools from The Vehicle Framework.");
                 Harmony harmony = new("Map Preview SmashTools Compat");
 
                 var mgMethod = AccessTools.Method(ccType, "MapGenerated");
@@ -42,13 +42,13 @@ internal static class ModCompat_SmashTools
         }
         catch (Exception e)
         {
-            Log.Error(ModInstance.LogPrefix + "Failed to apply compatibility patches for SmashTools from The Vehicle Framework!");
+            Log.Error(Main.LogPrefix + "Failed to apply compatibility patches for SmashTools from The Vehicle Framework!");
             Debug.LogException(e);
         }
     }
     
     private static bool ComponentCache_MapGenerated()
     {
-        return !Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
 }

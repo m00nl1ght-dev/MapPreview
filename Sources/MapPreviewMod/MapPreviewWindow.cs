@@ -1,3 +1,4 @@
+using MapPreview.Util;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
@@ -13,8 +14,8 @@ public class MapPreviewWindow : Window
     public override Vector2 InitialSize => new(ModInstance.Settings.PreviewWindowSize, ModInstance.Settings.PreviewWindowSize);
     protected override float Margin => 0f;
 
-    private static ExactMapPreviewGenerator _exactPreviewGenerator;
-    private readonly MapPreview _preview = new(MaxMapSize);
+    private static MapPreviewGenerator _previewGenerator;
+    private readonly BasicMapPreview _preview = new(MaxMapSize);
 
     public MapPreviewWindow()
     {
@@ -29,18 +30,24 @@ public class MapPreviewWindow : Window
         resizeable = false;
         draggable = true;
         
-        _exactPreviewGenerator ??= new ExactMapPreviewGenerator();
+        if (_previewGenerator == null)
+        {
+            _previewGenerator = new MapPreviewGenerator();
+            LifecycleHooks.OnShutdown += Dispose;
+        }
+        
         if (Instance != this) Instance?.Close();
     }
 
     public void OnWorldTileSelected(World world, int tileId)
     {
-        _exactPreviewGenerator.ClearQueue();
+        _previewGenerator.ClearQueue();
         
         string seed = world.info.seedString;
         int mapSize = DetermineMapSize(world);
-        
-        var promise = _exactPreviewGenerator.QueuePreviewForSeed(seed, tileId, mapSize, MaxMapSize, _preview.Buffer);
+
+        var trueTerrainColors = ModInstance.Settings.EnableTrueTerrainColors;
+        var promise = _previewGenerator.QueuePreviewForSeed(seed, tileId, mapSize, MaxMapSize, trueTerrainColors, _preview.Buffer);
         _preview.Await(promise, tileId);
         
         var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
@@ -88,16 +95,16 @@ public class MapPreviewWindow : Window
     
     public override void DoWindowContents(Rect inRect)
     {
-        _preview.Draw(inRect.ContractedBy(5f), 0);
+        _preview.Draw(inRect.ContractedBy(5f));
     }
 
     public static void Dispose()
     {
-        if (_exactPreviewGenerator != null)
+        if (_previewGenerator != null)
         {
-            _exactPreviewGenerator.Dispose();
-            _exactPreviewGenerator.WaitForDisposal();
-            _exactPreviewGenerator = null;
+            _previewGenerator.Dispose();
+            _previewGenerator.WaitForDisposal();
+            _previewGenerator = null;
         }
     }
 }

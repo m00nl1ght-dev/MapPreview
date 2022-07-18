@@ -16,9 +16,17 @@ public class TrueTerrainColors
 {
     private static string CacheFile => Path.Combine(GenFilePaths.ConfigFolderPath, "TrueTerrainColorsCache.xml");
 
-    private static readonly HashSet<string> ExcludeList = new() { "fluffy.stuffedfloors" };
+    public static string LogPrefix => "[TrueTerrainColors v" + Main.LibVersion + "] ";
 
-    private static readonly Dictionary<string, Color> DefaultMapRerollColors = new Dictionary<string, Color> {
+    private static readonly HashSet<string> _excludeList = new() { "fluffy.stuffedfloors" };
+
+    public static Func<bool> EnabledFunc { get; set; } = () => true;
+
+    public static IReadOnlyDictionary<string, Color> ActiveColors => EnabledFunc.Invoke() ? TrueColors : DefaultColors;
+
+    // Default colors from Map Reroll as fallback
+    public static readonly IReadOnlyDictionary<string, Color> DefaultColors = new Dictionary<string, Color>
+    {
         {"Sand", GenColor.FromHex("806F54")},
         {"Soil", GenColor.FromHex("6D5B49")},
         {"MarshyTerrain", GenColor.FromHex("3F412B")},
@@ -36,11 +44,9 @@ public class TrueTerrainColors
         {"WaterMovingShallow", GenColor.FromHex("434F50")}
     };
 
-    public static IReadOnlyDictionary<string, Color> CurrentTerrainColors => 
-        ModInstance.Settings.EnableTrueTerrainColors ? _trueTerrainColors : DefaultMapRerollColors;
+    public static IReadOnlyDictionary<string, Color> TrueColors => _trueColors ?? DefaultColors;
 
-    private static Dictionary<string, Color> _trueTerrainColors;
-    private static bool _trueTerrainColorsApplied;
+    private static Dictionary<string, Color> _trueColors;
 
     static TrueTerrainColors()
     {
@@ -54,15 +60,15 @@ public class TrueTerrainColors
                 using var streamReader = File.OpenText(CacheFile);
                 if (xmlSerializer.Deserialize(streamReader) is List<CacheEntry> cacheData)
                 {
-                    _trueTerrainColors = new Dictionary<string, Color>();
-                    foreach (var cacheEntry in cacheData) _trueTerrainColors.Add(cacheEntry.DefName, cacheEntry.Color);
-                    Log.Message(ModInstance.LogPrefix + $"Loaded cached true colors for {cacheData.Count} terrain defs from file.");
+                    _trueColors = new Dictionary<string, Color>();
+                    foreach (var cacheEntry in cacheData) _trueColors.Add(cacheEntry.DefName, cacheEntry.Color);
+                    Log.Message(LogPrefix + $"Loaded cached true colors for {cacheData.Count} terrain defs from file.");
                 }
             }
             catch (Exception e)
             {
-                _trueTerrainColors = null;
-                Log.Warning(ModInstance.LogPrefix + $" Failed to read TrueTerrainColorsCache from file: " + e);
+                _trueColors = null;
+                Log.Warning(LogPrefix + " Failed to read TrueTerrainColors cache from file: " + e);
                 Debug.LogException(e);
             }
         }
@@ -73,28 +79,9 @@ public class TrueTerrainColors
         }
         catch (Exception e)
         {
-            ModInstance.Settings.EnableTrueTerrainColors = false;
-            Log.Error(ModInstance.LogPrefix + "Unknown error occured while extracting colors from terrain textures. Disabling true terrain colors feature.");
+            _trueColors = null;
+            Log.Error(LogPrefix + "Unknown error occured while extracting colors from terrain textures. Using default colors as fallback.");
             Debug.LogException(e);
-        }
-    }
-
-    public static void UpdateTerrainColorsIfNeeded(Dictionary<string, Color> terrainColors)
-    {
-        if (ModInstance.Settings.EnableTrueTerrainColors != _trueTerrainColorsApplied)
-        {
-            if (ModInstance.Settings.EnableTrueTerrainColors && _trueTerrainColors != null)
-            {
-                terrainColors.Clear();
-                terrainColors.AddRange(_trueTerrainColors);
-                _trueTerrainColorsApplied = true;
-            }
-            else
-            {
-                terrainColors.Clear();
-                terrainColors.AddRange(DefaultMapRerollColors);
-                _trueTerrainColorsApplied = false;
-            }
         }
     }
 
@@ -102,11 +89,11 @@ public class TrueTerrainColors
     {
         int maxW = 0, maxH = 0, count = 0;
 
-        _trueTerrainColors ??= new Dictionary<string, Color>();
-        if (clear) _trueTerrainColors.Clear();
+        _trueColors ??= new Dictionary<string, Color>();
+        if (clear) _trueColors.Clear();
 
         var missingDefs = DefDatabase<TerrainDef>.AllDefsListForReading
-            .Where(def => !_trueTerrainColors.ContainsKey(def.defName) && !ExcludeList.Contains(def.modContentPack?.PackageId))
+            .Where(def => !_trueColors.ContainsKey(def.defName) && !_excludeList.Contains(def.modContentPack?.PackageId))
             .ToList();
         
         if (missingDefs.Count <= 0) return;
@@ -140,12 +127,12 @@ public class TrueTerrainColors
                     readableTex.Apply();
                     var rawColor = AverageColorFromTexture(readableTex);
                     var combinedColor = rawColor * def.graphic.MatSingle.color * def.graphic.color;
-                    _trueTerrainColors.Add(def.defName, combinedColor);
+                    _trueColors.Add(def.defName, combinedColor);
                 }
             }
             catch (Exception e)
             {
-                Log.Message(ModInstance.LogPrefix + $"Failed to extract true color from terrain {def.defName}.");
+                Log.Message(LogPrefix + $"Failed to extract true color from terrain {def.defName}.");
                 Debug.LogException(e);
             }
         }
@@ -157,18 +144,18 @@ public class TrueTerrainColors
         stopwatch.Stop();
         
         var time = Math.Round(stopwatch.Elapsed.TotalSeconds, 2);
-        Log.Message(ModInstance.LogPrefix + $"Extracted true colors from {count} terrain defs in {time} seconds using a RenderTexture of size {maxW}x{maxH}.");
+        Log.Message(LogPrefix + $"Extracted true colors from {count} terrain defs in {time} seconds using a RenderTexture of size {maxW}x{maxH}.");
         
         try
         {
-            var cacheEntries = _trueTerrainColors.Select(p => new CacheEntry { DefName = p.Key, Color = p.Value }).ToList();
+            var cacheEntries = _trueColors.Select(p => new CacheEntry { DefName = p.Key, Color = p.Value }).ToList();
             var xmlSerializer = new XmlSerializer(typeof(List<CacheEntry>));
             using var streamWriter = File.CreateText(CacheFile);
             xmlSerializer.Serialize(streamWriter, cacheEntries);
         }
         catch (Exception e)
         {
-            Log.Warning(ModInstance.LogPrefix + "Failed to write TrueTerrainColorsCache to file: " + e);
+            Log.Warning(LogPrefix + "Failed to write TrueTerrainColors cache to file: " + e);
             Debug.LogException(e);
         }
     }

@@ -4,7 +4,7 @@ using HarmonyLib;
 using UnityEngine;
 using Verse;
 
-namespace MapPreview.Patches;
+namespace MapPreview.ModCompat;
 
 // ReSharper disable UnusedType.Global
 // ReSharper disable UnusedMember.Local
@@ -24,18 +24,18 @@ internal static class ModCompat_RimThreaded
             var rtType = GenTypes.GetTypeInAnyAssembly("RimThreaded.RimThreaded");
             if (rtType != null)
             {
-                Log.Message(ModInstance.LogPrefix + "Applying compatibility patches for RimThreaded.");
+                Log.Message(Main.LogPrefix + "Applying compatibility patches for RimThreaded.");
 
                 InitializeAllThreadStatics = AccessTools.Method(rtType, "InitializeAllThreadStatics");
                 if (InitializeAllThreadStatics == null) throw new Exception("InitializeAllThreadStatics not found");
 
-                ExactMapPreviewGenerator.OnPreviewThreadInit += InitThread;
+                MapPreviewGenerator.OnPreviewThreadInit += InitThread;
                 IsPresent = true;
             }
         }
         catch (Exception e)
         {
-            Log.Error(ModInstance.LogPrefix + "Failed to apply compatibility patches for RimThreaded!");
+            Log.Error(Main.LogPrefix + "Failed to apply compatibility patches for RimThreaded!");
             Debug.LogException(e);
         }
     }

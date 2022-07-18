@@ -33,9 +33,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using HarmonyLib;
-using HugsLib;
 using MapPreview.Patches;
 using MapPreview.Promises;
+using MapPreview.Util;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
@@ -46,7 +46,7 @@ namespace MapPreview;
 /// <summary>
 /// Modified version of MapReroll.MapPreviewGenerator that uses full Map Generator mechanics for better mod compat.
 /// </summary>
-public class ExactMapPreviewGenerator : IDisposable
+public class MapPreviewGenerator : IDisposable
 {
     public static Map GeneratingMapOnCurrentThread => GeneratingPreviewMap.Value;
     public static bool IsGeneratingOnCurrentThread => GeneratingPreviewMap.Value != null;
@@ -87,7 +87,11 @@ public class ExactMapPreviewGenerator : IDisposable
         "BetterCaves"
     };
 
-    public IPromise<ThreadableTexture> QueuePreviewForSeed(string seed, int mapTile, int mapSize, int targetTextureSize, Color[] existingBuffer = null)
+    public IPromise<ThreadableTexture> QueuePreviewForSeed(
+        string seed, int mapTile, int mapSize, 
+        int targetTextureSize, 
+        bool useTrueTerrainColors, 
+        Color[] existingBuffer = null)
     {
         if (_disposeHandle == null)
         {
@@ -111,7 +115,7 @@ public class ExactMapPreviewGenerator : IDisposable
         Log.ResetMessageCount();
 
         var promise = new Promise<ThreadableTexture>();
-        _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, targetTextureSize, seed, mapTile, mapSize, existingBuffer));
+        _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, targetTextureSize, useTrueTerrainColors, seed, mapTile, mapSize, existingBuffer));
         _workHandle.Set();
         
         return promise;
@@ -136,7 +140,7 @@ public class ExactMapPreviewGenerator : IDisposable
                     try
                     {
                         placeholderTex = new ThreadableTexture(request.MapTile, request.MapSize, request.TargetTextureSize, request.ExistingBuffer);
-                        GeneratePreviewForSeed(request.Seed, request.MapTile, request.MapSize, placeholderTex);
+                        GeneratePreviewForSeed(request.Seed, request.MapTile, request.MapSize, placeholderTex, request.UseTrueTerrainColors);
 
                         if (placeholderTex.MapGenErrored)
                         {
@@ -154,7 +158,7 @@ public class ExactMapPreviewGenerator : IDisposable
                     }
 
                     var promise = request.Promise;
-                    HugsLibController.Instance.DoLater.DoNextUpdate(() =>
+                    LifecycleHooks.OnUpdateOnce += () =>
                     {
                         if (rejectException == null)
                         {
@@ -164,7 +168,7 @@ public class ExactMapPreviewGenerator : IDisposable
                         {
                             promise.Reject(rejectException);
                         }
-                    });
+                    };
                 }
             }
 
@@ -174,12 +178,12 @@ public class ExactMapPreviewGenerator : IDisposable
         }
         catch (Exception e)
         {
-            HugsLibController.Instance.DoLater.DoNextUpdate(() =>
+            LifecycleHooks.OnUpdateOnce += () =>
             {
                 Log.ResetMessageCount();
                 Log.Error("Exception in preview generator thread: " + e);
                 request?.Promise.Reject(e);
-            });
+            };
         }
     }
 
@@ -204,7 +208,12 @@ public class ExactMapPreviewGenerator : IDisposable
         _workerThread.Join(5 * 1000);
     }
 
-    private static void GeneratePreviewForSeed(string seed, int mapTile, int mapSize, ThreadableTexture texture)
+    private static void GeneratePreviewForSeed(
+        string seed, 
+        int mapTile, 
+        int mapSize, 
+        ThreadableTexture texture, 
+        bool useTrueTerrainColors)
     {
         var tickManager = Find.TickManager;
         var speedWas = tickManager?.CurTimeSpeed ?? TimeSpeed.Paused;
@@ -221,8 +230,9 @@ public class ExactMapPreviewGenerator : IDisposable
 
             var mapParent = new MapParent { Tile = mapTile, def = WorldObjectDefOf.Settlement};
             mapParent.SetFaction(Faction.OfPlayer);
-            
-            GenerateMap(new IntVec3(mapSize, 1, mapSize), mapParent, MapGeneratorDefOf.Base_Player, texture);
+
+            var mapSizeVec = new IntVec3(mapSize, 1, mapSize);
+            GenerateMap(mapSizeVec, mapParent, MapGeneratorDefOf.Base_Player, texture, useTrueTerrainColors);
 
             AddBevelToSolidStone(texture, mapSize);
         }
@@ -253,7 +263,8 @@ public class ExactMapPreviewGenerator : IDisposable
         IntVec3 mapSize,
         MapParent parent,
         MapGeneratorDef mapGenerator,
-        ThreadableTexture texture)
+        ThreadableTexture texture,
+        bool useTrueTerrainColors)
     {
         var mapGeneratorData = (Dictionary<string, object>) _fieldMapGenData.GetValue(null);
         mapGeneratorData.Clear();
@@ -276,11 +287,12 @@ public class ExactMapPreviewGenerator : IDisposable
             map.info.parent = parent;
             map.ConstructComponents();
 
-            var previewGenStep = new GenStepDef { genStep = new PreviewTextureGenStep(texture), order = 9999 };
+            var previewGenStep = new PreviewTextureGenStep(texture, useTrueTerrainColors);
+            var previewGenStepDef = new GenStepDef { genStep = previewGenStep, order = 9999 };
             var genStepWithParamses = mapGenerator.genSteps
                 .Where(d => IncludedGenStepDefs.Contains(d.defName))
                 .Select(x => new GenStepWithParams(x, new GenStepParams()))
-                .Append(new GenStepWithParams(previewGenStep, new GenStepParams()));
+                .Append(new GenStepWithParams(previewGenStepDef, new GenStepParams()));
             
             MapGenerator.GenerateContentsIntoMap(genStepWithParamses, map, seed);
             
@@ -324,10 +336,12 @@ public class ExactMapPreviewGenerator : IDisposable
     private class PreviewTextureGenStep : GenStep
     {
         private readonly ThreadableTexture _texture;
+        private readonly bool _useTrueTerrainColors;
 
-        public PreviewTextureGenStep(ThreadableTexture texture)
+        public PreviewTextureGenStep(ThreadableTexture texture, bool useTrueTerrainColors)
         {
             _texture = texture;
+            _useTrueTerrainColors = useTrueTerrainColors;
         }
 
         public override int SeedPart => 0;
@@ -335,7 +349,7 @@ public class ExactMapPreviewGenerator : IDisposable
         public override void Generate(Map map, GenStepParams parms)
         {
             var mapBounds = CellRect.WholeMap(map);
-            var colors = TrueTerrainColors.CurrentTerrainColors;
+            var colors = _useTrueTerrainColors ? TrueTerrainColors.TrueColors : TrueTerrainColors.DefaultColors;
             foreach (var cell in mapBounds)
             {
                 var terrainDef = map.terrainGrid.TerrainAt(cell);
@@ -393,16 +407,23 @@ public class ExactMapPreviewGenerator : IDisposable
     {
         public readonly Promise<ThreadableTexture> Promise;
         public readonly int TargetTextureSize;
+        public readonly bool UseTrueTerrainColors;
         public readonly Color[] ExistingBuffer;
         
         public readonly string Seed;
         public readonly int MapTile;
         public readonly int MapSize;
 
-        public QueuedPreviewRequest(Promise<ThreadableTexture> promise, int targetTextureSize, string seed, int mapTile, int mapSize, Color[] existingBuffer = null)
+        public QueuedPreviewRequest(
+            Promise<ThreadableTexture> promise, 
+            int targetTextureSize,
+            bool useTrueTerrainColors, 
+            string seed, int mapTile, int mapSize,
+            Color[] existingBuffer = null)
         {
             Promise = promise;
             TargetTextureSize = targetTextureSize;
+            UseTrueTerrainColors = useTrueTerrainColors;
             ExistingBuffer = existingBuffer;
             Seed = seed;
             MapTile = mapTile;

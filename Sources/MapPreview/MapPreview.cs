@@ -27,7 +27,6 @@ SOFTWARE.
  */
 
 using System;
-using HugsLib;
 using MapPreview.Interpolation;
 using MapPreview.Promises;
 using UnityEngine;
@@ -36,34 +35,32 @@ using Object = UnityEngine.Object;
 
 namespace MapPreview;
 
-[StaticConstructorOnStartup]
-public class MapPreview : IDisposable
+public abstract class MapPreview : IDisposable
 {
-    private const float SpawnInterpolationDuration = .3f;
+    protected static readonly Color DefaultOutlineColor = GenColor.FromHex("616C7A");
+    
+    protected virtual float SpawnInterpolationDuration => 0.3f;
+    protected virtual Color OutlineColor => DefaultOutlineColor;
 
-    private static readonly Color OutlineColor = GenColor.FromHex("616C7A");
+    protected readonly ValueInterpolator SpawnInterpolator;
 
-    private static readonly Texture2D UIPreviewLoading = ContentFinder<Texture2D>.Get("UIPreviewLoadingMP");
-
-    private readonly ValueInterpolator _spawnInterpolator;
-
-    private Rect _texCoords;
-    private int _awaitingMapTile = -1;
+    protected Rect TexCoords;
+    protected int AwaitingMapTile = -1;
     
     public Color[] Buffer { get; private set; }
     public Texture2D Texture { get; private set; }
 
-    public MapPreview(int maxMapSize)
+    protected MapPreview(int maxMapSize)
     {
-        _spawnInterpolator = new ValueInterpolator();
+        SpawnInterpolator = new ValueInterpolator();
         Texture = new Texture2D(maxMapSize, maxMapSize, TextureFormat.RGB24, false);
     }
 
-    public void Await(IPromise<ExactMapPreviewGenerator.ThreadableTexture> promise, int mapTile)
+    public void Await(IPromise<MapPreviewGenerator.ThreadableTexture> promise, int mapTile = -1)
     {
-        _spawnInterpolator.finished = true;
-        _spawnInterpolator.value = 0f;
-        _awaitingMapTile = mapTile;
+        SpawnInterpolator.finished = true;
+        SpawnInterpolator.value = 0f;
+        AwaitingMapTile = mapTile;
         
         promise.Done(OnPromiseResolved, OnPromiseRejected);
     }
@@ -71,60 +68,62 @@ public class MapPreview : IDisposable
     public void Dispose()
     {
         Object.Destroy(Texture);
-        _awaitingMapTile = -1;
+        AwaitingMapTile = -1;
         Texture = null;
     }
 
-    public void Draw(Rect inRect, int index)
+    public void Draw(Rect inRect)
     {
         if (Event.current.type == EventType.Repaint)
         {
-            _spawnInterpolator.Update();
-            if (_spawnInterpolator.value < 1)
+            SpawnInterpolator.Update();
+            if (SpawnInterpolator.value < 1)
             {
-                DrawPreloader(inRect.center, index);
+                DrawGenerating(inRect);
             }
         }
 
         DrawOutline(inRect);
-        if (Texture != null)
+        if (Texture != null && SpawnInterpolator.value > 0)
         {
-            var texScale = _spawnInterpolator.value;
-            if (texScale > 0)
-            {
-                var texRect = inRect.ScaledBy(texScale).ContractedBy(1f);
-                GUI.DrawTextureWithTexCoords(texRect, Texture, _texCoords);
-            }
+            DrawGenerated(inRect);
         }
     }
 
-    private void OnPromiseResolved(ExactMapPreviewGenerator.ThreadableTexture result)
+    protected virtual void DrawGenerating(Rect inRect) {}
+
+    protected virtual void DrawGenerated(Rect inRect)
     {
-        if (Texture == null || result == null || _awaitingMapTile != result.MapTile) return;
+        var texRect = inRect.ScaledBy(SpawnInterpolator.value).ContractedBy(1f);
+        GUI.DrawTextureWithTexCoords(texRect, Texture, TexCoords);
+    }
+
+    private void OnPromiseResolved(MapPreviewGenerator.ThreadableTexture result)
+    {
+        if (Texture == null || result == null || AwaitingMapTile != result.MapTile) return;
         
-        _texCoords = result.TexCoords;
+        TexCoords = result.TexCoords;
         result.CopyToTexture(Texture);
         Texture.Apply();
         
-        _awaitingMapTile = -1;
+        AwaitingMapTile = -1;
         Buffer = result.Pixels;
         
-        _spawnInterpolator.value = 0f;
-        _spawnInterpolator.StartInterpolation(1f, SpawnInterpolationDuration, CurveType.CubicOut);
+        SpawnInterpolator.value = 0f;
+        SpawnInterpolator.StartInterpolation(1f, SpawnInterpolationDuration, CurveType.CubicOut);
     }
 
     private void OnPromiseRejected(Exception ex)
     {
         if (Texture == null) return;
         
-        _spawnInterpolator.value = 0f;
-        _spawnInterpolator.finished = true;
+        SpawnInterpolator.value = 0f;
+        SpawnInterpolator.finished = true;
         
-        Find.WindowStack.Add(new Dialog_MessageBox(
-            "MapPreview.PreviewGenerationFailed".Translate(),
-            null, () => { HugsLibController.Instance.LogUploader.ShowPublishPrompt(); }
-        ));
+        HandleError(ex);
     }
+
+    protected virtual void HandleError(Exception ex) {}
 
     private void DrawOutline(Rect rect)
     {
@@ -134,11 +133,10 @@ public class MapPreview : IDisposable
         GUI.color = oldColor;
     }
 
-    public static void DrawPreloader(Vector2 center, int index)
+    public static void DrawPreloader(Texture2D tex, Vector2 center, int offset = 0)
     {
-        var waveBase = Mathf.Abs(Time.time - index / 2f);
-        var wave = Mathf.Sin((Time.time - index / 6f) * 3f);
-        var tex = UIPreviewLoading;
+        var waveBase = Mathf.Abs(Time.time - offset / 2f);
+        var wave = Mathf.Sin((Time.time - offset / 6f) * 3f);
         var texAlpha = 1f - (1 + wave) * .4f;
         const float texScale = 1f;
         var rect = new Rect(center.x - (tex.width / 2f) * texScale, center.y - (tex.height / 2f) * texScale,

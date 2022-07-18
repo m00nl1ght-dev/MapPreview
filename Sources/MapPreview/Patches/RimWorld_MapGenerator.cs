@@ -1,7 +1,9 @@
 using HarmonyLib;
 using Verse;
 
-// ReSharper disable All
+// ReSharper disable UnusedType.Global
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
 
 namespace MapPreview.Patches;
 

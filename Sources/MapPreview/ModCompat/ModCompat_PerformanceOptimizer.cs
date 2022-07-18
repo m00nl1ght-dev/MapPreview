@@ -4,7 +4,7 @@ using HarmonyLib;
 using UnityEngine;
 using Verse;
 
-namespace MapPreview.Patches;
+namespace MapPreview.ModCompat;
 
 // ReSharper disable UnusedType.Global
 // ReSharper disable UnusedMember.Local
@@ -26,7 +26,7 @@ internal static class ModCompat_PerformanceOptimizer
             var opType = GenTypes.GetTypeInAnyAssembly("PerformanceOptimizer.Optimization_WorldGrid_LongLatOf");
             if (opType != null)
             {
-                Log.Message(ModInstance.LogPrefix + "Applying compatibility patches for Performance Optimizer.");
+                Log.Message(Main.LogPrefix + "Applying compatibility patches for Performance Optimizer.");
                 Harmony harmony = new("Map Preview Performance Optimizer Compat");
 
                 var doPatches = AccessTools.Method(opType, "DoPatches");
@@ -42,7 +42,7 @@ internal static class ModCompat_PerformanceOptimizer
         }
         catch (Exception e)
         {
-            Log.Error(ModInstance.LogPrefix + "Failed to apply compatibility patches for Performance Optimizer!");
+            Log.Error(Main.LogPrefix + "Failed to apply compatibility patches for Performance Optimizer!");
             Debug.LogException(e);
         }
     }

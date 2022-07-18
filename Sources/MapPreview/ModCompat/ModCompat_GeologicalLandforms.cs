@@ -1,10 +1,11 @@
 using System;
 using System.Reflection;
 using HarmonyLib;
+using MapPreview.Util;
 using UnityEngine;
 using Verse;
 
-namespace MapPreview.Patches;
+namespace MapPreview.ModCompat;
 
 // ReSharper disable UnusedType.Global
 // ReSharper disable UnusedMember.Local
@@ -44,18 +45,18 @@ internal static class ModCompat_GeologicalLandforms
         }
         catch (Exception e)
         {
-            Log.Warning(ModInstance.LogPrefix + "Failed to apply optional integration patches for Geological Landforms!");
+            Log.Warning(Main.LogPrefix + "Failed to apply optional integration patches for Geological Landforms!");
             Debug.LogException(e);
         }
     }
     
     private static bool NodeTerrainGridPreview_GetTerrainColor(TerrainDef def, ref Color __result)
     {
-        return !TrueTerrainColors.CurrentTerrainColors.TryGetValue(def.defName, out __result);
+        return !TrueTerrainColors.TrueColors.TryGetValue(def.defName, out __result);
     }
     
     private static void WorldTileInfo_InvalidateCache()
     {
-        RimWorld_WorldInterface.Refresh();
+        LifecycleHooks.NotifyWorldChanged();
     }
 }

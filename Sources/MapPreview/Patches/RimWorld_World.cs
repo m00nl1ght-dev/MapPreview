@@ -29,7 +29,7 @@ internal static class RimWorld_World
     [HarmonyPrefix]
     private static bool CoastDirectionAt(World __instance, int tileID, ref Rot4 __result)
     {
-        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         
         var grid = __instance.grid;
         if (!grid[tileID].biome.canBuildBase)
@@ -70,7 +70,7 @@ internal static class RimWorld_World
     [HarmonyPrefix]
     private static bool NaturalRockTypesIn(int tile, ref IEnumerable<ThingDef> __result, ref List<ThingDef> ___allNaturalRockDefs)
     {
-        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         
         Rand.PushState(tile);
         
@@ -102,7 +102,7 @@ internal static class RimWorld_World
     [HarmonyPrefix]
     private static bool IsNeighbor(int tile1, int tile2, ref bool __result, WorldGrid __instance)
     {
-        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         __instance.GetTileNeighbors(tile1, tmpNeighbors);
         __result = tmpNeighbors.Contains(tile2);
         return false;
@@ -113,7 +113,7 @@ internal static class RimWorld_World
     [HarmonyPrefix]
     private static bool GetNeighborId(int tile1, int tile2, ref int __result, WorldGrid __instance)
     {
-        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         __instance.GetTileNeighbors(tile1, tmpNeighbors);
         __result = tmpNeighbors.IndexOf(tile2);
         return false;
@@ -124,7 +124,7 @@ internal static class RimWorld_World
     [HarmonyPrefix]
     private static bool GetTileNeighbor(int tileID, int adjacentId, ref int __result, WorldGrid __instance)
     {
-        if (!Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         __instance.GetTileNeighbors(tileID, tmpNeighbors);
         __result = tmpNeighbors[adjacentId];
         return false;

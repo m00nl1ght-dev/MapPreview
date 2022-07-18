@@ -19,28 +19,28 @@ internal static class RimWorld_PreviewGenShortcuts
     [HarmonyPatch(typeof(GenStep_Terrain), "GenerateRiverLookupTexture")]
     private static bool GenStep_Terrain_GenerateRiverLookupTexture()
     {
-        return !Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
     
     [HarmonyPrefix]
     [HarmonyPatch(typeof(RiverMaker), "ValidatePassage")]
     private static bool RiverMaker_ValidatePassage()
     {
-        return !Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
     
     [HarmonyPrefix]
     [HarmonyPatch(typeof(TerrainGrid), "DoTerrainChangedEffects")]
     private static bool TerrainGrid_DoTerrainChangedEffects()
     {
-        return !Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
     
     [HarmonyPrefix]
     [HarmonyPatch(typeof(RegionAndRoomUpdater), "RegenerateNewRegionsFromDirtyCells")]
     private static bool RegionAndRoomUpdater_RegenerateNewRegionsFromDirtyCells()
     {
-        return !Main.IsGeneratingPreview || !ExactMapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
     
     [HarmonyPrefix]
@@ -48,7 +48,7 @@ internal static class RimWorld_PreviewGenShortcuts
     private static bool District_Map(ref Map __result)
     {
         if (!Main.IsGeneratingPreview) return true;
-        var map = ExactMapPreviewGenerator.GeneratingMapOnCurrentThread;
+        var map = MapPreviewGenerator.GeneratingMapOnCurrentThread;
         if (map == null) return true;
         __result = map;
         return false;
@@ -59,16 +59,9 @@ internal static class RimWorld_PreviewGenShortcuts
     private static bool Region_Map(ref Map __result)
     {
         if (!Main.IsGeneratingPreview) return true;
-        var map = ExactMapPreviewGenerator.GeneratingMapOnCurrentThread;
+        var map = MapPreviewGenerator.GeneratingMapOnCurrentThread;
         if (map == null) return true;
         __result = map;
         return false;
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(Root), "Shutdown")]
-    private static void Root_Shutdown()
-    {
-        MapPreviewWindow.Dispose();
     }
 }
