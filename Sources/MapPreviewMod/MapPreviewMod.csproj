@@ -8,7 +8,7 @@
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>MapPreview</RootNamespace>
-        <AssemblyName>1_MapPreviewMod</AssemblyName>
+        <AssemblyName>MapPreviewMod</AssemblyName>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>default</LangVersion>
@@ -16,34 +16,32 @@
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
         <DebugSymbols>false</DebugSymbols>
-        <DebugType>full</DebugType>
+        <DebugType>none</DebugType>
         <Optimize>false</Optimize>
-        <OutputPath>..\..\Assemblies\</OutputPath>
+        <OutputPath>..\..\1.3\Lunar\Components\</OutputPath>
         <DefineConstants>DEBUG;TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
-        <DebugType>pdbonly</DebugType>
+        <DebugType>none</DebugType>
         <Optimize>false</Optimize>
-        <OutputPath>..\..\Assemblies\</OutputPath>
+        <OutputPath>..\..\1.3\Lunar\Components\</OutputPath>
         <DefineConstants>TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="0Harmony">
-          <HintPath>..\..\..\..\..\..\..\..\GOG\RimWorld\Mods\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
-          <Private>False</Private>
+          <HintPath>..\..\1.3\Lunar\Components\HarmonyLib.dll</HintPath>
         </Reference>
         <Reference Include="Assembly-CSharp">
           <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
           <Private>False</Private>
         </Reference>
-        <Reference Include="HugsLib">
-          <HintPath>..\..\..\HugsLib\Assemblies\HugsLib.dll</HintPath>
-          <Private>False</Private>
+        <Reference Include="LunarFramework">
+          <HintPath>..\..\1.3\Lunar\Components\LunarFramework.dll</HintPath>
         </Reference>
         <Reference Include="System" />
         <Reference Include="System.Core" />
@@ -64,12 +62,11 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="BasicMapPreview.cs" />
-        <Compile Include="InitOnStartup.cs" />
         <Compile Include="MapPreviewWindow.cs" />
         <Compile Include="ModInstance.cs" />
-        <Compile Include="Patches\RimWorld_Page_SelectStartingSite.cs" />
-        <Compile Include="Patches\RimWorld_PlaySettings.cs" />
-        <Compile Include="Patches\RimWorld_WorldInterface.cs" />
+        <Compile Include="Patches\Patch_RimWorld_Page_SelectStartingSite.cs" />
+        <Compile Include="Patches\Patch_RimWorld_PlaySettings.cs" />
+        <Compile Include="Patches\Patch_RimWorld_WorldInterface.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Settings.cs" />
     </ItemGroup>

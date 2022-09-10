@@ -1,4 +1,5 @@
 using HarmonyLib;
+using LunarFramework.Patching;
 using RimWorld;
 using Verse;
 using Verse.Noise;
@@ -14,13 +15,16 @@ namespace MapPreview.Patches;
 /// Ensures that TerrainPatchMakers get a deterministic seed.
 /// Has priority over the buggy patches from Map Reroll that cause all TerrainPatchMakers to have the same seed.
 /// </summary>
-[HarmonyPatch(typeof(TerrainPatchMaker), "Init")]
-internal static class RimWorld_TerrainPatchMaker
+[PatchGroup("Main")]
+[HarmonyPatch(typeof(TerrainPatchMaker))]
+internal static class Patch_RimWorld_TerrainPatchMaker
 {
     private static int _instanceIdx;
 
+    [HarmonyPrefix]
+    [HarmonyPatch("Init")]
     [HarmonyPriority(750)]
-    private static bool Prefix(Map map, ref ModuleBase ___noise, ref Map ___currentlyInitializedForMap, TerrainPatchMaker __instance)
+    private static bool Init(Map map, ref ModuleBase ___noise, ref Map ___currentlyInitializedForMap, TerrainPatchMaker __instance)
     {
         int seed = Main.TpmSeedSource?.Invoke(__instance, map.Tile) ?? Find.World.info.Seed ^ map.Tile ^ 9305 + _instanceIdx;
         ___noise = new Perlin(__instance.perlinFrequency, __instance.perlinLacunarity, __instance.perlinPersistence, __instance.perlinOctaves, seed, QualityMode.Medium);

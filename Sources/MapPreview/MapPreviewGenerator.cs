@@ -35,7 +35,6 @@ using System.Threading;
 using HarmonyLib;
 using MapPreview.Patches;
 using MapPreview.Promises;
-using MapPreview.Util;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
@@ -55,11 +54,12 @@ public class MapPreviewGenerator : IDisposable
     
     private static readonly ThreadLocal<Map> GeneratingPreviewMap = new();
     
+    public static MapPreviewGenerator Instance { get; private set; }
+    
     private readonly Queue<QueuedPreviewRequest> _queuedRequests = new();
-    private Thread _workerThread;
+    private readonly Thread _workerThread;
     private EventWaitHandle _workHandle = new AutoResetEvent(false);
     private EventWaitHandle _disposeHandle = new AutoResetEvent(false);
-    private bool _disposed;
 
     private static FieldInfo _fieldMapGenData;
 
@@ -68,8 +68,6 @@ public class MapPreviewGenerator : IDisposable
     private static readonly Color SolidStoneHighlightColor = GenColor.FromHex("4C3426");
     private static readonly Color SolidStoneShadowColor = GenColor.FromHex("1C130E");
     private static readonly Color CaveColor = GenColor.FromHex("42372b");
-
-    private static string debugPre, debugPost;
 
     private static readonly IReadOnlyCollection<string> IncludedGenStepDefs = new HashSet<string>
     {
@@ -87,6 +85,22 @@ public class MapPreviewGenerator : IDisposable
         "BetterCaves"
     };
 
+    public static MapPreviewGenerator Init()
+    {
+        return Instance ??= new MapPreviewGenerator();
+    }
+
+    private MapPreviewGenerator()
+    {
+        _fieldMapGenData ??= AccessTools.Field(typeof(MapGenerator), "data");
+        if (_fieldMapGenData == null) throw new Exception("Failed to reflect MapGenerator.data");
+        
+        _workerThread = new Thread(DoThreadWork);
+        _workerThread.Start();
+        
+        Main.LunarAPI.LifecycleHooks.DoOnceOnShutdown(Dispose);
+    }
+
     public IPromise<ThreadableTexture> QueuePreviewForSeed(
         string seed, int mapTile, int mapSize, 
         int targetTextureSize, 
@@ -102,17 +116,6 @@ public class MapPreviewGenerator : IDisposable
         {
             throw new Exception("Map size exceeds max preview size: " + mapSize + " > " + targetTextureSize);
         }
-
-        if (_workerThread == null)
-        {
-            _fieldMapGenData ??= AccessTools.Field(typeof(MapGenerator), "data");
-            if (_fieldMapGenData == null) throw new Exception("Failed to reflect MapGenerator.data");
-            
-            _workerThread = new Thread(DoThreadWork);
-            _workerThread.Start();
-        }
-        
-        Log.ResetMessageCount();
 
         var promise = new Promise<ThreadableTexture>();
         _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, targetTextureSize, useTrueTerrainColors, seed, mapTile, mapSize, existingBuffer));
@@ -149,16 +152,13 @@ public class MapPreviewGenerator : IDisposable
                     }
                     catch (Exception e)
                     {
-                        Log.ResetMessageCount();
-                        Log.Error("Failed to generate map preview: " + e);
-                        debugPost = PrintMapTileInfo(request.MapTile);
-                        Log.Message("Map Info at start: \n" + debugPre);
-                        Log.Message("Map Info at error: \n" + debugPost);
+                        Main.Logger.Error("Failed to generate map preview!", e);
+                        Main.Logger.Log("Map Info: \n" + PrintMapTileInfo(request.MapTile));
                         rejectException = e;
                     }
 
                     var promise = request.Promise;
-                    LifecycleHooks.OnUpdateOnce += () =>
+                    Main.LunarAPI.LifecycleHooks.DoOnce(() =>
                     {
                         if (rejectException == null)
                         {
@@ -168,7 +168,7 @@ public class MapPreviewGenerator : IDisposable
                         {
                             promise.Reject(rejectException);
                         }
-                    };
+                    });
                 }
             }
 
@@ -178,25 +178,24 @@ public class MapPreviewGenerator : IDisposable
         }
         catch (Exception e)
         {
-            LifecycleHooks.OnUpdateOnce += () =>
+            Main.LunarAPI.LifecycleHooks.DoOnce(() =>
             {
-                Log.ResetMessageCount();
-                Log.Error("Exception in preview generator thread: " + e);
+                Main.Logger.Error("Exception in preview generator thread!", e);
                 request?.Promise.Reject(e);
-            };
+            });
         }
     }
 
     public void Dispose()
     {
-        if (!_disposed)
+        if (Instance == this)
         {
-            _disposed = true;
+            Instance = null;
             _queuedRequests.Clear();
             _disposeHandle.Set();
         }
     }
-        
+
     public void ClearQueue()
     {
         _queuedRequests.Clear();
@@ -204,7 +203,7 @@ public class MapPreviewGenerator : IDisposable
     
     public void WaitForDisposal()
     {
-        if (!_disposed || !_workerThread.IsAlive || _workerThread.ThreadState == ThreadState.WaitSleepJoin) return;
+        if (Instance == this || _workerThread is not { IsAlive: true } || _workerThread.ThreadState == ThreadState.WaitSleepJoin) return;
         _workerThread.Join(5 * 1000);
     }
 
@@ -218,13 +217,12 @@ public class MapPreviewGenerator : IDisposable
         var tickManager = Find.TickManager;
         var speedWas = tickManager?.CurTimeSpeed ?? TimeSpeed.Paused;
         var prevSeed = Find.World.info.seedString;
-        debugPre = PrintMapTileInfo(mapTile);
 
         try
         {
             Main.IsGeneratingPreview = true;
             Find.World.info.seedString = seed;
-            RimWorld_TerrainPatchMaker.Reset();
+            Patch_RimWorld_TerrainPatchMaker.Reset();
             
             tickManager?.Pause();
 
@@ -238,17 +236,13 @@ public class MapPreviewGenerator : IDisposable
         }
         catch (Exception e)
         {
-            Log.ResetMessageCount();
-            Log.Error("Error in preview generation: " + e);
-            Debug.LogException(e);
+            Main.Logger.Error("Error in preview generation!", e);
             texture.MapGenErrored = true;
-            debugPost = PrintMapTileInfo(mapTile);
-            Log.Message("Map Info at start: \n" + debugPre);
-            Log.Message("Map Info at error: \n" + debugPost);
+            Main.Logger.Log("Map Info: \n" + PrintMapTileInfo(mapTile));
         }
         finally
         {
-            RimWorld_TerrainPatchMaker.Reset();
+            Patch_RimWorld_TerrainPatchMaker.Reset();
             Find.World.info.seedString = prevSeed;
             Main.IsGeneratingPreview = false;
             

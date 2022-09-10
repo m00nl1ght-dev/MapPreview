@@ -1,4 +1,5 @@
 using HarmonyLib;
+using LunarFramework.Patching;
 using RimWorld;
 using Verse;
 
@@ -8,17 +9,19 @@ using Verse;
 
 namespace MapPreview.Patches;
 
+[PatchGroup("Main")]
 [HarmonyPatch(typeof(PlaySettings))]
-internal class RimWorld_PlaySettings
+internal class Patch_RimWorld_PlaySettings
 {
+    [HarmonyPostfix]
     [HarmonyPatch("DoPlaySettingsGlobalControls")]
-    private static void Postfix(WidgetRow row, bool worldView)
+    private static void DoPlaySettingsGlobalControls(WidgetRow row, bool worldView)
     {
         if (worldView)
         {
             bool prev = ModInstance.Settings.EnableMapPreview;
             row.ToggleableIcon(ref ModInstance.Settings.EnableMapPreview, TexButton.TogglePauseOnError, "MapPreview.World.ShowHidePreview".Translate(), SoundDefOf.Mouseover_ButtonToggle);
-            if (prev != ModInstance.Settings.EnableMapPreview) RimWorld_WorldInterface.Refresh();
+            if (prev != ModInstance.Settings.EnableMapPreview) Patch_RimWorld_WorldInterface.Refresh();
         }
     }
 }

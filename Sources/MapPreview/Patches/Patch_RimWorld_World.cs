@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
+using LunarFramework.Patching;
 using RimWorld;
 using RimWorld.Planet;
 using Verse;
@@ -17,14 +18,15 @@ namespace MapPreview.Patches;
 /// Holds a separate state for World caches on the preview thread.
 /// All patches are conditional and are only active while a preview is actually generating.
 /// </summary>
-[HarmonyPatch]
-internal static class RimWorld_World
+[PatchGroup("Gen")]
+[HarmonyPatch(typeof(World))]
+internal static class Patch_RimWorld_World
 {
     private static readonly List<ThingDef> tmpNaturalRockDefs = new();
     private static readonly List<int> tmpNeighbors = new();
     private static readonly List<Rot4> tmpOceanDirs = new();
 
-    [HarmonyPatch(typeof(World), nameof(World.CoastDirectionAt))]
+    [HarmonyPatch(nameof(World.CoastDirectionAt))]
     [HarmonyPriority(Priority.VeryLow)]
     [HarmonyPrefix]
     private static bool CoastDirectionAt(World __instance, int tileID, ref Rot4 __result)
@@ -65,7 +67,7 @@ internal static class RimWorld_World
         return false;
     }
     
-    [HarmonyPatch(typeof(World), nameof(World.NaturalRockTypesIn))]
+    [HarmonyPatch(nameof(World.NaturalRockTypesIn))]
     [HarmonyPriority(Priority.VeryLow)]
     [HarmonyPrefix]
     private static bool NaturalRockTypesIn(int tile, ref IEnumerable<ThingDef> __result, ref List<ThingDef> ___allNaturalRockDefs)
@@ -94,39 +96,6 @@ internal static class RimWorld_World
         Rand.PopState();
         
         __result = thingDefList;
-        return false;
-    }
-
-    [HarmonyPatch(typeof(WorldGrid), nameof(WorldGrid.IsNeighbor))]
-    [HarmonyPriority(Priority.VeryLow)]
-    [HarmonyPrefix]
-    private static bool IsNeighbor(int tile1, int tile2, ref bool __result, WorldGrid __instance)
-    {
-        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        __instance.GetTileNeighbors(tile1, tmpNeighbors);
-        __result = tmpNeighbors.Contains(tile2);
-        return false;
-    }
-    
-    [HarmonyPatch(typeof(WorldGrid), nameof(WorldGrid.GetNeighborId))]
-    [HarmonyPriority(Priority.VeryLow)]
-    [HarmonyPrefix]
-    private static bool GetNeighborId(int tile1, int tile2, ref int __result, WorldGrid __instance)
-    {
-        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        __instance.GetTileNeighbors(tile1, tmpNeighbors);
-        __result = tmpNeighbors.IndexOf(tile2);
-        return false;
-    }
-    
-    [HarmonyPatch(typeof(WorldGrid), nameof(WorldGrid.GetTileNeighbor))]
-    [HarmonyPriority(Priority.VeryLow)]
-    [HarmonyPrefix]
-    private static bool GetTileNeighbor(int tileID, int adjacentId, ref int __result, WorldGrid __instance)
-    {
-        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        __instance.GetTileNeighbors(tileID, tmpNeighbors);
-        __result = tmpNeighbors[adjacentId];
         return false;
     }
 }

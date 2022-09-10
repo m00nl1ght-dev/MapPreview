@@ -1,4 +1,5 @@
 using HarmonyLib;
+using LunarFramework.Patching;
 using RimWorld;
 using Verse;
 
@@ -10,11 +11,13 @@ using Verse;
 
 namespace MapPreview.Patches;
 
+[PatchGroup("Main")]
 [HarmonyPatch(typeof(Page_SelectStartingSite))]
-internal class RimWorld_Page_SelectStartingSite
+internal class Patch_RimWorld_Page_SelectStartingSite
 {
+    [HarmonyPrefix]
     [HarmonyPatch("CanDoNext")]
-    private static bool Prefix(ref bool __result)
+    private static bool CanDoNext(ref bool __result)
     {
         if (Main.IsGeneratingPreview)
         {

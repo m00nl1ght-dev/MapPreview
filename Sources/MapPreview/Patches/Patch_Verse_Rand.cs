@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HarmonyLib;
+using LunarFramework.Patching;
 using Verse;
 
 // ReSharper disable RedundantAssignment
@@ -15,8 +16,9 @@ namespace MapPreview.Patches;
 /// Holds a separate state for Verse.Rand on the preview thread.
 /// All patches are conditional and only run while a preview is actually generating.
 /// </summary>
+[PatchGroup("Gen")]
 [HarmonyPatch(typeof(Rand))]
-internal static class RimWorld_Rand
+internal static class Patch_Verse_Rand
 {
     private static uint seed = (uint) DateTime.Now.GetHashCode();
     private static uint iterations;

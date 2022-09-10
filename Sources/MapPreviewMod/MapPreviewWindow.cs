@@ -1,4 +1,4 @@
-using MapPreview.Util;
+using LunarFramework.Patching;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
@@ -14,7 +14,8 @@ public class MapPreviewWindow : Window
     public override Vector2 InitialSize => new(ModInstance.Settings.PreviewWindowSize, ModInstance.Settings.PreviewWindowSize);
     protected override float Margin => 0f;
 
-    private static MapPreviewGenerator _previewGenerator;
+    private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(MapPreviewWindow));
+
     private readonly BasicMapPreview _preview = new(MaxMapSize);
 
     public MapPreviewWindow()
@@ -29,25 +30,23 @@ public class MapPreviewWindow : Window
         forcePause = false;
         resizeable = false;
         draggable = true;
-        
-        if (_previewGenerator == null)
-        {
-            _previewGenerator = new MapPreviewGenerator();
-            LifecycleHooks.OnShutdown += Dispose;
-        }
-        
-        if (Instance != this) Instance?.Close();
     }
 
     public void OnWorldTileSelected(World world, int tileId)
     {
-        _previewGenerator.ClearQueue();
+        MapPreviewGenerator.Instance.ClearQueue();
+
+        if (!Main.IsReadyForPreviewGen)
+        {
+            Close();
+            return;
+        }
         
         string seed = world.info.seedString;
         int mapSize = DetermineMapSize(world);
 
         var trueTerrainColors = ModInstance.Settings.EnableTrueTerrainColors;
-        var promise = _previewGenerator.QueuePreviewForSeed(seed, tileId, mapSize, MaxMapSize, trueTerrainColors, _preview.Buffer);
+        var promise = MapPreviewGenerator.Instance.QueuePreviewForSeed(seed, tileId, mapSize, MaxMapSize, trueTerrainColors, _preview.Buffer);
         _preview.Await(promise, tileId);
         
         var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
@@ -71,6 +70,12 @@ public class MapPreviewWindow : Window
     {
         base.PreOpen();
         
+        if (Instance != this) Instance?.Close();
+        
+        MapPreviewGenerator.Init();
+        
+        Main.SubscribeGenPatches(PatchGroupSubscriber);
+        
         float lastX = ModInstance.Settings.PreviewWindowPosition.x;
         float lastY = ModInstance.Settings.PreviewWindowPosition.y;
         
@@ -84,7 +89,13 @@ public class MapPreviewWindow : Window
     public override void PreClose()
     {
         base.PreClose();
+        
         _preview.Dispose();
+        
+        MapPreviewGenerator.Instance.ClearQueue();
+        
+        Main.UnsubscribeGenPatches(PatchGroupSubscriber);
+        
         var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
         if (pos != ModInstance.Settings.PreviewWindowPosition)
         {
@@ -96,15 +107,5 @@ public class MapPreviewWindow : Window
     public override void DoWindowContents(Rect inRect)
     {
         _preview.Draw(inRect.ContractedBy(5f));
-    }
-
-    public static void Dispose()
-    {
-        if (_previewGenerator != null)
-        {
-            _previewGenerator.Dispose();
-            _previewGenerator.WaitForDisposal();
-            _previewGenerator = null;
-        }
     }
 }

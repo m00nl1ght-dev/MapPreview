@@ -1,5 +1,5 @@
 ﻿using System;
-using HugsLib;
+using LunarFramework.Logging;
 using UnityEngine;
 using Verse;
 
@@ -21,7 +21,10 @@ public class BasicMapPreview : MapPreview
     {
         Find.WindowStack.Add(new Dialog_MessageBox(
             "MapPreview.PreviewGenerationFailed".Translate(),
-            null, () => { HugsLibController.Instance.LogUploader.ShowPublishPrompt(); }
+            null, () =>
+            {
+                LogPublisher.TryShowPublishPrompt();
+            }
         ));
     }
 }

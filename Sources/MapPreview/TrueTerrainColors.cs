@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
+using LunarFramework.Logging;
 using UnityEngine;
 using Verse;
-using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace MapPreview;
@@ -16,11 +16,11 @@ public class TrueTerrainColors
 {
     private static string CacheFile => Path.Combine(GenFilePaths.ConfigFolderPath, "TrueTerrainColorsCache.xml");
 
-    public static string LogPrefix => "[TrueTerrainColors v" + Main.LibVersion + "] ";
+    private static readonly IngameLogContext Logger = new(typeof(TrueTerrainColors));
 
-    private static readonly HashSet<string> _excludeList = new() { "fluffy.stuffedfloors" };
+    private static readonly HashSet<string> ExcludeList = new() { "fluffy.stuffedfloors" };
 
-    public static Func<bool> EnabledFunc { get; set; } = () => true;
+    public static Func<bool> EnabledFunc { get; set; } = () => false;
 
     public static IReadOnlyDictionary<string, Color> ActiveColors => EnabledFunc.Invoke() ? TrueColors : DefaultColors;
 
@@ -50,7 +50,7 @@ public class TrueTerrainColors
 
     static TrueTerrainColors()
     {
-        Log.ResetMessageCount();
+        Logger.IgnoreLogLimitLevel = LogContext.LogLevel.Warn;
         
         if (File.Exists(CacheFile))
         {
@@ -62,14 +62,13 @@ public class TrueTerrainColors
                 {
                     _trueColors = new Dictionary<string, Color>();
                     foreach (var cacheEntry in cacheData) _trueColors.Add(cacheEntry.DefName, cacheEntry.Color);
-                    Log.Message(LogPrefix + $"Loaded cached true colors for {cacheData.Count} terrain defs from file.");
+                    Logger.Log($"Loaded cached true colors for {cacheData.Count} terrain defs from file.");
                 }
             }
             catch (Exception e)
             {
                 _trueColors = null;
-                Log.Warning(LogPrefix + " Failed to read TrueTerrainColors cache from file: " + e);
-                Debug.LogException(e);
+                Logger.Warn("Failed to read TrueTerrainColors cache from file.", e);
             }
         }
         
@@ -80,8 +79,7 @@ public class TrueTerrainColors
         catch (Exception e)
         {
             _trueColors = null;
-            Log.Error(LogPrefix + "Unknown error occured while extracting colors from terrain textures. Using default colors as fallback.");
-            Debug.LogException(e);
+            Logger.Error("Unknown error occured while extracting colors from terrain textures. Using default colors as fallback.", e);
         }
     }
 
@@ -93,7 +91,7 @@ public class TrueTerrainColors
         if (clear) _trueColors.Clear();
 
         var missingDefs = DefDatabase<TerrainDef>.AllDefsListForReading
-            .Where(def => !_trueColors.ContainsKey(def.defName) && !_excludeList.Contains(def.modContentPack?.PackageId))
+            .Where(def => !_trueColors.ContainsKey(def.defName) && !ExcludeList.Contains(def.modContentPack?.PackageId))
             .ToList();
         
         if (missingDefs.Count <= 0) return;
@@ -132,8 +130,7 @@ public class TrueTerrainColors
             }
             catch (Exception e)
             {
-                Log.Message(LogPrefix + $"Failed to extract true color from terrain {def.defName}.");
-                Debug.LogException(e);
+                Logger.Log($"Failed to extract true color from terrain {def.defName}.", e);
             }
         }
         
@@ -144,7 +141,7 @@ public class TrueTerrainColors
         stopwatch.Stop();
         
         var time = Math.Round(stopwatch.Elapsed.TotalSeconds, 2);
-        Log.Message(LogPrefix + $"Extracted true colors from {count} terrain defs in {time} seconds using a RenderTexture of size {maxW}x{maxH}.");
+        Logger.Log( $"Extracted true colors from {count} terrain defs in {time} seconds using a RenderTexture of size {maxW}x{maxH}.");
         
         try
         {
@@ -155,8 +152,7 @@ public class TrueTerrainColors
         }
         catch (Exception e)
         {
-            Log.Warning(LogPrefix + "Failed to write TrueTerrainColors cache to file: " + e);
-            Debug.LogException(e);
+            Logger.Warn("Failed to write TrueTerrainColors cache to file", e);
         }
     }
     

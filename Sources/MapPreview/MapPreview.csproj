@@ -8,7 +8,7 @@
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>MapPreview</RootNamespace>
-        <AssemblyName>0_MapPreview</AssemblyName>
+        <AssemblyName>MapPreview</AssemblyName>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>default</LangVersion>
@@ -16,35 +16,34 @@
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
         <DebugSymbols>false</DebugSymbols>
-        <DebugType>full</DebugType>
+        <DebugType>none</DebugType>
         <Optimize>false</Optimize>
-        <OutputPath>..\..\Assemblies</OutputPath>
+        <OutputPath>..\..\1.3\Lunar\Components\</OutputPath>
         <DefineConstants>DEBUG;TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
-        <DebugType>full</DebugType>
+        <DebugType>none</DebugType>
         <Optimize>false</Optimize>
-        <OutputPath>..\..\Assemblies</OutputPath>
+        <OutputPath>..\..\1.3\Lunar\Components\</OutputPath>
         <DefineConstants>TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
         <DebugSymbols>false</DebugSymbols>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="0Harmony, Version=2.2.1.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\..\..\GOG\RimWorld\Mods\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
+        <Reference Include="0Harmony">
+          <HintPath>..\..\1.3\Lunar\Components\HarmonyLib.dll</HintPath>
           <Private>False</Private>
         </Reference>
         <Reference Include="Assembly-CSharp, Version=1.3.8194.1220, Culture=neutral, PublicKeyToken=null">
           <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
           <Private>False</Private>
         </Reference>
-        <Reference Include="HugsLib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\HugsLib\Assemblies\HugsLib.dll</HintPath>
-          <Private>False</Private>
+        <Reference Include="LunarFramework">
+          <HintPath>..\..\1.3\Lunar\Components\LunarFramework.dll</HintPath>
         </Reference>
         <Reference Include="System" />
         <Reference Include="System.Core" />
@@ -68,25 +67,28 @@
         <Compile Include="Interpolation\ValueInterpolator.cs" />
         <Compile Include="Main.cs" />
         <Compile Include="MapPreviewGenerator.cs" />
-        <Compile Include="ModCompat\ModCompat_GeologicalLandforms.cs" />
-        <Compile Include="ModCompat\ModCompat_MapReroll.cs" />
-        <Compile Include="ModCompat\ModCompat_PerformanceOptimizer.cs" />
-        <Compile Include="ModCompat\ModCompat_RimThreaded.cs" />
-        <Compile Include="ModCompat\ModCompat_SmashTools.cs" />
-        <Compile Include="Patches\RimWorld_Map.cs" />
-        <Compile Include="Patches\RimWorld_MapGenerator.cs" />
-        <Compile Include="Patches\RimWorld_PreviewGenShortcuts.cs" />
-        <Compile Include="Patches\RimWorld_Rand.cs" />
-        <Compile Include="Patches\RimWorld_Root.cs" />
-        <Compile Include="Patches\RimWorld_TerrainPatchMaker.cs" />
-        <Compile Include="Patches\RimWorld_World.cs" />
+        <Compile Include="Compatibility\ModCompat_MapReroll.cs" />
+        <Compile Include="Compatibility\ModCompat_PerformanceOptimizer.cs" />
+        <Compile Include="Compatibility\ModCompat_RimThreaded.cs" />
+        <Compile Include="Compatibility\ModCompat_SmashTools.cs" />
+        <Compile Include="Patches\Patch_RimWorld_GenStep_Terrain.cs" />
+        <Compile Include="Patches\Patch_RimWorld_RiverMaker.cs" />
+        <Compile Include="Patches\Patch_Verse_District.cs" />
+        <Compile Include="Patches\Patch_Verse_Region.cs" />
+        <Compile Include="Patches\Patch_Verse_RegionAndRoomUpdater.cs" />
+        <Compile Include="Patches\Patch_Verse_TerrainGrid.cs" />
+        <Compile Include="Patches\Patch_RimWorld_WorldGrid.cs" />
+        <Compile Include="Patches\Patch_Verse_Map.cs" />
+        <Compile Include="Patches\Patch_Verse_MapGenerator.cs" />
+        <Compile Include="Patches\Patch_Verse_Rand.cs" />
+        <Compile Include="Patches\Patch_RimWorld_TerrainPatchMaker.cs" />
+        <Compile Include="Patches\Patch_RimWorld_World.cs" />
         <Compile Include="Promises\EnumerableExt.cs" />
         <Compile Include="Promises\IPromise.cs" />
         <Compile Include="Promises\Promise.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="MapPreview.cs" />
         <Compile Include="TrueTerrainColors.cs" />
-        <Compile Include="Util\LifecycleHooks.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HarmonyLib;
+using LunarFramework.Patching;
 using Verse;
 
 // ReSharper disable UnusedType.Global
@@ -9,8 +10,9 @@ using Verse;
 
 namespace MapPreview.Patches;
 
+[PatchGroup("Gen")]
 [HarmonyPatch(typeof(Map))]
-internal static class RimWorld_Map
+internal static class Patch_Verse_Map
 {
     private static readonly HashSet<string> IncludedMapComponents = new HashSet<string>
     {
@@ -34,8 +36,8 @@ internal static class RimWorld_Map
         "DubRoss.MapComponent_PaintShop"
     };
     
-    [HarmonyPatch("FillComponents")]
     [HarmonyPrefix]
+    [HarmonyPatch("FillComponents")]
     private static bool FillComponents(Map __instance)
     {
         if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
