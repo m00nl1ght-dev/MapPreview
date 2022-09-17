@@ -1,3 +1,4 @@
+using System;
 using LunarFramework.Patching;
 using RimWorld.Planet;
 using UnityEngine;
@@ -7,7 +8,10 @@ namespace MapPreview;
 
 public class MapPreviewWindow : Window
 {
-    public static readonly IntVec2 MaxMapSize = new(500, 500);
+    public static IntVec2 MinMapSize = new(10, 10);
+    public static IntVec2 MaxMapSize = new(500, 500);
+
+    public static Func<IntVec2> MapSizeOverride;
     
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
     
@@ -43,11 +47,20 @@ public class MapPreviewWindow : Window
         }
         
         string seed = world.info.seedString;
-        var mapSize = DetermineMapSize(world);
+        var mapSize = DetermineMapSize(world, tileId);
+        
+        mapSize = new IntVec2(Mathf.Clamp(mapSize.x, MinMapSize.x, MaxMapSize.x), Mathf.Clamp(mapSize.z, MinMapSize.z, MaxMapSize.z));
+
+        float desiredSize = ModInstance.Settings.PreviewWindowSize;
+        float largeSide = Math.Max(mapSize.x, mapSize.z);
+        float scale = desiredSize / largeSide;
+
+        windowRect = new Rect(windowRect.x, windowRect.y, mapSize.x * scale, mapSize.z * scale);
+        windowRect = windowRect.Rounded();
 
         var request = new MapPreviewRequest(seed, tileId, mapSize)
         {
-            TextureSize = MaxMapSize,
+            TextureSize = new IntVec2(_preview.Texture.width, _preview.Texture.height),
             UseTrueTerrainColors = ModInstance.Settings.EnableTrueTerrainColors,
             SkipRiverFlowCalc = ModInstance.Settings.SkipRiverFlowCalc,
             ExistingBuffer = _preview.Buffer
@@ -64,16 +77,33 @@ public class MapPreviewWindow : Window
         }
     }
 
-    private IntVec2 DetermineMapSize(World world)
+    private IntVec2 DetermineMapSize(World world, int tileId)
     {
-        var gameInitData = Find.GameInitData;
-        if (gameInitData is { mapSize: >= 100 and <= 1000 })
-            return new IntVec2(gameInitData.mapSize, gameInitData.mapSize);
+        var mapParent = world.worldObjects.MapParentAt(tileId);
+        if (mapParent is Site site)
+        {
+            var fromSite = site.PreferredMapSize;
+            return new IntVec2(fromSite.x, fromSite.z);
+        }
         
-        var fromWorld = world.info.initialMapSize;
-        if (fromWorld.x is >= 100 and <= 1000 && fromWorld.z is >= 100 and <= 1000)
+        if (Current.Game.Maps.Any())
+        {
+            var fromWorld = world.info.initialMapSize;
             return new IntVec2(fromWorld.x, fromWorld.z);
+        }
+        
+        if (MapSizeOverride != null)
+        {
+            var fromOverride = MapSizeOverride.Invoke();
+            return new IntVec2(fromOverride.x, fromOverride.z);
+        }
 
+        var gameInitData = Find.GameInitData;
+        if (gameInitData != null)
+        {
+            return new IntVec2(gameInitData.mapSize, gameInitData.mapSize);
+        }
+        
         return new IntVec2(250, 250);
     }
 
