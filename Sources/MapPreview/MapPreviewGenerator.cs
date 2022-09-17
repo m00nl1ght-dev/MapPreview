@@ -56,7 +56,7 @@ public class MapPreviewGenerator : IDisposable
     
     public static MapPreviewGenerator Instance { get; private set; }
     
-    private readonly Queue<QueuedPreviewRequest> _queuedRequests = new();
+    private readonly Queue<MapPreviewRequest> _queuedRequests = new();
     private readonly Thread _workerThread;
     private EventWaitHandle _workHandle = new AutoResetEvent(false);
     private EventWaitHandle _disposeHandle = new AutoResetEvent(false);
@@ -101,32 +101,27 @@ public class MapPreviewGenerator : IDisposable
         Main.LunarAPI.LifecycleHooks.DoOnceOnShutdown(Dispose);
     }
 
-    public IPromise<ThreadableTexture> QueuePreviewForSeed(
-        string seed, int mapTile, int mapSize, 
-        int targetTextureSize, 
-        bool useTrueTerrainColors, 
-        Color[] existingBuffer = null)
+    public IPromise<MapPreviewResult> QueuePreviewRequest(MapPreviewRequest request)
     {
         if (_disposeHandle == null)
         {
             throw new Exception("ExactMapPreviewGenerator has already been disposed.");
         }
         
-        if (mapSize > targetTextureSize)
+        if (request.MapSize.x > request.TextureSize.x || request.MapSize.z > request.TextureSize.z)
         {
-            throw new Exception("Map size exceeds max preview size: " + mapSize + " > " + targetTextureSize);
+            throw new Exception("Map size exceeds max preview size: " + request.MapSize + " > " + request.TextureSize);
         }
-
-        var promise = new Promise<ThreadableTexture>();
-        _queuedRequests.Enqueue(new QueuedPreviewRequest(promise, targetTextureSize, useTrueTerrainColors, seed, mapTile, mapSize, existingBuffer));
+        
+        _queuedRequests.Enqueue(request);
         _workHandle.Set();
         
-        return promise;
+        return request.Promise;
     }
 
     private void DoThreadWork()
     {
-        QueuedPreviewRequest request = null;
+        MapPreviewRequest request = null;
         try
         {
             OnPreviewThreadInit?.Invoke();
@@ -139,13 +134,13 @@ public class MapPreviewGenerator : IDisposable
                 {
                     request = _queuedRequests.Dequeue();
 
-                    ThreadableTexture placeholderTex = null;
+                    MapPreviewResult result = null;
                     try
                     {
-                        placeholderTex = new ThreadableTexture(request.MapTile, request.MapSize, request.TargetTextureSize, request.ExistingBuffer);
-                        GeneratePreviewForSeed(request.Seed, request.MapTile, request.MapSize, placeholderTex, request.UseTrueTerrainColors);
+                        result = new MapPreviewResult(request.MapTile, request.MapSize, request.TextureSize, request.ExistingBuffer);
+                        GeneratePreview(request, result);
 
-                        if (placeholderTex.MapGenErrored)
+                        if (result.MapGenErrored)
                         {
                             throw new Exception("No terrain was generated for at least one map cell.");
                         }
@@ -162,7 +157,7 @@ public class MapPreviewGenerator : IDisposable
                     {
                         if (rejectException == null)
                         {
-                            promise.Resolve(placeholderTex);
+                            promise.Resolve(result);
                         }
                         else
                         {
@@ -207,12 +202,7 @@ public class MapPreviewGenerator : IDisposable
         _workerThread.Join(5 * 1000);
     }
 
-    private static void GeneratePreviewForSeed(
-        string seed, 
-        int mapTile, 
-        int mapSize, 
-        ThreadableTexture texture, 
-        bool useTrueTerrainColors)
+    private static void GeneratePreview(MapPreviewRequest request, MapPreviewResult result)
     {
         var tickManager = Find.TickManager;
         var speedWas = tickManager?.CurTimeSpeed ?? TimeSpeed.Paused;
@@ -221,30 +211,32 @@ public class MapPreviewGenerator : IDisposable
         try
         {
             Main.IsGeneratingPreview = true;
-            Find.World.info.seedString = seed;
-            Patch_RimWorld_TerrainPatchMaker.Reset();
+            Find.World.info.seedString = request.Seed;
+
+            Patch_RimWorld_GenStep_Terrain.SkipRiverFlowCalc = request.SkipRiverFlowCalc;
             
             tickManager?.Pause();
 
-            var mapParent = new MapParent { Tile = mapTile, def = WorldObjectDefOf.Settlement};
+            var mapParent = new MapParent { Tile = request.MapTile, def = WorldObjectDefOf.Settlement};
             mapParent.SetFaction(Faction.OfPlayer);
 
-            var mapSizeVec = new IntVec3(mapSize, 1, mapSize);
-            GenerateMap(mapSizeVec, mapParent, MapGeneratorDefOf.Base_Player, texture, useTrueTerrainColors);
+            var mapSizeVec = new IntVec3(request.MapSize.x, 1, request.MapSize.z);
+            GenerateMap(mapSizeVec, mapParent, MapGeneratorDefOf.Base_Player, result, request.UseTrueTerrainColors);
 
-            AddBevelToSolidStone(texture, mapSize);
+            AddBevelToSolidStone(result);
         }
         catch (Exception e)
         {
             Main.Logger.Error("Error in preview generation!", e);
-            texture.MapGenErrored = true;
-            Main.Logger.Log("Map Info: \n" + PrintMapTileInfo(mapTile));
+            result.MapGenErrored = true;
+            Main.Logger.Log("Map Info: \n" + PrintMapTileInfo(request.MapTile));
         }
         finally
         {
-            Patch_RimWorld_TerrainPatchMaker.Reset();
             Find.World.info.seedString = prevSeed;
             Main.IsGeneratingPreview = false;
+
+            Patch_RimWorld_GenStep_Terrain.SkipRiverFlowCalc = false;
             
             if (tickManager is { CurTimeSpeed: TimeSpeed.Paused })
             {
@@ -257,7 +249,7 @@ public class MapPreviewGenerator : IDisposable
         IntVec3 mapSize,
         MapParent parent,
         MapGeneratorDef mapGenerator,
-        ThreadableTexture texture,
+        MapPreviewResult texture,
         bool useTrueTerrainColors)
     {
         var mapGeneratorData = (Dictionary<string, object>) _fieldMapGenData.GetValue(null);
@@ -329,10 +321,10 @@ public class MapPreviewGenerator : IDisposable
 
     private class PreviewTextureGenStep : GenStep
     {
-        private readonly ThreadableTexture _texture;
+        private readonly MapPreviewResult _texture;
         private readonly bool _useTrueTerrainColors;
 
-        public PreviewTextureGenStep(ThreadableTexture texture, bool useTrueTerrainColors)
+        public PreviewTextureGenStep(MapPreviewResult texture, bool useTrueTerrainColors)
         {
             _texture = texture;
             _useTrueTerrainColors = useTrueTerrainColors;
@@ -371,96 +363,29 @@ public class MapPreviewGenerator : IDisposable
     /// <summary>
     /// Adds highlights and shadows to the solid stone color in the texture
     /// </summary>
-    private static void AddBevelToSolidStone(ThreadableTexture tex, int mapSize)
+    private static void AddBevelToSolidStone(MapPreviewResult result)
     {
-        for (int x = 0; x < mapSize; x++)
+        for (int x = 0; x < result.MapSize.x; x++)
         {
-            for (int y = 0; y < mapSize; y++)
+            for (int z = 0; z < result.MapSize.z; z++)
             {
-                var isStone = tex.GetPixel(x, y) == SolidStoneColor;
+                var isStone = result.GetPixel(x, z) == SolidStoneColor;
                 if (isStone)
                 {
-                    var colorBelow = y > 0 ? tex.GetPixel(x, y - 1) : Color.clear;
+                    var colorBelow = z > 0 ? result.GetPixel(x, z - 1) : Color.clear;
                     var isStoneBelow = colorBelow == SolidStoneColor || colorBelow == SolidStoneHighlightColor ||
                                        colorBelow == SolidStoneShadowColor;
-                    var isStoneAbove = y < mapSize - 1 && tex.GetPixel(x, y + 1) == SolidStoneColor;
+                    var isStoneAbove = z < result.MapSize.z - 1 && result.GetPixel(x, z + 1) == SolidStoneColor;
                     if (!isStoneAbove)
                     {
-                        tex.SetPixel(x, y, SolidStoneHighlightColor);
+                        result.SetPixel(x, z, SolidStoneHighlightColor);
                     }
                     else if (!isStoneBelow)
                     {
-                        tex.SetPixel(x, y, SolidStoneShadowColor);
+                        result.SetPixel(x, z, SolidStoneShadowColor);
                     }
                 }
             }
-        }
-    }
-
-    private class QueuedPreviewRequest
-    {
-        public readonly Promise<ThreadableTexture> Promise;
-        public readonly int TargetTextureSize;
-        public readonly bool UseTrueTerrainColors;
-        public readonly Color[] ExistingBuffer;
-        
-        public readonly string Seed;
-        public readonly int MapTile;
-        public readonly int MapSize;
-
-        public QueuedPreviewRequest(
-            Promise<ThreadableTexture> promise, 
-            int targetTextureSize,
-            bool useTrueTerrainColors, 
-            string seed, int mapTile, int mapSize,
-            Color[] existingBuffer = null)
-        {
-            Promise = promise;
-            TargetTextureSize = targetTextureSize;
-            UseTrueTerrainColors = useTrueTerrainColors;
-            ExistingBuffer = existingBuffer;
-            Seed = seed;
-            MapTile = mapTile;
-            MapSize = mapSize;
-        }
-    }
-
-    // A placeholder for Texture2D that can be used in threads other than the main one (required since 1.0)
-    // Pixels are laid out left to right, top to bottom
-    public class ThreadableTexture
-    {
-        public readonly Color[] Pixels;
-        
-        public readonly int TextureSize;
-        public readonly int MapSize;
-        public readonly int MapTile;
-        
-        public Rect TexCoords => new(0, 0, MapSize / (float) TextureSize, MapSize / (float) TextureSize);
-
-        public bool MapGenErrored;
-
-        public ThreadableTexture(int mapTile, int mapSize, int textureSize, Color[] existingBuffer = null)
-        {
-            MapTile = mapTile;
-            MapSize = mapSize;
-            TextureSize = textureSize;
-            if (existingBuffer != null && existingBuffer.Length == textureSize * textureSize) Pixels = existingBuffer;
-            else Pixels = new Color[textureSize * textureSize];
-        }
-
-        public void SetPixel(int x, int y, Color color)
-        {
-            Pixels[y * TextureSize + x] = color;
-        }
-
-        public Color GetPixel(int x, int y)
-        {
-            return Pixels[y * TextureSize + x];
-        }
-
-        public void CopyToTexture(Texture2D tex)
-        {
-            tex.SetPixels(Pixels);
         }
     }
 }

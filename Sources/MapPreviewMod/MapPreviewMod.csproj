@@ -62,6 +62,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="BasicMapPreview.cs" />
+        <Compile Include="Compatibility\ModCompat_MapReroll.cs" />
         <Compile Include="MapPreviewWindow.cs" />
         <Compile Include="ModInstance.cs" />
         <Compile Include="Patches\Patch_RimWorld_Page_SelectStartingSite.cs" />

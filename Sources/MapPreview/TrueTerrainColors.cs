@@ -20,10 +20,6 @@ public class TrueTerrainColors
 
     private static readonly HashSet<string> ExcludeList = new() { "fluffy.stuffedfloors" };
 
-    public static Func<bool> EnabledFunc { get; set; } = () => false;
-
-    public static IReadOnlyDictionary<string, Color> ActiveColors => EnabledFunc.Invoke() ? TrueColors : DefaultColors;
-
     // Default colors from Map Reroll as fallback
     public static readonly IReadOnlyDictionary<string, Color> DefaultColors = new Dictionary<string, Color>
     {

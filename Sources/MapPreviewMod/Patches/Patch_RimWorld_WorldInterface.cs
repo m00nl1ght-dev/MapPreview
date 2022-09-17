@@ -25,7 +25,7 @@ internal class Patch_RimWorld_WorldInterface
     {
         if (!WorldRendererUtility.WorldRenderedNow)
         {
-            if (_openedPreviewSinceEnteringMap)
+            if (_openedPreviewSinceEnteringMap && !Main.IsGeneratingPreview)
             {
                 MapPreviewWindow.Instance?.Close();
                 _openedPreviewSinceEnteringMap = false;

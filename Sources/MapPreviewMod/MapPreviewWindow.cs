@@ -7,7 +7,7 @@ namespace MapPreview;
 
 public class MapPreviewWindow : Window
 {
-    public const int MaxMapSize = 500;
+    public static readonly IntVec2 MaxMapSize = new(500, 500);
     
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
     
@@ -43,10 +43,17 @@ public class MapPreviewWindow : Window
         }
         
         string seed = world.info.seedString;
-        int mapSize = DetermineMapSize(world);
+        var mapSize = DetermineMapSize(world);
 
-        var trueTerrainColors = ModInstance.Settings.EnableTrueTerrainColors;
-        var promise = MapPreviewGenerator.Instance.QueuePreviewForSeed(seed, tileId, mapSize, MaxMapSize, trueTerrainColors, _preview.Buffer);
+        var request = new MapPreviewRequest(seed, tileId, mapSize)
+        {
+            TextureSize = MaxMapSize,
+            UseTrueTerrainColors = ModInstance.Settings.EnableTrueTerrainColors,
+            SkipRiverFlowCalc = ModInstance.Settings.SkipRiverFlowCalc,
+            ExistingBuffer = _preview.Buffer
+        };
+
+        var promise = MapPreviewGenerator.Instance.QueuePreviewRequest(request);
         _preview.Await(promise, tileId);
         
         var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
@@ -57,13 +64,17 @@ public class MapPreviewWindow : Window
         }
     }
 
-    private int DetermineMapSize(World world)
+    private IntVec2 DetermineMapSize(World world)
     {
         var gameInitData = Find.GameInitData;
-        if (gameInitData is { mapSize: >= 100 and <= 1000 }) return gameInitData.mapSize;
-        var fromWorld = world.info.initialMapSize.x;
-        if (fromWorld is >= 100 and <= 1000) return fromWorld;
-        return 250;
+        if (gameInitData is { mapSize: >= 100 and <= 1000 })
+            return new IntVec2(gameInitData.mapSize, gameInitData.mapSize);
+        
+        var fromWorld = world.info.initialMapSize;
+        if (fromWorld.x is >= 100 and <= 1000 && fromWorld.z is >= 100 and <= 1000)
+            return new IntVec2(fromWorld.x, fromWorld.z);
+
+        return new IntVec2(250, 250);
     }
 
     public override void PreOpen()

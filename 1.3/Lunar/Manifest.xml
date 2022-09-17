@@ -9,7 +9,7 @@
       <AssemblyName>HugsLogPublisher</AssemblyName>
       <AllowNonLunarSource>true</AllowNonLunarSource>
       <Aliases>
-        <li>HugsLib</li>
+        <string>HugsLib</string>
       </Aliases>
     </Component>
     <Component>

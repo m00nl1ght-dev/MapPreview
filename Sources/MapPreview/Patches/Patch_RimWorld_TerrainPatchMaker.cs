@@ -12,31 +12,60 @@ using Verse.Noise;
 namespace MapPreview.Patches;
 
 /// <summary>
-/// Ensures that TerrainPatchMakers get a deterministic seed.
+/// Ensures that TerrainPatchMakers get a deterministic seed, if needed.
 /// Has priority over the buggy patches from Map Reroll that cause all TerrainPatchMakers to have the same seed.
 /// </summary>
 [PatchGroup("Main")]
 [HarmonyPatch(typeof(TerrainPatchMaker))]
 internal static class Patch_RimWorld_TerrainPatchMaker
 {
-    private static int _instanceIdx;
-
     [HarmonyPrefix]
     [HarmonyPatch("Init")]
     [HarmonyPriority(750)]
     private static bool Init(Map map, ref ModuleBase ___noise, ref Map ___currentlyInitializedForMap, TerrainPatchMaker __instance)
     {
-        int seed = Main.TpmSeedSource?.Invoke(__instance, map.Tile) ?? Find.World.info.Seed ^ map.Tile ^ 9305 + _instanceIdx;
-        ___noise = new Perlin(__instance.perlinFrequency, __instance.perlinLacunarity, __instance.perlinPersistence, __instance.perlinOctaves, seed, QualityMode.Medium);
-        NoiseDebugUI.RenderSize = new IntVec2(map.Size.x, map.Size.z);
-        NoiseDebugUI.StoreNoiseRender(___noise, "TerrainPatchMaker " + _instanceIdx);
+        if (!Main.ShouldUseStableSeed(map)) return true;
+        
+        ___noise = new Perlin(
+            __instance.perlinFrequency,
+            __instance.perlinLacunarity,
+            __instance.perlinPersistence,
+            __instance.perlinOctaves,
+            MakeStableSeed(__instance, map),
+            QualityMode.Medium);
+        
         ___currentlyInitializedForMap = map;
-        _instanceIdx++;
         return false;
     }
-
-    public static void Reset()
+    
+    private static int MakeStableSeed(TerrainPatchMaker tpm, Map map)
     {
-        _instanceIdx = 0;
+        int idx = map.Biome.terrainPatchMakers.IndexOf(tpm);
+        if (idx >= 0) return Find.World.info.Seed ^ map.Tile ^ 9305 + idx;
+
+        return Find.World.info.Seed ^ map.Tile ^ GetHashCode(tpm);
+    }
+    
+    public static int GetHashCode(TerrainPatchMaker tpm)
+    {
+        unchecked
+        {
+            var hashCode =  tpm.perlinFrequency.GetHashCode();
+            hashCode = (hashCode * 397) ^ tpm.perlinLacunarity.GetHashCode();
+            hashCode = (hashCode * 397) ^ tpm.perlinPersistence.GetHashCode();
+            hashCode = (hashCode * 397) ^ tpm.perlinOctaves;
+            hashCode = (hashCode * 397) ^ tpm.minFertility.GetHashCode();
+            hashCode = (hashCode * 397) ^ tpm.maxFertility.GetHashCode();
+            hashCode = (hashCode * 397) ^ tpm.minSize;
+            
+            foreach (var threshold in tpm.thresholds)
+            {
+                hashCode = (hashCode * 397) ^ threshold.min.GetHashCode();
+                hashCode = (hashCode * 397) ^ threshold.max.GetHashCode();
+                hashCode = (hashCode * 397) ^ threshold.terrain.defName.GetHashCode();
+            }
+            
+            return hashCode;
+        }
     }
 }

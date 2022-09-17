@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using LunarFramework.Patching;
-using MapPreview.Patches;
 using UnityEngine;
 
 // ReSharper disable RedundantAssignment
@@ -23,25 +22,16 @@ internal class ModCompat_MapReroll : ModCompat
     [HarmonyPatch("MapReroll.MapPreviewGenerator", "GeneratePreviewForSeed")]
     private static void MapPreviewGenerator_GeneratePreviewForSeed_Prefix(Dictionary<string, Color> ___terrainColors)
     {
-        Main.IsGeneratingPreview = true;
         UpdateTerrainColorsIfNeeded(___terrainColors);
-        Patch_RimWorld_TerrainPatchMaker.Reset();
-    }
-    
-    [HarmonyPostfix]
-    [HarmonyPatch("MapReroll.MapPreviewGenerator", "GeneratePreviewForSeed")]
-    private static void MapPreviewGenerator_GeneratePreviewForSeed_Postfix()
-    {
-        Main.IsGeneratingPreview = false;
     }
     
     private static void UpdateTerrainColorsIfNeeded(Dictionary<string, Color> terrainColors)
     {
-        var enabled = TrueTerrainColors.EnabledFunc.Invoke();
+        var enabled = ModInstance.Settings.EnableTrueTerrainColors;
         if (enabled != _trueTerrainColorsApplied)
         {
             terrainColors.Clear();
-            var activeColors = TrueTerrainColors.ActiveColors;
+            var activeColors = enabled ? TrueTerrainColors.TrueColors : TrueTerrainColors.DefaultColors;
             foreach (var pair in activeColors) terrainColors.Add(pair.Key, pair.Value);
             _trueTerrainColorsApplied = enabled;
         }

@@ -10,7 +10,7 @@ public class BasicMapPreview : MapPreview
 {
     private static readonly Texture2D _uiPreviewLoading = ContentFinder<Texture2D>.Get("UIPreviewLoadingMP");
 
-    public BasicMapPreview(int maxMapSize) : base(maxMapSize) {}
+    public BasicMapPreview(IntVec2 maxMapSize) : base(maxMapSize) {}
 
     protected override void DrawGenerating(Rect inRect)
     {

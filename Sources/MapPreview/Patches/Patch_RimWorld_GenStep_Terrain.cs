@@ -14,10 +14,13 @@ namespace MapPreview.Patches;
 [HarmonyPatch(typeof(GenStep_Terrain))]
 internal static class Patch_RimWorld_GenStep_Terrain
 {
+    internal static bool SkipRiverFlowCalc = false;
+
     [HarmonyPrefix]
     [HarmonyPatch("GenerateRiverLookupTexture")]
     private static bool GenerateRiverLookupTexture()
     {
-        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
+        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        return !SkipRiverFlowCalc;
     }
 }

@@ -50,13 +50,13 @@ public abstract class MapPreview : IDisposable
     public Color[] Buffer { get; private set; }
     public Texture2D Texture { get; private set; }
 
-    protected MapPreview(int maxMapSize)
+    protected MapPreview(IntVec2 maxMapSize)
     {
         SpawnInterpolator = new ValueInterpolator();
-        Texture = new Texture2D(maxMapSize, maxMapSize, TextureFormat.RGB24, false);
+        Texture = new Texture2D(maxMapSize.x, maxMapSize.z, TextureFormat.RGB24, false);
     }
 
-    public void Await(IPromise<MapPreviewGenerator.ThreadableTexture> promise, int mapTile = -1)
+    public void Await(IPromise<MapPreviewResult> promise, int mapTile = -1)
     {
         SpawnInterpolator.finished = true;
         SpawnInterpolator.value = 0f;
@@ -98,7 +98,7 @@ public abstract class MapPreview : IDisposable
         GUI.DrawTextureWithTexCoords(texRect, Texture, TexCoords);
     }
 
-    private void OnPromiseResolved(MapPreviewGenerator.ThreadableTexture result)
+    private void OnPromiseResolved(MapPreviewResult result)
     {
         if (Texture == null || result == null || AwaitingMapTile != result.MapTile) return;
         

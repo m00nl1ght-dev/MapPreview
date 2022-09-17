@@ -1,8 +1,8 @@
 using System;
+using System.Collections.Generic;
 using LunarFramework;
 using LunarFramework.Logging;
 using LunarFramework.Patching;
-using RimWorld;
 using Verse;
 
 namespace MapPreview;
@@ -31,7 +31,7 @@ public static class Main
         CompatPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Compat");
         CompatPatchGroup.Subscribe();
 
-        GenPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Gen", 3f);
+        GenPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Gen");
         GenPatchGroup.AddPatches(typeof(Main).Assembly);
 
         ModCompat.ApplyAll(LunarAPI, CompatPatchGroup);
@@ -49,7 +49,14 @@ public static class Main
         GenPatchGroup?.UnsubscribeAll();
     }
     
-    public static Func<TerrainPatchMaker, int, int> TpmSeedSource;
+    internal static readonly List<Predicate<Map>> StableSeedConditions = new();
+    
+    public static bool ShouldUseStableSeed(Map map) => StableSeedConditions.Any(c => c.Invoke(map));
+
+    public static void AddStableSeedCondition(Predicate<Map> condition)
+    {
+        StableSeedConditions.Add(condition);
+    }
     
     public static event Action OnWorldChanged;
 
