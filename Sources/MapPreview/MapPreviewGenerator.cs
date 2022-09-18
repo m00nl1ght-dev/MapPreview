@@ -51,6 +51,8 @@ public class MapPreviewGenerator : IDisposable
     public static bool IsGeneratingOnCurrentThread => GeneratingPreviewMap.Value != null;
 
     public static event Action OnPreviewThreadInit;
+    public static event Action<MapPreviewRequest> OnBeginGenerating;
+    public static event Action<MapPreviewResult> OnFinishedGenerating;
     
     private static readonly ThreadLocal<Map> GeneratingPreviewMap = new();
     
@@ -137,13 +139,15 @@ public class MapPreviewGenerator : IDisposable
                     MapPreviewResult result = null;
                     try
                     {
+                        OnBeginGenerating?.Invoke(request);
+                        
                         result = new MapPreviewResult(request.MapTile, request.MapSize, request.TextureSize, request.ExistingBuffer);
                         GeneratePreview(request, result);
 
                         if (result.MapGenErrored)
-                        {
                             throw new Exception("No terrain was generated for at least one map cell.");
-                        }
+
+                        OnFinishedGenerating?.Invoke(result);
                     }
                     catch (Exception e)
                     {

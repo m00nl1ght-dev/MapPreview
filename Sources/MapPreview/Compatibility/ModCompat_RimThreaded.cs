@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using HarmonyLib;
 using LunarFramework.Patching;
 
@@ -11,25 +10,18 @@ namespace MapPreview.Compatibility;
 
 internal class ModCompat_RimThreaded : ModCompat
 {
-    public override string TargetAssembly => "RimThreaded";
-    public override string DisplayName => "RimThreaded";
-    
-    private MethodInfo InitializeAllThreadStatics;
+    public override string TargetAssemblyName => "RimThreaded";
 
-    protected override bool OnApply(Assembly assembly)
+    protected override bool OnApply()
     {
-        var rtType = assembly.GetType("RimThreaded.RimThreaded");
-        if (rtType == null) throw new Exception("RimThreaded version incompatible");
+        var type = FindType("RimThreaded.RimThreaded");
+        var method = Require(AccessTools.Method(type, "InitializeAllThreadStatics"));
+
+        MapPreviewGenerator.OnPreviewThreadInit += () =>
+        {
+            method.Invoke(null, Array.Empty<object>());
+        };
         
-        InitializeAllThreadStatics = AccessTools.Method(rtType, "InitializeAllThreadStatics");
-        if (InitializeAllThreadStatics == null) throw new Exception("InitializeAllThreadStatics not found");
-
-        MapPreviewGenerator.OnPreviewThreadInit += InitThread;
         return true;
-    }
-
-    private void InitThread()
-    {
-        InitializeAllThreadStatics.Invoke(null, Array.Empty<object>());
     }
 }

@@ -14,7 +14,7 @@ namespace MapPreview.Compatibility;
 [HarmonyPatch]
 internal class ModCompat_PerformanceOptimizer : ModCompat
 {
-    public override string TargetAssembly => "PerformanceOptimizer";
+    public override string TargetAssemblyName => "PerformanceOptimizer";
     public override string DisplayName => "Performance Optimizer";
 
     [HarmonyPrefix]

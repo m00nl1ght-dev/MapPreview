@@ -135,6 +135,7 @@ public abstract class MapPreview : IDisposable
 
     public static void DrawPreloader(Texture2D tex, Vector2 center, int offset = 0)
     {
+        if (tex == null) return;
         var waveBase = Mathf.Abs(Time.time - offset / 2f);
         var wave = Mathf.Sin((Time.time - offset / 6f) * 3f);
         var texAlpha = 1f - (1 + wave) * .4f;

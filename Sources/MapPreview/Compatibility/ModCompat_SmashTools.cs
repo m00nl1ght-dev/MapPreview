@@ -14,7 +14,7 @@ namespace MapPreview.Compatibility;
 [HarmonyPatch]
 internal class ModCompat_SmashTools : ModCompat
 {
-    public override string TargetAssembly => "SmashTools";
+    public override string TargetAssemblyName => "SmashTools";
     public override string DisplayName => "SmashTools from The Vehicle Framework";
 
     [HarmonyPrefix]

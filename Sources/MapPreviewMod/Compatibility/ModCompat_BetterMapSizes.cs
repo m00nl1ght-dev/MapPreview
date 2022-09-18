@@ -1,4 +1,3 @@
-using System.Reflection;
 using HarmonyLib;
 using LunarFramework.Patching;
 using Verse;
@@ -12,17 +11,16 @@ namespace MapPreview.Compatibility;
 
 internal class ModCompat_BetterMapSizes : ModCompat
 {
-    public override string TargetAssembly => "CustomMapSizes";
+    public override string TargetAssemblyName => "CustomMapSizes";
     public override string DisplayName => "Better Map Sizes";
 
-    protected override bool OnApply(Assembly assembly)
+    protected override bool OnApply()
     {
-        var type = assembly.GetType("CustomMapSizes.CustomMapSizesMain", true);
+        var type = FindType("CustomMapSizes.CustomMapSizesMain");
         
-        var mapWidth  = AccessTools.Field(type, "mapWidth");
-        var mapHeight = AccessTools.Field(type, "mapHeight");
+        var mapWidth  = Require(AccessTools.Field(type, "mapWidth"));
+        var mapHeight = Require(AccessTools.Field(type, "mapHeight"));
         
-        if (mapWidth == null || mapHeight == null) return false;
         if ((int) mapWidth.GetValue(null) < 0 || (int) mapHeight.GetValue(null) < 0) return false;
 
         MapPreviewWindow.MaxMapSize = new IntVec2(1000, 1000);

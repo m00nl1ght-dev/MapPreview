@@ -13,7 +13,7 @@ namespace MapPreview.Compatibility;
 [HarmonyPatch]
 internal class ModCompat_MapReroll : ModCompat
 {
-    public override string TargetAssembly => "MapReroll";
+    public override string TargetAssemblyName => "MapReroll";
     public override string DisplayName => "Map Reroll";
     
     private static bool _trueTerrainColorsApplied;
