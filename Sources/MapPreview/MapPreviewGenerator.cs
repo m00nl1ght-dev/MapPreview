@@ -232,13 +232,13 @@ public class MapPreviewGenerator : IDisposable
         catch (Exception e)
         {
             Main.Logger.Error("Error in preview generation!", e);
-            result.MapGenErrored = true;
             Main.Logger.Log("Map Info: \n" + PrintMapTileInfo(request.MapTile));
+            result.MapGenErrored = true;
         }
         finally
         {
-            Find.World.info.seedString = prevSeed;
             Main.IsGeneratingPreview = false;
+            Find.World.info.seedString = prevSeed;
 
             Patch_RimWorld_GenStep_Terrain.SkipRiverFlowCalc = false;
             
@@ -270,6 +270,9 @@ public class MapPreviewGenerator : IDisposable
 
         try
         {
+            if (MapGenerator.mapBeingGenerated != null)
+                throw new Exception("Attempted to generate map preview while another map is generating!");
+            
             MapGenerator.mapBeingGenerated = map;
             if (startTick == 0) tickManager.gameStartAbsTick = GenTicks.ConfiguredTicksAbsAtGameStart;
 

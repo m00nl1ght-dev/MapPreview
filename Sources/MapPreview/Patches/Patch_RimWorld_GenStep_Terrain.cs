@@ -10,7 +10,7 @@ using RimWorld;
 
 namespace MapPreview.Patches;
 
-[PatchGroup("Gen")]
+[PatchGroup("Main")]
 [HarmonyPatch(typeof(GenStep_Terrain))]
 internal static class Patch_RimWorld_GenStep_Terrain
 {

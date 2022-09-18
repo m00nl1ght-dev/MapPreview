@@ -10,7 +10,7 @@ using RimWorld;
 
 namespace MapPreview.Patches;
 
-[PatchGroup("Gen")]
+[PatchGroup("Main")]
 [HarmonyPatch(typeof(RiverMaker))]
 internal static class Patch_RimWorld_RiverMaker
 {

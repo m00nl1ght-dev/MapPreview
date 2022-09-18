@@ -10,11 +10,11 @@ using Verse;
 
 namespace MapPreview.Patches;
 
-[PatchGroup("Gen")]
+[PatchGroup("Main")]
 [HarmonyPatch(typeof(Map))]
 internal static class Patch_Verse_Map
 {
-    private static readonly HashSet<string> IncludedMapComponents = new HashSet<string>
+    private static readonly HashSet<string> IncludedMapComponents = new()
     {
         // Vanilla
         typeof(RoadInfo).FullName,
