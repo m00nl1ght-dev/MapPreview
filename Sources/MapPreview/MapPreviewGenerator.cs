@@ -308,18 +308,21 @@ public class MapPreviewGenerator : IDisposable
 
         var tile = worldGrid[tileId];
         if (tile == null) return "No Tile";
+        
+        var tickManager = Find.TickManager;
 
         var str = new StringBuilder();
 
         str.AppendLine("World Seed: " + Find.World?.info?.seedString);
         str.AppendLine("World Tile: " + tileId);
+        str.AppendLine("Tick Speed: " + tickManager?.CurTimeSpeed);
         str.AppendLine("Biome: " + tile.biome?.defName);
         str.AppendLine("Biome TPMs: " + tile.biome?.terrainPatchMakers?.Count);
         str.AppendLine("Biome TTresh: " + tile.biome?.terrainsByFertility?.Count);
         str.AppendLine("Biome MCP: " + tile.biome?.modContentPack?.Name);
         str.AppendLine("River: " + tile.Rivers?.Count);
         str.AppendLine("Road: " + tile.Roads?.Count);
-        
+
         return str.ToString();
     }
 

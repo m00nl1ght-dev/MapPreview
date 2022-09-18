@@ -63,6 +63,9 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Compatibility\ModCompat_AnimalTraps.cs" />
+        <Compile Include="Compatibility\ModCompat_BiomesCore.cs" />
+        <Compile Include="Compatibility\ModCompat_FishTraps.cs" />
         <Compile Include="Compatibility\ModCompat_StartupImpact.cs" />
         <Compile Include="Interpolation\InterpolationCurves.cs" />
         <Compile Include="Interpolation\ValueInterpolator.cs" />
