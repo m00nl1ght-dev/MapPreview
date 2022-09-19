@@ -35,7 +35,7 @@ using Object = UnityEngine.Object;
 
 namespace MapPreview;
 
-public abstract class MapPreview : IDisposable
+public abstract class MapPreviewWidget : IDisposable
 {
     protected static readonly Color DefaultOutlineColor = GenColor.FromHex("616C7A");
     
@@ -50,7 +50,7 @@ public abstract class MapPreview : IDisposable
     public Color[] Buffer { get; private set; }
     public Texture2D Texture { get; private set; }
 
-    protected MapPreview(IntVec2 maxMapSize)
+    protected MapPreviewWidget(IntVec2 maxMapSize)
     {
         SpawnInterpolator = new ValueInterpolator();
         Texture = new Texture2D(maxMapSize.x, maxMapSize.z, TextureFormat.RGB24, false);

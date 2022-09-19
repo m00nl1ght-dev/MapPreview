@@ -17,7 +17,7 @@ internal static class Patch_Verse_MapGenerator
     [HarmonyPatch("GenerateMap")]
     private static bool GenerateMap()
     {
-        if (!Main.IsGeneratingPreview) return true;
+        if (!MapPreviewAPI.IsGeneratingPreview) return true;
         throw new Exception("Attempted to use MapGenerator while a map preview is being generated!");
     }
 }

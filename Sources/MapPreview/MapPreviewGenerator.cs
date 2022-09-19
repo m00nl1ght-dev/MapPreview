@@ -100,7 +100,7 @@ public class MapPreviewGenerator : IDisposable
         _workerThread = new Thread(DoThreadWork);
         _workerThread.Start();
         
-        Main.LunarAPI.LifecycleHooks.DoOnceOnShutdown(Dispose);
+        MapPreviewAPI.LunarAPI.LifecycleHooks.DoOnceOnShutdown(Dispose);
     }
 
     public IPromise<MapPreviewResult> QueuePreviewRequest(MapPreviewRequest request)
@@ -151,13 +151,13 @@ public class MapPreviewGenerator : IDisposable
                     }
                     catch (Exception e)
                     {
-                        Main.Logger.Error("Failed to generate map preview!", e);
-                        Main.Logger.Log("Map Info: \n" + PrintMapTileInfo(request.MapTile));
+                        MapPreviewAPI.Logger.Error("Failed to generate map preview!", e);
+                        MapPreviewAPI.Logger.Log("Map Info: \n" + PrintMapTileInfo(request.MapTile));
                         rejectException = e;
                     }
 
                     var promise = request.Promise;
-                    Main.LunarAPI.LifecycleHooks.DoOnce(() =>
+                    MapPreviewAPI.LunarAPI.LifecycleHooks.DoOnce(() =>
                     {
                         if (rejectException == null)
                         {
@@ -177,9 +177,9 @@ public class MapPreviewGenerator : IDisposable
         }
         catch (Exception e)
         {
-            Main.LunarAPI.LifecycleHooks.DoOnce(() =>
+            MapPreviewAPI.LunarAPI.LifecycleHooks.DoOnce(() =>
             {
-                Main.Logger.Error("Exception in preview generator thread!", e);
+                MapPreviewAPI.Logger.Error("Exception in preview generator thread!", e);
                 request?.Promise.Reject(e);
             });
         }
@@ -214,7 +214,7 @@ public class MapPreviewGenerator : IDisposable
 
         try
         {
-            Main.IsGeneratingPreview = true;
+            MapPreviewAPI.IsGeneratingPreview = true;
             Find.World.info.seedString = request.Seed;
 
             Patch_RimWorld_GenStep_Terrain.SkipRiverFlowCalc = request.SkipRiverFlowCalc;
@@ -231,13 +231,13 @@ public class MapPreviewGenerator : IDisposable
         }
         catch (Exception e)
         {
-            Main.Logger.Error("Error in preview generation!", e);
-            Main.Logger.Log("Map Info: \n" + PrintMapTileInfo(request.MapTile));
+            MapPreviewAPI.Logger.Error("Error in preview generation!", e);
+            MapPreviewAPI.Logger.Log("Map Info: \n" + PrintMapTileInfo(request.MapTile));
             result.MapGenErrored = true;
         }
         finally
         {
-            Main.IsGeneratingPreview = false;
+            MapPreviewAPI.IsGeneratingPreview = false;
             Find.World.info.seedString = prevSeed;
 
             Patch_RimWorld_GenStep_Terrain.SkipRiverFlowCalc = false;

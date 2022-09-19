@@ -18,7 +18,7 @@ internal static class Patch_Verse_District
     [HarmonyPatch("Map", MethodType.Getter)]
     private static bool Map(ref Map __result)
     {
-        if (!Main.IsGeneratingPreview) return true;
+        if (!MapPreviewAPI.IsGeneratingPreview) return true;
         var map = MapPreviewGenerator.GeneratingMapOnCurrentThread;
         if (map == null) return true;
         __result = map;

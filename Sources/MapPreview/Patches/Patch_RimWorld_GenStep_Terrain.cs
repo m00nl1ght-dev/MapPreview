@@ -20,7 +20,7 @@ internal static class Patch_RimWorld_GenStep_Terrain
     [HarmonyPatch("GenerateRiverLookupTexture")]
     private static bool GenerateRiverLookupTexture()
     {
-        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         return !SkipRiverFlowCalc;
     }
 }

@@ -61,16 +61,16 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="BasicMapPreview.cs" />
+        <Compile Include="MapPreviewWidgetWithPreloader.cs" />
         <Compile Include="Compatibility\ModCompat_BetterMapSizes.cs" />
         <Compile Include="Compatibility\ModCompat_MapReroll.cs" />
         <Compile Include="MapPreviewWindow.cs" />
-        <Compile Include="ModInstance.cs" />
+        <Compile Include="MapPreviewMod.cs" />
         <Compile Include="Patches\Patch_RimWorld_Page_SelectStartingSite.cs" />
         <Compile Include="Patches\Patch_RimWorld_PlaySettings.cs" />
         <Compile Include="Patches\Patch_RimWorld_WorldInterface.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="Settings.cs" />
+        <Compile Include="MapPreviewSettings.cs" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\MapPreview\MapPreview.csproj">

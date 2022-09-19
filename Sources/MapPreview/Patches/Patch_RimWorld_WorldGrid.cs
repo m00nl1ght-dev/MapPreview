@@ -26,7 +26,7 @@ internal static class Patch_RimWorld_WorldGrid
     [HarmonyPrefix]
     private static bool IsNeighbor(int tile1, int tile2, ref bool __result, WorldGrid __instance)
     {
-        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         __instance.GetTileNeighbors(tile1, tmpNeighbors);
         __result = tmpNeighbors.Contains(tile2);
         return false;
@@ -37,7 +37,7 @@ internal static class Patch_RimWorld_WorldGrid
     [HarmonyPrefix]
     private static bool GetNeighborId(int tile1, int tile2, ref int __result, WorldGrid __instance)
     {
-        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         __instance.GetTileNeighbors(tile1, tmpNeighbors);
         __result = tmpNeighbors.IndexOf(tile2);
         return false;
@@ -48,7 +48,7 @@ internal static class Patch_RimWorld_WorldGrid
     [HarmonyPrefix]
     private static bool GetTileNeighbor(int tileID, int adjacentId, ref int __result, WorldGrid __instance)
     {
-        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         __instance.GetTileNeighbors(tileID, tmpNeighbors);
         __result = tmpNeighbors[adjacentId];
         return false;

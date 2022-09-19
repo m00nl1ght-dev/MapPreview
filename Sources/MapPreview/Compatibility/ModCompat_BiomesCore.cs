@@ -17,6 +17,6 @@ internal class ModCompat_BiomesCore : ModCompat
     [HarmonyPatch("BiomesCore.Patches.WildPlantSpawner_GetBaseDesiredPlantsCountAt", "UpdateCommonalityAt")]
     private static bool WildPlantSpawner_GetBaseDesiredPlantsCountAt_UpdateCommonalityAt()
     {
-        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
 }

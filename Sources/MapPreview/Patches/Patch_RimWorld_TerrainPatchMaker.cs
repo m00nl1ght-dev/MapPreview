@@ -24,7 +24,7 @@ internal static class Patch_RimWorld_TerrainPatchMaker
     [HarmonyPriority(750)]
     private static bool Init(Map map, ref ModuleBase ___noise, ref Map ___currentlyInitializedForMap, TerrainPatchMaker __instance)
     {
-        if (!Main.ShouldUseStableSeed(map)) return true;
+        if (!MapPreviewAPI.ShouldUseStableSeed(map)) return true;
         
         ___noise = new Perlin(
             __instance.perlinFrequency,

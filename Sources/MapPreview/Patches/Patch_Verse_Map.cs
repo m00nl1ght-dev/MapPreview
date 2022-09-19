@@ -40,7 +40,7 @@ internal static class Patch_Verse_Map
     [HarmonyPatch("FillComponents")]
     private static bool FillComponents(Map __instance)
     {
-        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         
         __instance.components.RemoveAll(component => component == null);
         foreach (var type in typeof (MapComponent).AllSubclassesNonAbstract())

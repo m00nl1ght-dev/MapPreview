@@ -15,12 +15,12 @@ public class MapPreviewWindow : Window
     
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
     
-    public override Vector2 InitialSize => new(ModInstance.Settings.PreviewWindowSize, ModInstance.Settings.PreviewWindowSize);
+    public override Vector2 InitialSize => new(MapPreviewMod.Settings.PreviewWindowSize, MapPreviewMod.Settings.PreviewWindowSize);
     protected override float Margin => 0f;
 
     private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(MapPreviewWindow));
 
-    private readonly BasicMapPreview _preview = new(MaxMapSize);
+    private readonly MapPreviewWidgetWithPreloader _previewWidget = new(MaxMapSize);
 
     public MapPreviewWindow()
     {
@@ -40,7 +40,7 @@ public class MapPreviewWindow : Window
     {
         MapPreviewGenerator.Instance.ClearQueue();
 
-        if (!Main.IsReadyForPreviewGen)
+        if (!MapPreviewAPI.IsReadyForPreviewGen)
         {
             Close();
             return;
@@ -51,7 +51,7 @@ public class MapPreviewWindow : Window
         
         mapSize = new IntVec2(Mathf.Clamp(mapSize.x, MinMapSize.x, MaxMapSize.x), Mathf.Clamp(mapSize.z, MinMapSize.z, MaxMapSize.z));
 
-        float desiredSize = ModInstance.Settings.PreviewWindowSize;
+        float desiredSize = MapPreviewMod.Settings.PreviewWindowSize;
         float largeSide = Math.Max(mapSize.x, mapSize.z);
         float scale = desiredSize / largeSide;
 
@@ -60,20 +60,20 @@ public class MapPreviewWindow : Window
 
         var request = new MapPreviewRequest(seed, tileId, mapSize)
         {
-            TextureSize = new IntVec2(_preview.Texture.width, _preview.Texture.height),
-            UseTrueTerrainColors = ModInstance.Settings.EnableTrueTerrainColors,
-            SkipRiverFlowCalc = ModInstance.Settings.SkipRiverFlowCalc,
-            ExistingBuffer = _preview.Buffer
+            TextureSize = new IntVec2(_previewWidget.Texture.width, _previewWidget.Texture.height),
+            UseTrueTerrainColors = MapPreviewMod.Settings.EnableTrueTerrainColors,
+            SkipRiverFlowCalc = MapPreviewMod.Settings.SkipRiverFlowCalc,
+            ExistingBuffer = _previewWidget.Buffer
         };
 
         var promise = MapPreviewGenerator.Instance.QueuePreviewRequest(request);
-        _preview.Await(promise, tileId);
+        _previewWidget.Await(promise, tileId);
         
         var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
-        if (pos != ModInstance.Settings.PreviewWindowPosition)
+        if (pos != MapPreviewMod.Settings.PreviewWindowPosition)
         {
-            ModInstance.Settings.PreviewWindowPosition = pos;
-            ModInstance.Settings.Write();
+            MapPreviewMod.Settings.PreviewWindowPosition = pos;
+            MapPreviewMod.Settings.Write();
         }
     }
 
@@ -115,10 +115,10 @@ public class MapPreviewWindow : Window
         
         MapPreviewGenerator.Init();
         
-        Main.SubscribeGenPatches(PatchGroupSubscriber);
+        MapPreviewAPI.SubscribeGenPatches(PatchGroupSubscriber);
         
-        float lastX = ModInstance.Settings.PreviewWindowPosition.x;
-        float lastY = ModInstance.Settings.PreviewWindowPosition.y;
+        float lastX = MapPreviewMod.Settings.PreviewWindowPosition.x;
+        float lastY = MapPreviewMod.Settings.PreviewWindowPosition.y;
         
         windowRect.x = lastX >= 0 ? lastX : UI.screenWidth - InitialSize.x - 50f;
         windowRect.y = lastY >= 0 ? lastY : 100f;
@@ -131,22 +131,22 @@ public class MapPreviewWindow : Window
     {
         base.PreClose();
         
-        _preview.Dispose();
+        _previewWidget.Dispose();
         
         MapPreviewGenerator.Instance.ClearQueue();
         
-        Main.UnsubscribeGenPatches(PatchGroupSubscriber);
+        MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
         
         var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
-        if (pos != ModInstance.Settings.PreviewWindowPosition)
+        if (pos != MapPreviewMod.Settings.PreviewWindowPosition)
         {
-            ModInstance.Settings.PreviewWindowPosition = pos;
-            ModInstance.Settings.Write();
+            MapPreviewMod.Settings.PreviewWindowPosition = pos;
+            MapPreviewMod.Settings.Write();
         }
     }
     
     public override void DoWindowContents(Rect inRect)
     {
-        _preview.Draw(inRect.ContractedBy(5f));
+        _previewWidget.Draw(inRect.ContractedBy(5f));
     }
 }

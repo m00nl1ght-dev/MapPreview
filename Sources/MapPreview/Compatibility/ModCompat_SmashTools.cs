@@ -21,6 +21,6 @@ internal class ModCompat_SmashTools : ModCompat
     [HarmonyPatch("SmashTools.ComponentCache", "MapGenerated")]
     private static bool ComponentCache_MapGenerated()
     {
-        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
 }

@@ -27,7 +27,7 @@ internal class ModCompat_MapReroll : ModCompat
     
     private static void UpdateTerrainColorsIfNeeded(Dictionary<string, Color> terrainColors)
     {
-        var enabled = ModInstance.Settings.EnableTrueTerrainColors;
+        var enabled = MapPreviewMod.Settings.EnableTrueTerrainColors;
         if (enabled != _trueTerrainColorsApplied)
         {
             terrainColors.Clear();

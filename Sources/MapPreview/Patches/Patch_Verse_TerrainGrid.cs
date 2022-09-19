@@ -18,6 +18,6 @@ internal static class Patch_Verse_TerrainGrid
     [HarmonyPatch("DoTerrainChangedEffects")]
     private static bool DoTerrainChangedEffects()
     {
-        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
 }

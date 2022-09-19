@@ -17,6 +17,6 @@ internal class ModCompat_AnimalTraps : ModCompat
     [HarmonyPatch("AnimalTraps.HarmonyPatches.TerrainChangePatch", "Postfix")]
     private static bool TerrainChangePatch_Postfix()
     {
-        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
 }

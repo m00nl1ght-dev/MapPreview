@@ -19,7 +19,7 @@ internal class Patch_RimWorld_Page_SelectStartingSite
     [HarmonyPatch("CanDoNext")]
     private static bool CanDoNext(ref bool __result)
     {
-        if (Main.IsGeneratingPreview)
+        if (MapPreviewAPI.IsGeneratingPreview)
         {
             __result = false;
             Messages.Message("MapPreview.World.WaitForPreview".Translate(), MessageTypeDefOf.RejectInput, false);

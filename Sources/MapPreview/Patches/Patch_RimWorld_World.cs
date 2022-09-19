@@ -31,7 +31,7 @@ internal static class Patch_RimWorld_World
     [HarmonyPrefix]
     private static bool CoastDirectionAt(World __instance, int tileID, ref Rot4 __result)
     {
-        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         
         var grid = __instance.grid;
         if (!grid[tileID].biome.canBuildBase)
@@ -72,7 +72,7 @@ internal static class Patch_RimWorld_World
     [HarmonyPrefix]
     private static bool NaturalRockTypesIn(int tile, ref IEnumerable<ThingDef> __result, ref List<ThingDef> ___allNaturalRockDefs)
     {
-        if (!Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
         
         Rand.PushState(tile);
         

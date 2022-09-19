@@ -18,6 +18,6 @@ internal static class Patch_RimWorld_RiverMaker
     [HarmonyPatch("ValidatePassage")]
     private static bool ValidatePassage()
     {
-        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
 }

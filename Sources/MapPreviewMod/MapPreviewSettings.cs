@@ -4,7 +4,7 @@ using Verse;
 
 namespace MapPreview;
 
-public class Settings : ModSettings
+public class MapPreviewSettings : ModSettings
 {
     private const float DefaultPreviewWindowSize = 250f;
 

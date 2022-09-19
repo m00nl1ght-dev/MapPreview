@@ -8,12 +8,10 @@ using Verse;
 namespace MapPreview;
 
 [StaticConstructorOnStartup]
-public static class Main
+public static class MapPreviewAPI
 {
-    public static bool IsReady => MainPatchGroup is { Active: true } && GenPatchGroup != null;
-    public static bool IsReadyForPreviewGen => IsReady && GenPatchGroup.Active;
-    public static bool IsGeneratingPreview { get; internal set; }
-
+    // ### Init ###
+    
     internal static readonly LunarAPI LunarAPI = LunarAPI.Create("Map Preview", Init, Cleanup);
     
     internal static LogContext Logger => LunarAPI.LogContext;
@@ -25,14 +23,14 @@ public static class Main
     private static void Init()
     {
         MainPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Main");
-        MainPatchGroup.AddPatches(typeof(Main).Assembly);
+        MainPatchGroup.AddPatches(typeof(MapPreviewAPI).Assembly);
         MainPatchGroup.Subscribe();
 
         CompatPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Compat");
         CompatPatchGroup.Subscribe();
 
         GenPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Gen");
-        GenPatchGroup.AddPatches(typeof(Main).Assembly);
+        GenPatchGroup.AddPatches(typeof(MapPreviewAPI).Assembly);
 
         ModCompat.ApplyAll(LunarAPI, CompatPatchGroup);
 
@@ -49,7 +47,13 @@ public static class Main
         GenPatchGroup?.UnsubscribeAll();
     }
     
-    internal static readonly List<Predicate<Map>> StableSeedConditions = new();
+    // ### Public API ###
+    
+    public static bool IsReady => MainPatchGroup is { Active: true } && GenPatchGroup != null;
+    public static bool IsReadyForPreviewGen => IsReady && GenPatchGroup.Active;
+    public static bool IsGeneratingPreview { get; internal set; }
+
+    private static readonly List<Predicate<Map>> StableSeedConditions = new();
     
     public static bool ShouldUseStableSeed(Map map) => StableSeedConditions.Any(c => c.Invoke(map));
 

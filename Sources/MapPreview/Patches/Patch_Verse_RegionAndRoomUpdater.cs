@@ -18,6 +18,6 @@ internal static class Patch_Verse_RegionAndRoomUpdater
     [HarmonyPatch("RegenerateNewRegionsFromDirtyCells")]
     private static bool RegenerateNewRegionsFromDirtyCells()
     {
-        return !Main.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
+        return !MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
 }
