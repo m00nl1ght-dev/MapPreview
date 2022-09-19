@@ -9,7 +9,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("MapPreview")]
-[assembly: AssemblyCopyright("Copyright © 2022 m00nl1ght <https://github.com/m00nl1ght-dev>")]
+[assembly: AssemblyCopyright("Copyright of MapPreview © 2022 m00nl1ght <https://github.com/m00nl1ght-dev>, " +
+                             "Copyright of MapReroll © 2017 UnlimitedHugs")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
