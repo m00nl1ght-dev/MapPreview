@@ -1,5 +1,4 @@
 using System;
-using LunarFramework.Patching;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
@@ -17,8 +16,6 @@ public class MapPreviewWindow : Window
     
     public override Vector2 InitialSize => new(MapPreviewMod.Settings.PreviewWindowSize, MapPreviewMod.Settings.PreviewWindowSize);
     protected override float Margin => 0f;
-
-    private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(MapPreviewWindow));
 
     private readonly MapPreviewWidgetWithPreloader _previewWidget = new(MaxMapSize);
 
@@ -115,8 +112,6 @@ public class MapPreviewWindow : Window
         
         MapPreviewGenerator.Init();
         
-        MapPreviewAPI.SubscribeGenPatches(PatchGroupSubscriber);
-        
         float lastX = MapPreviewMod.Settings.PreviewWindowPosition.x;
         float lastY = MapPreviewMod.Settings.PreviewWindowPosition.y;
         
@@ -134,8 +129,6 @@ public class MapPreviewWindow : Window
         _previewWidget.Dispose();
         
         MapPreviewGenerator.Instance.ClearQueue();
-        
-        MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
         
         var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
         if (pos != MapPreviewMod.Settings.PreviewWindowPosition)

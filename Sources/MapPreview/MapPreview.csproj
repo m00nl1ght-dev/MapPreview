@@ -27,7 +27,7 @@
         <PlatformTarget>AnyCPU</PlatformTarget>
         <DebugType>none</DebugType>
         <Optimize>false</Optimize>
-        <OutputPath>..\..\..\Geological Landforms\1.4\Lunar\Components\</OutputPath>
+        <OutputPath>..\..\1.4\Lunar\Components\</OutputPath>
         <DefineConstants>TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
@@ -104,5 +104,7 @@
     <Target Name="AfterBuild">
     </Target>
     -->
-
+    <PropertyGroup>
+        <PostBuildEvent>xcopy "$(TargetDir)$(TargetName).dll" "$(ProjectDir)..\..\..\Geological Landforms\1.4\Lunar\Components\" /F /Y</PostBuildEvent>
+    </PropertyGroup>
 </Project>

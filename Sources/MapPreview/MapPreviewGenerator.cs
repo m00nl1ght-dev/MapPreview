@@ -33,6 +33,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using HarmonyLib;
+using LunarFramework.Patching;
 using MapPreview.Patches;
 using MapPreview.Promises;
 using RimWorld;
@@ -62,6 +63,8 @@ public class MapPreviewGenerator : IDisposable
     private readonly Thread _workerThread;
     private EventWaitHandle _workHandle = new AutoResetEvent(false);
     private EventWaitHandle _disposeHandle = new AutoResetEvent(false);
+    
+    private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(MapPreviewGenerator));
 
     private static FieldInfo _fieldMapGenData;
 
@@ -115,6 +118,8 @@ public class MapPreviewGenerator : IDisposable
             throw new Exception("Map size exceeds max preview size: " + request.MapSize + " > " + request.TextureSize);
         }
         
+        MapPreviewAPI.SubscribeGenPatches(PatchGroupSubscriber);
+        
         _queuedRequests.Enqueue(request);
         _workHandle.Set();
         
@@ -154,6 +159,11 @@ public class MapPreviewGenerator : IDisposable
                         MapPreviewAPI.Logger.Error("Failed to generate map preview!", e);
                         MapPreviewAPI.Logger.Log("Map Info: \n" + PrintMapTileInfo(request.MapTile));
                         rejectException = e;
+                    }
+                    
+                    if (_queuedRequests.Count == 0 && !MapPreviewAPI.IsGeneratingPreview)
+                    {
+                        MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
                     }
 
                     var promise = request.Promise;

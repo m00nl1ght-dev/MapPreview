@@ -19,15 +19,18 @@ internal class Patch_RimWorld_WorldInterface
 
     static Patch_RimWorld_WorldInterface() => MapPreviewAPI.OnWorldChanged += Refresh;
     
+    private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(Patch_RimWorld_WorldInterface));
+    
     [HarmonyPostfix]
     [HarmonyPatch("WorldInterfaceUpdate")]
     private static void WorldInterfaceUpdate(WorldInterface __instance)
     {
         if (!WorldRendererUtility.WorldRenderedNow)
         {
-            if (_openedPreviewSinceEnteringMap && !MapPreviewAPI.IsGeneratingPreview)
+            if (_openedPreviewSinceEnteringMap)
             {
                 MapPreviewWindow.Instance?.Close();
+                MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
                 _openedPreviewSinceEnteringMap = false;
                 _tileId = -1;
             }
@@ -44,10 +47,16 @@ internal class Patch_RimWorld_WorldInterface
                 if (!tile.biome.impassable && (tile.hilliness != Hilliness.Impassable || TileFinder.IsValidTileForNewSettlement(_tileId)))
                 {
                     if (!MapPreviewMod.Settings.EnableMapPreview || !MapPreviewAPI.IsReady) return;
+                    
+                    if (!_openedPreviewSinceEnteringMap)
+                    {
+                        MapPreviewAPI.SubscribeGenPatches(PatchGroupSubscriber);
+                        _openedPreviewSinceEnteringMap = true;
+                    }
+                    
                     var window = MapPreviewWindow.Instance;
                     if (window == null) Find.WindowStack.Add(window = new MapPreviewWindow());
                     window.OnWorldTileSelected(Find.World, _tileId);
-                    _openedPreviewSinceEnteringMap = true;
                     return;
                 }
             }
