@@ -66,6 +66,7 @@
         <Compile Include="Compatibility\ModCompat_AnimalTraps.cs" />
         <Compile Include="Compatibility\ModCompat_BiomesCore.cs" />
         <Compile Include="Compatibility\ModCompat_FishTraps.cs" />
+        <Compile Include="Compatibility\ModCompat_SaveOurShip.cs" />
         <Compile Include="Compatibility\ModCompat_StartupImpact.cs" />
         <Compile Include="MapPreviewAPI.cs" />
         <Compile Include="MapPreviewGenerator.cs" />
