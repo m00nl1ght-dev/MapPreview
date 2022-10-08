@@ -1,4 +1,5 @@
 using System.Globalization;
+using LunarFramework.Utility;
 using UnityEngine;
 using Verse;
 
@@ -19,6 +20,12 @@ public class MapPreviewSettings : ModSettings
 
     public void DoSettingsWindowContents(Rect inRect)
     {
+        if (!MapPreviewMod.LunarAPI.IsInitialized())
+        {
+            DoLoadFailMessage(inRect);
+            return;
+        }
+        
         Rect rect = new(0.0f, 0.0f, inRect.width, 300f);
         rect.xMax *= 0.95f;
         
@@ -48,6 +55,14 @@ public class MapPreviewSettings : ModSettings
         }
 
         Widgets.EndScrollView();
+    }
+
+    private void DoLoadFailMessage(Rect rect)
+    {
+        Listing_Standard listingStandard = new();
+        listingStandard.Begin(rect);
+        listingStandard.Label("An error occured whie loading this mod. Check the log file for more information.");
+        listingStandard.End();
     }
 
     public override void ExposeData()

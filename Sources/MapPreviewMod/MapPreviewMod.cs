@@ -1,4 +1,5 @@
 using LunarFramework;
+using LunarFramework.Logging;
 using LunarFramework.Patching;
 using UnityEngine;
 using Verse;
@@ -8,6 +9,8 @@ namespace MapPreview;
 public class MapPreviewMod : Mod
 {
     internal static readonly LunarAPI LunarAPI = LunarAPI.Create("Map Preview Mod", Init, Cleanup);
+    
+    internal static LogContext Logger => LunarAPI.LogContext;
     
     internal static PatchGroup MainPatchGroup;
     internal static PatchGroup CompatPatchGroup;

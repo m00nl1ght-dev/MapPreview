@@ -17,10 +17,17 @@
     </Component>
     <Component>
       <AssemblyName>MapPreviewMod</AssemblyName>
+      <DependsOn>
+        <string>MapPreview</string>
+      </DependsOn>
     </Component>
   </Components>
   <Compatibility>
     <Lunar>
+      <Entry>
+        <PackageId>m00nl1ght.GeologicalLandforms</PackageId>
+        <MinVersion>1.6.0</MinVersion>
+      </Entry>
     </Lunar>
   </Compatibility>
 </Manifest>
