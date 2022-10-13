@@ -19,6 +19,9 @@ public class MapPreviewWindow : Window
 
     private readonly MapPreviewWidgetWithPreloader _previewWidget = new(MaxMapSize);
 
+    private bool _currentTileCanBeRerolled;
+    private bool _currentTileIsRerolled;
+
     public MapPreviewWindow()
     {
         layer = WindowLayer.SubSuper;
@@ -72,6 +75,10 @@ public class MapPreviewWindow : Window
             MapPreviewMod.Settings.PreviewWindowPosition = pos;
             MapPreviewMod.Settings.Write();
         }
+
+        var rerollData = world.GetComponent<SeedRerollData>();
+        _currentTileIsRerolled = rerollData.TryGet(tileId, out _);
+        _currentTileCanBeRerolled = !Find.WorldObjects.AnyMapParentAt(tileId);
     }
 
     private IntVec2 DetermineMapSize(World world, int tileId)
@@ -141,5 +148,34 @@ public class MapPreviewWindow : Window
     public override void DoWindowContents(Rect inRect)
     {
         _previewWidget.Draw(inRect.ContractedBy(5f));
+
+        var rerollAllowed = MapPreviewMod.Settings.EnableSeedRerollFeature || _currentTileIsRerolled;
+        if (rerollAllowed && !MapPreviewAPI.IsGeneratingPreview && _currentTileCanBeRerolled)
+        {
+            var btnRow = inRect.BottomPartPixels(70);
+
+            var rerollPos = btnRow.LeftPartPixels(70).ContractedBy(15);
+            TooltipHandler.TipRegion(rerollPos, "MapPreview.World.RerollMapSeed".Translate());
+            if (GUI.Button(rerollPos, MapPreviewWidgetWithPreloader.UIPreviewLoading))
+            {
+                var tile = Find.WorldSelector.selectedTile;
+                var rerollData = Find.World.GetComponent<SeedRerollData>();
+                rerollData.TryGet(tile, out var seed);
+                unchecked { seed += 1; }
+                rerollData.Commit(tile, seed);
+            }
+
+            if (_currentTileIsRerolled)
+            {
+                var resetPos = btnRow.RightPartPixels(70).ContractedBy(15);
+                TooltipHandler.TipRegion(resetPos, "MapPreview.World.ResetMapSeed".Translate());
+                if (GUI.Button(resetPos, MapPreviewWidgetWithPreloader.UIPreviewReset))
+                {
+                    var tile = Find.WorldSelector.selectedTile;
+                    var rerollData = Find.World.GetComponent<SeedRerollData>();
+                    rerollData.Reset(tile);
+                }
+            }
+        }
     }
 }

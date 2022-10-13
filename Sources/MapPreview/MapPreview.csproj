@@ -90,6 +90,7 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="MapPreviewWidget.cs" />
         <Compile Include="MapPreviewResult.cs" />
+        <Compile Include="SeedRerollData.cs" />
         <Compile Include="TrueTerrainColors.cs" />
         <Compile Include="Utility\Interpolation\InterpolationCurves.cs" />
         <Compile Include="Utility\Interpolation\ValueInterpolator.cs" />

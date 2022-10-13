@@ -14,6 +14,7 @@ public class MapPreviewSettings : ModSettings
     public float PreviewWindowSize = DefaultPreviewWindowSize;
     public bool EnableTrueTerrainColors = true;
     public bool EnableMapPreview = true;
+    public bool EnableSeedRerollFeature;
     public bool SkipRiverFlowCalc = true;
     
     public Vector2 PreviewWindowPosition = new(-1, -1);
@@ -35,6 +36,10 @@ public class MapPreviewSettings : ModSettings
         Widgets.BeginScrollView(inRect, ref _scrollPos, rect);
         
         listingStandard.CheckboxLabeled("MapPreview.Settings.EnableMapPreview".Translate(), ref EnableMapPreview, "MapPreview.Settings.EnableMapPreview".Translate());
+        
+        listingStandard.Gap();
+        
+        listingStandard.CheckboxLabeled("MapPreview.Settings.EnableSeedRerollFeature".Translate(), ref EnableSeedRerollFeature, "MapPreview.Settings.EnableSeedRerollFeature".Translate());
         
         listingStandard.Gap();
 
@@ -70,6 +75,7 @@ public class MapPreviewSettings : ModSettings
         Scribe_Values.Look(ref PreviewWindowSize, "PreviewWindowSize", DefaultPreviewWindowSize);
         Scribe_Values.Look(ref EnableTrueTerrainColors, "EnableTrueTerrainColors", true);
         Scribe_Values.Look(ref EnableMapPreview, "EnableMapPreview", true);
+        Scribe_Values.Look(ref EnableSeedRerollFeature, "EnableSeedRerollFeature");
         Scribe_Values.Look(ref SkipRiverFlowCalc, "SkipRiverFlowCalc", true);
         Scribe_Values.Look(ref PreviewWindowPosition, "PreviewWindowPosition", new Vector2(-1, -1));
         base.ExposeData();
@@ -80,6 +86,7 @@ public class MapPreviewSettings : ModSettings
         PreviewWindowSize = DefaultPreviewWindowSize;
         EnableTrueTerrainColors = true;
         EnableMapPreview = true;
+        EnableSeedRerollFeature = false;
         SkipRiverFlowCalc = true;
         PreviewWindowPosition = new Vector2(-1, -1);
     }

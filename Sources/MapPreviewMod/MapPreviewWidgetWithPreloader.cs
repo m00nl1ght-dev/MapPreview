@@ -8,7 +8,8 @@ namespace MapPreview;
 [StaticConstructorOnStartup]
 public class MapPreviewWidgetWithPreloader : MapPreviewWidget
 {
-    private static readonly Texture2D UIPreviewLoading = ContentFinder<Texture2D>.Get("UIPreviewLoadingMP");
+    public static readonly Texture2D UIPreviewLoading = ContentFinder<Texture2D>.Get("UIPreviewLoadingMP");
+    public static readonly Texture2D UIPreviewReset = ContentFinder<Texture2D>.Get("UIPreviewResetMP");
 
     public MapPreviewWidgetWithPreloader(IntVec2 maxMapSize) : base(maxMapSize) {}
 
