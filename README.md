@@ -13,6 +13,9 @@ This mod was developed as a QoL addition for Geological Landforms and works grea
 
 # Additional Features
 
+Reroll map seeds:
+- You can reroll the seed for individual world tiles. This feature is disabled by default and can be enabled in the mod settings. The main difference to the Map Reroll mod is that the rerolling happens on the world screen, before the actual map is generated, which is better for mod compatibility.
+
 True terrain colors:
 - Instead of a fixed color palette that only supports vanilla terrain, this mod dynamically extracts the actual texture colors from all terrains, including those added by other mods. So basically you will see the terrain how it will actually look when you settle on that tile. If for some reason you prefer the original fixed color palette from Map Reroll, I added an option to disable this feature in the mod settings.
 
