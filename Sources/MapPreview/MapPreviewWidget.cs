@@ -49,6 +49,7 @@ public abstract class MapPreviewWidget : IDisposable
     
     public Color[] Buffer { get; private set; }
     public Texture2D Texture { get; private set; }
+    public Map PreviewMap { get; private set; }
 
     protected MapPreviewWidget(IntVec2 maxMapSize)
     {
@@ -69,6 +70,7 @@ public abstract class MapPreviewWidget : IDisposable
     {
         Object.Destroy(Texture);
         AwaitingMapTile = -1;
+        PreviewMap = null;
         Texture = null;
     }
 
@@ -87,7 +89,26 @@ public abstract class MapPreviewWidget : IDisposable
         if (Texture != null && SpawnInterpolator.value > 0)
         {
             DrawGenerated(inRect);
+
+            if (PreviewMap != null && Event.current.type == EventType.Repaint)
+            {
+                var pos = Event.current.mousePosition - inRect.position;
+                TooltipHandler.TipRegion(inRect, new TipSignal(() =>
+                {
+                    double rx = PreviewMap.Size.x / inRect.width;
+                    double rz = PreviewMap.Size.z / inRect.height;
+                    double x = pos.x * rx, z = PreviewMap.Size.z - pos.y * rz;
+                    int ix = Math.Min(PreviewMap.Size.x - 1, Math.Max(0, (int) Math.Round(x, 0)));
+                    int iz = Math.Min(PreviewMap.Size.z - 1, Math.Max(0, (int) Math.Round(z, 0)));
+                    return MakeTooltip(PreviewMap, ix, iz);
+                }, GetHashCode()));
+            }
         }
+    }
+
+    protected virtual string MakeTooltip(Map map, int x, int z)
+    {
+        return map.terrainGrid.TerrainAt(new IntVec3(x, 0, z)).label.CapitalizeFirst() + " ( " + x + " | " + z + " )";
     }
 
     protected virtual void DrawGenerating(Rect inRect) {}
@@ -101,7 +122,8 @@ public abstract class MapPreviewWidget : IDisposable
     private void OnPromiseResolved(MapPreviewResult result)
     {
         if (Texture == null || result == null || AwaitingMapTile != result.MapTile) return;
-        
+
+        PreviewMap = result.Map;
         TexCoords = result.TexCoords;
         result.CopyToTexture(Texture);
         Texture.Apply();
@@ -116,6 +138,8 @@ public abstract class MapPreviewWidget : IDisposable
     private void OnPromiseRejected(Exception ex)
     {
         if (Texture == null) return;
+
+        PreviewMap = null;
         
         SpawnInterpolator.value = 0f;
         SpawnInterpolator.finished = true;
