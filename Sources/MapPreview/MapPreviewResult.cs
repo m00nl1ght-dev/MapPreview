@@ -38,10 +38,11 @@ public class MapPreviewResult
     public readonly IntVec2 TextureSize;
     public readonly IntVec2 MapSize;
     public readonly int MapTile;
-        
+
     public Rect TexCoords => new(0, 0, MapSize.x / (float) TextureSize.x, MapSize.z / (float) TextureSize.z);
 
     public bool MapGenErrored;
+    public Map Map;
 
     public MapPreviewResult(int mapTile, IntVec2 mapSize, IntVec2 textureSize, Color[] existingBuffer = null)
     {

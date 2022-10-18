@@ -110,7 +110,7 @@ public class MapPreviewGenerator : IDisposable
     {
         if (_disposeHandle == null)
         {
-            throw new Exception("ExactMapPreviewGenerator has already been disposed.");
+            throw new Exception("MapPreviewGenerator has already been disposed.");
         }
         
         if (request.MapSize.x > request.TextureSize.x || request.MapSize.z > request.TextureSize.z)
@@ -156,17 +156,12 @@ public class MapPreviewGenerator : IDisposable
                     }
                     catch (Exception e)
                     {
-                        MapPreviewAPI.Logger.Error("Failed to generate map preview!", e);
-                        MapPreviewAPI.Logger.Log("Map Info: \n" + PrintMapTileInfo(request.MapTile));
                         rejectException = e;
-                    }
-                    
-                    if (_queuedRequests.Count == 0 && !MapPreviewAPI.IsGeneratingPreview)
-                    {
-                        MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
                     }
 
                     var promise = request.Promise;
+                    var mapTile = request.MapTile;
+                    
                     MapPreviewAPI.LunarAPI.LifecycleHooks.DoOnce(() =>
                     {
                         if (rejectException == null)
@@ -175,7 +170,14 @@ public class MapPreviewGenerator : IDisposable
                         }
                         else
                         {
+                            MapPreviewAPI.Logger.Error("Failed to generate map preview!", rejectException);
+                            MapPreviewAPI.Logger.Log("Map Info: \n" + PrintMapTileInfo(mapTile));
                             promise.Reject(rejectException);
+                        }
+                        
+                        if (_queuedRequests.Count == 0 && !MapPreviewAPI.IsGeneratingPreview)
+                        {
+                            MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
                         }
                     });
                 }
@@ -220,35 +222,32 @@ public class MapPreviewGenerator : IDisposable
     {
         var tickManager = Find.TickManager;
         var speedWas = tickManager?.CurTimeSpeed ?? TimeSpeed.Paused;
-        var prevSeed = Find.World.info.seedString;
 
         try
         {
             MapPreviewAPI.IsGeneratingPreview = true;
-            Find.World.info.seedString = request.Seed;
 
             Patch_RimWorld_GenStep_Terrain.SkipRiverFlowCalc = request.SkipRiverFlowCalc;
             
             tickManager?.Pause();
 
-            var mapParent = new MapParent { Tile = request.MapTile, def = WorldObjectDefOf.Settlement};
+            var mapParent = new MapParent { Tile = request.MapTile, def = WorldObjectDefOf.Settlement };
             mapParent.SetFaction(Faction.OfPlayer);
 
             var mapSizeVec = new IntVec3(request.MapSize.x, 1, request.MapSize.z);
-            GenerateMap(mapSizeVec, mapParent, MapGeneratorDefOf.Base_Player, result, request.UseTrueTerrainColors);
+            GenerateMap(request.Seed, mapSizeVec, mapParent, MapGeneratorDefOf.Base_Player, result, request.UseTrueTerrainColors);
 
             AddBevelToSolidStone(result);
         }
         catch (Exception e)
         {
-            MapPreviewAPI.Logger.Error("Error in preview generation!", e);
+            MapPreviewAPI.Logger.Error("Error in preview generator!", e);
             MapPreviewAPI.Logger.Log("Map Info: \n" + PrintMapTileInfo(request.MapTile));
             result.MapGenErrored = true;
         }
         finally
         {
             MapPreviewAPI.IsGeneratingPreview = false;
-            Find.World.info.seedString = prevSeed;
 
             Patch_RimWorld_GenStep_Terrain.SkipRiverFlowCalc = false;
             
@@ -260,10 +259,11 @@ public class MapPreviewGenerator : IDisposable
     }
 
     private static void GenerateMap(
+        int seed,
         IntVec3 mapSize,
         MapParent parent,
         MapGeneratorDef mapGenerator,
-        MapPreviewResult texture,
+        MapPreviewResult result,
         bool useTrueTerrainColors)
     {
         var mapGeneratorData = (Dictionary<string, object>) _fieldMapGenData.GetValue(null);
@@ -275,7 +275,6 @@ public class MapPreviewGenerator : IDisposable
         var map = new Map { generationTick = GenTicks.TicksGame };
         GeneratingPreviewMap.Value = map;
         
-        int seed = Gen.HashCombineInt(Find.World.info.Seed, parent.Tile);
         Rand.PushState(seed);
 
         try
@@ -290,7 +289,9 @@ public class MapPreviewGenerator : IDisposable
             map.info.parent = parent;
             map.ConstructComponents();
 
-            var previewGenStep = new PreviewTextureGenStep(texture, useTrueTerrainColors);
+            result.Map = map;
+
+            var previewGenStep = new PreviewTextureGenStep(result, useTrueTerrainColors);
             var previewGenStepDef = new GenStepDef { genStep = previewGenStep, order = 9999 };
             var genStepWithParamses = mapGenerator.genSteps
                 .Where(d => IncludedGenStepDefs.Contains(d.defName))

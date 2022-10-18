@@ -46,7 +46,7 @@ public class MapPreviewWindow : Window
             return;
         }
         
-        string seed = world.info.seedString;
+        int seed = SeedRerollData.GetMapSeed(world, tileId);
         var mapSize = DetermineMapSize(world, tileId);
         
         mapSize = new IntVec2(Mathf.Clamp(mapSize.x, MinMapSize.x, MaxMapSize.x), Mathf.Clamp(mapSize.z, MinMapSize.z, MaxMapSize.z));

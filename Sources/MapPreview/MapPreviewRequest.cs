@@ -36,7 +36,7 @@ public class MapPreviewRequest
 {
     public Promise<MapPreviewResult> Promise { get; }
 
-    public string Seed { get; }
+    public int Seed { get; }
     public int MapTile { get; }
     public IntVec2 MapSize { get; }
 
@@ -46,7 +46,10 @@ public class MapPreviewRequest
     public bool UseTrueTerrainColors { get; set; }
     public bool SkipRiverFlowCalc { get; set; } = true;
 
-    public MapPreviewRequest(string seed, int mapTile, IntVec2 mapSize)
+    public MapPreviewRequest(string worldSeed, int mapTile, IntVec2 mapSize) : 
+        this(Gen.HashCombineInt(GenText.StableStringHash(worldSeed), mapTile), mapTile, mapSize) {}
+
+    public MapPreviewRequest(int seed, int mapTile, IntVec2 mapSize)
     {
         Promise = new Promise<MapPreviewResult>();
         Seed = seed;

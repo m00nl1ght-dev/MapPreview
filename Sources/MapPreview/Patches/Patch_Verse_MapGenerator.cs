@@ -25,6 +25,7 @@ internal static class Patch_Verse_MapGenerator
     [HarmonyPatch("GenerateContentsIntoMap")]
     private static void GenerateContentsIntoMap(Map map, ref int seed)
     {
+        if (MapPreviewAPI.IsGeneratingPreview) return;
         if (SeedRerollData.IsMapSeedRerolled(Find.World, map.Tile, out var savedSeed))
         {
             seed = savedSeed;

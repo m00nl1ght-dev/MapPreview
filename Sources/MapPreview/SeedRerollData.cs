@@ -23,6 +23,13 @@ public class SeedRerollData : WorldComponent
         seed = GetOriginalMapSeed(world, tile);
         return false;
     }
+    
+    public static int GetMapSeed(World world, int tile)
+    {
+        var seedRerollData = world.GetComponent<SeedRerollData>();
+        if (seedRerollData != null && seedRerollData.TryGet(tile, out var savedSeed)) return savedSeed;
+        return GetOriginalMapSeed(world, tile);
+    }
 
     public static int GetOriginalMapSeed(World world, int tile)
     {
