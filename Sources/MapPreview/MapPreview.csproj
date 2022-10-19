@@ -73,6 +73,7 @@
         <Compile Include="Compatibility\ModCompat_PerformanceOptimizer.cs" />
         <Compile Include="Compatibility\ModCompat_RimThreaded.cs" />
         <Compile Include="Compatibility\ModCompat_SmashTools.cs" />
+        <Compile Include="MapPreviewOverlay.cs" />
         <Compile Include="MapPreviewRequest.cs" />
         <Compile Include="Patches\Patch_RimWorld_GenStep_Terrain.cs" />
         <Compile Include="Patches\Patch_RimWorld_RiverMaker.cs" />

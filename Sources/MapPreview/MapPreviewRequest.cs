@@ -47,7 +47,7 @@ public class MapPreviewRequest
     public bool SkipRiverFlowCalc { get; set; } = true;
 
     public MapPreviewRequest(string worldSeed, int mapTile, IntVec2 mapSize) : 
-        this(Gen.HashCombineInt(GenText.StableStringHash(worldSeed), mapTile), mapTile, mapSize) {}
+        this(SeedFromWorldSeed(worldSeed, mapTile), mapTile, mapSize) {}
 
     public MapPreviewRequest(int seed, int mapTile, IntVec2 mapSize)
     {
@@ -56,5 +56,17 @@ public class MapPreviewRequest
         MapTile = mapTile;
         MapSize = mapSize;
         TextureSize = MapSize;
+    }
+    
+    private static int SeedFromWorldSeed(string worldSeed, int mapTile)
+    {
+        var world = Find.World;
+        
+        if (world != null && world.info.seedString == worldSeed)
+        {
+            if (SeedRerollData.IsMapSeedRerolled(world, mapTile, out var seed)) return seed;
+        }
+
+        return Gen.HashCombineInt(GenText.StableStringHash(worldSeed), mapTile);
     }
 }

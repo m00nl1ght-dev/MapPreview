@@ -27,6 +27,7 @@ SOFTWARE.
  */
 
 using System;
+using System.Collections.Generic;
 using MapPreview.Interpolation;
 using MapPreview.Promises;
 using UnityEngine;
@@ -51,10 +52,18 @@ public abstract class MapPreviewWidget : IDisposable
     public Texture2D Texture { get; private set; }
     public Map PreviewMap { get; private set; }
 
+    protected readonly List<MapPreviewOverlay> Overlays = new();
+
     protected MapPreviewWidget(IntVec2 maxMapSize)
     {
         SpawnInterpolator = new ValueInterpolator();
         Texture = new Texture2D(maxMapSize.x, maxMapSize.z, TextureFormat.RGB24, false);
+    }
+
+    public void AddOverlay(MapPreviewOverlay overlay)
+    {
+        if (overlay.PreviewWidget != this) throw new Exception();
+        Overlays.Add(overlay);
     }
 
     public void Await(IPromise<MapPreviewResult> promise, int mapTile = -1)
@@ -74,41 +83,59 @@ public abstract class MapPreviewWidget : IDisposable
         Texture = null;
     }
 
-    public void Draw(Rect inRect)
+    public void Draw(Rect rect)
     {
         if (Event.current.type == EventType.Repaint)
         {
             SpawnInterpolator.Update();
             if (SpawnInterpolator.value < 1)
             {
-                DrawGenerating(inRect);
+                DrawGenerating(rect);
             }
         }
 
-        DrawOutline(inRect);
+        DrawOutline(rect);
+        
         if (Texture != null && SpawnInterpolator.value > 0)
         {
-            DrawGenerated(inRect);
+            DrawGenerated(rect);
+            
+            foreach (var overlay in Overlays)
+            {
+                overlay.Draw(rect);
+            }
 
             if (PreviewMap != null && Event.current.type == EventType.Repaint)
             {
-                var pos = Event.current.mousePosition - inRect.position;
-                TooltipHandler.TipRegion(inRect, new TipSignal(() =>
-                {
-                    double rx = PreviewMap.Size.x / inRect.width;
-                    double rz = PreviewMap.Size.z / inRect.height;
-                    double x = pos.x * rx, z = PreviewMap.Size.z - pos.y * rz;
-                    int ix = Math.Min(PreviewMap.Size.x - 1, Math.Max(0, (int) Math.Round(x, 0)));
-                    int iz = Math.Min(PreviewMap.Size.z - 1, Math.Max(0, (int) Math.Round(z, 0)));
-                    return MakeTooltip(PreviewMap, ix, iz);
-                }, GetHashCode()));
+                var pos = Event.current.mousePosition - rect.position;
+                TooltipHandler.TipRegion(rect, new TipSignal(() => MakeTooltip(PreviewMap, MapPosFromScreenPos(rect, pos)), GetHashCode()));
             }
         }
     }
 
-    protected virtual string MakeTooltip(Map map, int x, int z)
+    public IntVec3 MapPosFromScreenPos(Rect mapRect, Vector2 screenPos)
     {
-        return map.terrainGrid.TerrainAt(new IntVec3(x, 0, z)).label.CapitalizeFirst() + " ( " + x + " | " + z + " )";
+        double rx = PreviewMap.Size.x / mapRect.width;
+        double rz = PreviewMap.Size.z / mapRect.height;
+        double x = screenPos.x * rx, z = PreviewMap.Size.z - screenPos.y * rz;
+        int ix = Math.Min(PreviewMap.Size.x - 1, Math.Max(0, (int) Math.Round(x, 0)));
+        int iz = Math.Min(PreviewMap.Size.z - 1, Math.Max(0, (int) Math.Round(z, 0)));
+        return new IntVec3(ix, 0, iz);
+    }
+    
+    public Vector2 PosInRectFromMapPos(Rect mapRect, IntVec3 mapPos)
+    {
+        float rx = PreviewMap.Size.x / mapRect.width;
+        float rz = PreviewMap.Size.z / mapRect.height;
+        float x = mapPos.x / rx, z = PreviewMap.Size.z - mapPos.y / rz;
+        float fx = Math.Min(mapRect.width, Math.Max(0, x));
+        float fz = Math.Min(mapRect.height, Math.Max(0, z));
+        return new Vector2(fx, fz);
+    }
+
+    protected virtual string MakeTooltip(Map map, IntVec3 pos)
+    {
+        return map.terrainGrid.TerrainAt(pos).label.CapitalizeFirst() + " ( " + pos.x + " | " + pos.z + " )";
     }
 
     protected virtual void DrawGenerating(Rect inRect) {}
@@ -131,6 +158,11 @@ public abstract class MapPreviewWidget : IDisposable
         AwaitingMapTile = -1;
         Buffer = result.Pixels;
         
+        foreach (var overlay in Overlays)
+        {
+            overlay.Update(result);
+        }
+        
         SpawnInterpolator.value = 0f;
         SpawnInterpolator.StartInterpolation(1f, SpawnInterpolationDuration, CurveType.CubicOut);
     }
@@ -140,6 +172,11 @@ public abstract class MapPreviewWidget : IDisposable
         if (Texture == null) return;
 
         PreviewMap = null;
+        
+        foreach (var overlay in Overlays)
+        {
+            overlay.Reset();
+        }
         
         SpawnInterpolator.value = 0f;
         SpawnInterpolator.finished = true;

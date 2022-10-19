@@ -23,6 +23,8 @@ internal static class Patch_Verse_GenSpawn
         if (generating != map) return true;
         
         MapPreviewAPI.Logger.Warn("Some mod attempted to spawn thing " + newThing + " on a preview map, this is not supported!");
-        return true;
+
+        __result = null;
+        return false;
     }
 }
