@@ -18,9 +18,9 @@ internal class ModCompat_PerformanceOptimizer : ModCompat
     public override string DisplayName => "Performance Optimizer";
 
     [HarmonyPrefix]
-    [HarmonyPatch("PerformanceOptimizer.Optimization_WorldGrid_LongLatOf", "DoPatches")]
-    private static bool Optimization_WorldGrid_LongLatOf_DoPatches()
+    [HarmonyPatch("PerformanceOptimizer.Optimization_WorldGrid_LongLatOf", "Prefix")]
+    private static bool Optimization_WorldGrid_LongLatOf_Prefix()
     {
-        return false;
+        return !MapPreviewAPI.IsGeneratingPreview;
     }
 }
