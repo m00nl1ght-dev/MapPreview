@@ -24,7 +24,11 @@ internal class ModCompat_BetterMapSizes : ModCompat
         if ((int) mapWidth.GetValue(null) < 0 || (int) mapHeight.GetValue(null) < 0) return false;
 
         MapPreviewWindow.MaxMapSize = new IntVec2(1000, 1000);
-        MapPreviewWindow.MapSizeOverride = () => new IntVec2((int) mapWidth.GetValue(null), (int) mapHeight.GetValue(null));
+        MapPreviewWindow.MapSizeOverride = () =>
+        {
+            if (Find.GameInitData?.mapSize != -1) return new IntVec2(-1, -1);
+            return new IntVec2((int) mapWidth.GetValue(null), (int) mapHeight.GetValue(null));
+        };
 
         return true;
     }

@@ -19,6 +19,8 @@ public class MapPreviewWindow : Window
 
     private readonly MapPreviewWidgetWithPreloader _previewWidget = new(MaxMapSize);
 
+    public Map CurrentPreviewMap => _previewWidget.PreviewMap;
+
     private bool _currentTileCanBeRerolled;
     private bool _currentTileIsRerolled;
 
@@ -66,8 +68,8 @@ public class MapPreviewWindow : Window
             ExistingBuffer = _previewWidget.Buffer
         };
 
-        var promise = MapPreviewGenerator.Instance.QueuePreviewRequest(request);
-        _previewWidget.Await(promise, tileId);
+        MapPreviewGenerator.Instance.QueuePreviewRequest(request);
+        _previewWidget.Await(request);
         
         var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
         if (pos != MapPreviewMod.Settings.PreviewWindowPosition)
@@ -81,7 +83,7 @@ public class MapPreviewWindow : Window
         _currentTileCanBeRerolled = !Find.WorldObjects.AnyMapParentAt(tileId);
     }
 
-    private IntVec2 DetermineMapSize(World world, int tileId)
+    public static IntVec2 DetermineMapSize(World world, int tileId)
     {
         var mapParent = world.worldObjects.MapParentAt(tileId);
         if (mapParent is Site site)
@@ -99,7 +101,10 @@ public class MapPreviewWindow : Window
         if (MapSizeOverride != null)
         {
             var fromOverride = MapSizeOverride.Invoke();
-            return new IntVec2(fromOverride.x, fromOverride.z);
+            if (fromOverride.x > 0 && fromOverride.z > 0)
+            {
+                return new IntVec2(fromOverride.x, fromOverride.z);
+            }
         }
 
         var gameInitData = Find.GameInitData;

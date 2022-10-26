@@ -146,7 +146,7 @@ public class MapPreviewGenerator : IDisposable
                     {
                         OnBeginGenerating?.Invoke(request);
                         
-                        result = new MapPreviewResult(request.MapTile, request.MapSize, request.TextureSize, request.ExistingBuffer);
+                        result = new MapPreviewResult(request);
                         GeneratePreview(request, result);
 
                         if (result.MapGenErrored)

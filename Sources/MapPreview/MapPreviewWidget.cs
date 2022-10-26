@@ -47,6 +47,7 @@ public abstract class MapPreviewWidget : IDisposable
 
     protected Rect TexCoords;
     protected int AwaitingMapTile = -1;
+    protected MapPreviewRequest AwaitingRequest;
     
     public Color[] Buffer { get; private set; }
     public Texture2D Texture { get; private set; }
@@ -65,6 +66,12 @@ public abstract class MapPreviewWidget : IDisposable
         if (overlay.PreviewWidget != this) throw new Exception();
         Overlays.Add(overlay);
     }
+    
+    public void Await(MapPreviewRequest request)
+    {
+        AwaitingRequest = request;
+        Await(request.Promise, request.MapTile);
+    }
 
     public void Await(IPromise<MapPreviewResult> promise, int mapTile = -1)
     {
@@ -79,6 +86,7 @@ public abstract class MapPreviewWidget : IDisposable
     {
         Object.Destroy(Texture);
         AwaitingMapTile = -1;
+        AwaitingRequest = null;
         PreviewMap = null;
         Texture = null;
     }
@@ -149,6 +157,7 @@ public abstract class MapPreviewWidget : IDisposable
     private void OnPromiseResolved(MapPreviewResult result)
     {
         if (Texture == null || result == null || AwaitingMapTile != result.MapTile) return;
+        if (AwaitingRequest != null && AwaitingRequest != result.Request) return;
 
         PreviewMap = result.Map;
         TexCoords = result.TexCoords;
@@ -156,6 +165,7 @@ public abstract class MapPreviewWidget : IDisposable
         Texture.Apply();
         
         AwaitingMapTile = -1;
+        AwaitingRequest = null;
         Buffer = result.Pixels;
         
         foreach (var overlay in Overlays)

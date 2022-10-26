@@ -34,22 +34,24 @@ namespace MapPreview;
 public class MapPreviewResult
 {
     public readonly Color[] Pixels;
-        
-    public readonly IntVec2 TextureSize;
-    public readonly IntVec2 MapSize;
-    public readonly int MapTile;
+    
+    public readonly MapPreviewRequest Request;
+    
+    public IntVec2 TextureSize => Request.TextureSize;
+    public IntVec2 MapSize => Request.MapSize;
+    public int MapTile => Request.MapTile;
 
     public Rect TexCoords => new(0, 0, MapSize.x / (float) TextureSize.x, MapSize.z / (float) TextureSize.z);
 
     public bool MapGenErrored;
     public Map Map;
 
-    public MapPreviewResult(int mapTile, IntVec2 mapSize, IntVec2 textureSize, Color[] existingBuffer = null)
+    public MapPreviewResult(MapPreviewRequest request)
     {
-        MapTile = mapTile;
-        MapSize = mapSize;
-        TextureSize = textureSize;
-        if (existingBuffer != null && existingBuffer.Length == textureSize.x * textureSize.z) Pixels = existingBuffer;
+        Request = request;
+        var buffer = request.ExistingBuffer;
+        var textureSize = request.TextureSize;
+        if (buffer != null && buffer.Length == textureSize.x * textureSize.z) Pixels = buffer;
         else Pixels = new Color[textureSize.x * textureSize.z];
     }
 
