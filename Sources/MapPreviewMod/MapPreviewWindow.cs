@@ -12,6 +12,8 @@ public class MapPreviewWindow : Window
 
     public static Func<IntVec2> MapSizeOverride;
     
+    public static event Action<MapPreviewWindow, Rect> ExtOnGUI;
+    
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
     
     public override Vector2 InitialSize => new(MapPreviewMod.Settings.PreviewWindowSize, MapPreviewMod.Settings.PreviewWindowSize);
@@ -165,7 +167,7 @@ public class MapPreviewWindow : Window
             {
                 var tile = Find.WorldSelector.selectedTile;
                 var rerollData = Find.World.GetComponent<SeedRerollData>();
-                rerollData.TryGet(tile, out var seed);
+                var seed = rerollData.TryGet(tile, out var savedSeed) ? savedSeed : SeedRerollData.GetOriginalMapSeed(Find.World, tile);
                 unchecked { seed += 1; }
                 rerollData.Commit(tile, seed);
             }
@@ -182,5 +184,7 @@ public class MapPreviewWindow : Window
                 }
             }
         }
+        
+        ExtOnGUI?.Invoke(this, inRect);
     }
 }
