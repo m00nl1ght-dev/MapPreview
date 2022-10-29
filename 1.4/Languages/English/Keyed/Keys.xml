@@ -16,4 +16,6 @@
 
   <MapPreview.PreviewGenerationFailed>A conflict with one of your mods has caused the map preview generator to fail. Please report this on the Map Preview workshop page so that a compatibility patch can be created. After closing this message, please upload your log file and include that link in your bug report.</MapPreview.PreviewGenerationFailed>
 
+  <MapPreview.Integration.MapDesigner.OpenSettings>Open Map Designer</MapPreview.Integration.MapDesigner.OpenSettings>
+  
 </LanguageData>

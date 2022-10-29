@@ -61,6 +61,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Compatibility\ModCompat_MapDesigner.cs" />
         <Compile Include="MapPreviewWidgetWithPreloader.cs" />
         <Compile Include="Compatibility\ModCompat_BetterMapSizes.cs" />
         <Compile Include="Compatibility\ModCompat_MapReroll.cs" />
