@@ -81,8 +81,9 @@ public class MapPreviewWindow : Window
         }
 
         var rerollData = world.GetComponent<SeedRerollData>();
+        var mapParent = Find.WorldObjects.MapParentAt(tileId);
         _currentTileIsRerolled = rerollData.TryGet(tileId, out _);
-        _currentTileCanBeRerolled = !Find.WorldObjects.AnyMapParentAt(tileId);
+        _currentTileCanBeRerolled = mapParent is not { HasMap: true };
     }
 
     public static IntVec2 DetermineMapSize(World world, int tileId)
