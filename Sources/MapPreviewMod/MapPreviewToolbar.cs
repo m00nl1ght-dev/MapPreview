@@ -125,28 +125,35 @@ public class MapPreviewToolbar : Window
                 rerollData.Reset(tile);
             }
         }
-        
-        GUI.enabled = Current.ProgramState == ProgramState.Entry && !MapPreviewAPI.IsGeneratingPreview;
-        var rerollWorldPos = _layout.Abs();
-        TooltipHandler.TipRegion(rerollWorldPos, "MapPreview.World.RerollWorldSeed".Translate());
-        if (GUI.Button(rerollWorldPos, _btnRerollWorldTex ??= ContentFinder<Texture2D>.Get("RerollWorldSeedMP")))
-        {
-            var windowStack = Find.WindowStack;
-            var page = windowStack.WindowOfType<Page_SelectStartingSite>();
-            if (page is { prev: Page_CreateWorldParams paramsPage })
-            {
-                _wpCanDoNext ??= AccessTools.Method(typeof(Page_CreateWorldParams), "CanDoNext");
-                _wpSeedString ??= AccessTools.Field(typeof(Page_CreateWorldParams), "seedString");
-                
-                page.Close();
-                windowStack.Add(paramsPage);
-                _wpSeedString?.SetValue(paramsPage, GenText.RandomSeedString());
-                _wpCanDoNext?.Invoke(paramsPage, Array.Empty<object>());
-            }
-        }
 
         GUI.enabled = true;
         ExtToolbar?.Invoke(this, _layout);
+        
+        if (Current.ProgramState == ProgramState.Entry)
+        {
+            GUI.enabled = !MapPreviewAPI.IsGeneratingPreview;
+            var rerollWorldPos = _layout.Abs();
+            TooltipHandler.TipRegion(rerollWorldPos, "MapPreview.World.RerollWorldSeed".Translate());
+            if (GUI.Button(rerollWorldPos, _btnRerollWorldTex ??= ContentFinder<Texture2D>.Get("RerollWorldSeedMP")))
+            {
+                var windowStack = Find.WindowStack;
+                var page = windowStack.WindowOfType<Page_SelectStartingSite>();
+                if (page is { prev: Page_CreateWorldParams paramsPage })
+                {
+                    _wpCanDoNext ??= AccessTools.Method(typeof(Page_CreateWorldParams), "CanDoNext");
+                    _wpSeedString ??= AccessTools.Field(typeof(Page_CreateWorldParams), "seedString");
+                    
+                    windowStack.Add(paramsPage);
+                    page.Close();
+                    
+                    windowStack.WindowOfType<WorldInspectPane>()?.Close();
+
+                    _wpSeedString?.SetValue(paramsPage, GenText.RandomSeedString());
+                    _wpCanDoNext?.Invoke(paramsPage, Array.Empty<object>());
+                }
+            }
+        }
+        
         GUI.enabled = true;
         
         _layout.End();
