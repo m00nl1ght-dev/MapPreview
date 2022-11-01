@@ -41,9 +41,11 @@ internal static class Patch_RimWorld_TerrainPatchMaker
     private static int MakeStableSeed(TerrainPatchMaker tpm, Map map)
     {
         int idx = map.Biome.terrainPatchMakers.IndexOf(tpm);
-        if (idx >= 0) return Find.World.info.Seed ^ map.Tile ^ 9305 + idx;
+        var seed = SeedRerollData.IsMapSeedRerolled(Find.World, map.Tile, out var savedSeed)
+            ? savedSeed : Find.World.info.Seed ^ map.Tile;
 
-        return Find.World.info.Seed ^ map.Tile ^ GetHashCode(tpm);
+        if (idx >= 0) return seed ^ 9305 + idx;
+        return seed ^ GetHashCode(tpm);
     }
     
     public static int GetHashCode(TerrainPatchMaker tpm)
