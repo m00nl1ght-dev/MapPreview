@@ -12,19 +12,15 @@ public class MapPreviewWindow : Window
 
     public static Func<IntVec2> MapSizeOverride;
     
-    public static event Action<MapPreviewWindow, Rect> ExtOnGUI;
-    
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
-    
+
+    public Vector2 DefaultPos => new(UI.screenWidth - InitialSize.x - 50f, 105f);
     public override Vector2 InitialSize => new(MapPreviewMod.Settings.PreviewWindowSize, MapPreviewMod.Settings.PreviewWindowSize);
     protected override float Margin => 0f;
 
     private readonly MapPreviewWidgetWithPreloader _previewWidget = new(MaxMapSize);
 
     public Map CurrentPreviewMap => _previewWidget.PreviewMap;
-
-    private bool _currentTileCanBeRerolled;
-    private bool _currentTileIsRerolled;
 
     public MapPreviewWindow()
     {
@@ -74,16 +70,11 @@ public class MapPreviewWindow : Window
         _previewWidget.Await(request);
         
         var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
-        if (pos != MapPreviewMod.Settings.PreviewWindowPosition)
+        if (pos != MapPreviewMod.Settings.PreviewWindowPos)
         {
-            MapPreviewMod.Settings.PreviewWindowPosition = pos;
+            MapPreviewMod.Settings.PreviewWindowPos = pos;
             MapPreviewMod.Settings.Write();
         }
-
-        var rerollData = world.GetComponent<SeedRerollData>();
-        var mapParent = Find.WorldObjects.MapParentAt(tileId);
-        _currentTileIsRerolled = rerollData.TryGet(tileId, out _);
-        _currentTileCanBeRerolled = mapParent is not { HasMap: true };
     }
 
     public static IntVec2 DetermineMapSize(World world, int tileId)
@@ -127,14 +118,14 @@ public class MapPreviewWindow : Window
         
         MapPreviewGenerator.Init();
         
-        float lastX = MapPreviewMod.Settings.PreviewWindowPosition.x;
-        float lastY = MapPreviewMod.Settings.PreviewWindowPosition.y;
+        float lastX = MapPreviewMod.Settings.PreviewWindowPos.x;
+        float lastY = MapPreviewMod.Settings.PreviewWindowPos.y;
         
-        windowRect.x = lastX >= 0 ? lastX : UI.screenWidth - InitialSize.x - 50f;
-        windowRect.y = lastY >= 0 ? lastY : 100f;
+        windowRect.x = lastX >= 0 ? lastX : DefaultPos.x;
+        windowRect.y = lastY >= 0 ? lastY : DefaultPos.y;
         
-        if (windowRect.x + windowRect.width > UI.screenWidth) windowRect.x = UI.screenWidth - InitialSize.x - 50f;
-        if (windowRect.y + windowRect.height > UI.screenHeight) windowRect.y = 100f;
+        if (windowRect.x + windowRect.width > UI.screenWidth) windowRect.x = DefaultPos.x;
+        if (windowRect.y + windowRect.height > UI.screenHeight) windowRect.y = DefaultPos.y;
     }
 
     public override void PreClose()
@@ -146,9 +137,9 @@ public class MapPreviewWindow : Window
         MapPreviewGenerator.Instance.ClearQueue();
         
         var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
-        if (pos != MapPreviewMod.Settings.PreviewWindowPosition)
+        if (pos != MapPreviewMod.Settings.PreviewWindowPos)
         {
-            MapPreviewMod.Settings.PreviewWindowPosition = pos;
+            MapPreviewMod.Settings.PreviewWindowPos = pos;
             MapPreviewMod.Settings.Write();
         }
     }
@@ -156,36 +147,5 @@ public class MapPreviewWindow : Window
     public override void DoWindowContents(Rect inRect)
     {
         _previewWidget.Draw(inRect.ContractedBy(5f));
-
-        var rerollAllowed = MapPreviewMod.Settings.EnableSeedRerollFeature || _currentTileIsRerolled;
-        if (rerollAllowed && !MapPreviewAPI.IsGeneratingPreview && _currentTileCanBeRerolled)
-        {
-            var btnRow = inRect.BottomPartPixels(70);
-
-            var rerollPos = btnRow.LeftPartPixels(70).ContractedBy(15);
-            TooltipHandler.TipRegion(rerollPos, "MapPreview.World.RerollMapSeed".Translate());
-            if (GUI.Button(rerollPos, MapPreviewWidgetWithPreloader.UIPreviewLoading))
-            {
-                var tile = Find.WorldSelector.selectedTile;
-                var rerollData = Find.World.GetComponent<SeedRerollData>();
-                var seed = rerollData.TryGet(tile, out var savedSeed) ? savedSeed : SeedRerollData.GetOriginalMapSeed(Find.World, tile);
-                unchecked { seed += 1; }
-                rerollData.Commit(tile, seed);
-            }
-
-            if (_currentTileIsRerolled)
-            {
-                var resetPos = btnRow.RightPartPixels(70).ContractedBy(15);
-                TooltipHandler.TipRegion(resetPos, "MapPreview.World.ResetMapSeed".Translate());
-                if (GUI.Button(resetPos, MapPreviewWidgetWithPreloader.UIPreviewReset))
-                {
-                    var tile = Find.WorldSelector.selectedTile;
-                    var rerollData = Find.World.GetComponent<SeedRerollData>();
-                    rerollData.Reset(tile);
-                }
-            }
-        }
-        
-        ExtOnGUI?.Invoke(this, inRect);
     }
 }

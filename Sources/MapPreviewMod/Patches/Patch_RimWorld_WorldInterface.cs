@@ -30,6 +30,7 @@ internal class Patch_RimWorld_WorldInterface
             if (_openedPreviewSinceEnteringMap)
             {
                 MapPreviewWindow.Instance?.Close();
+                MapPreviewToolbar.Instance?.Close();
                 MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
                 _openedPreviewSinceEnteringMap = false;
                 _tileId = -1;
@@ -44,7 +45,7 @@ internal class Patch_RimWorld_WorldInterface
             if (_tileId != -1)
             {
                 var tile = Find.World.grid[_tileId];
-                if (!tile.biome.impassable && (tile.hilliness != Hilliness.Impassable || TileFinder.IsValidTileForNewSettlement(_tileId)))
+                if (ShouldPreviewForTile(tile, _tileId))
                 {
                     if (!MapPreviewMod.Settings.EnableMapPreview || !MapPreviewAPI.IsReady) return;
                     
@@ -57,17 +58,36 @@ internal class Patch_RimWorld_WorldInterface
                     var window = MapPreviewWindow.Instance;
                     if (window == null) Find.WindowStack.Add(window = new MapPreviewWindow());
                     window.OnWorldTileSelected(Find.World, _tileId);
+                    
+                    var toolbar = MapPreviewToolbar.Instance;
+                    if (toolbar == null && MapPreviewMod.Settings.EnableToolbar) Find.WindowStack.Add(toolbar = new MapPreviewToolbar());
+                    toolbar?.OnWorldTileSelected(Find.World, _tileId);
+
                     return;
                 }
             }
             
+            MapPreviewToolbar.Instance?.OnWorldTileSelected(Find.World, _tileId);
             MapPreviewWindow.Instance?.Close();
         }
+    }
+
+    public static bool ShouldPreviewForTile(Tile tile, int tileId)
+    {
+        return !tile.biome.impassable && (tile.hilliness != Hilliness.Impassable || TileFinder.IsValidTileForNewSettlement(tileId));
     }
 
     public static void Refresh()
     {
         _tileId = -1;
-        if (!MapPreviewMod.Settings.EnableMapPreview) MapPreviewWindow.Instance?.Close();
+        if (!MapPreviewMod.Settings.EnableMapPreview)
+        {
+            MapPreviewWindow.Instance?.Close();
+            MapPreviewToolbar.Instance?.Close();
+        } 
+        else if (!MapPreviewMod.Settings.EnableToolbar)
+        {
+            MapPreviewToolbar.Instance?.Close();
+        }
     }
 }

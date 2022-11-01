@@ -1,5 +1,6 @@
 using System.Globalization;
 using LunarFramework.Utility;
+using MapPreview.Patches;
 using UnityEngine;
 using Verse;
 
@@ -14,10 +15,12 @@ public class MapPreviewSettings : ModSettings
     public float PreviewWindowSize = DefaultPreviewWindowSize;
     public bool EnableTrueTerrainColors = true;
     public bool EnableMapPreview = true;
+    public bool EnableToolbar = true;
     public bool EnableSeedRerollFeature;
     public bool SkipRiverFlowCalc = true;
     
-    public Vector2 PreviewWindowPosition = new(-1, -1);
+    public Vector2 PreviewWindowPos = new(-1, -1);
+    public Vector2 ToolbarWindowPos = new(-1, -1);
 
     public void DoSettingsWindowContents(Rect inRect)
     {
@@ -39,7 +42,14 @@ public class MapPreviewSettings : ModSettings
         
         listingStandard.Gap();
         
+        listingStandard.CheckboxLabeled("MapPreview.Settings.EnableToolbar".Translate(), ref EnableToolbar, "MapPreview.Settings.EnableToolbar".Translate());
+        
+        listingStandard.Gap();
+
+        GUI.enabled = EnableToolbar;
+        if (!EnableToolbar) EnableSeedRerollFeature = false;
         listingStandard.CheckboxLabeled("MapPreview.Settings.EnableSeedRerollFeature".Translate(), ref EnableSeedRerollFeature, "MapPreview.Settings.EnableSeedRerollFeature".Translate());
+        GUI.enabled = true;
         
         listingStandard.Gap();
 
@@ -50,9 +60,34 @@ public class MapPreviewSettings : ModSettings
         listingStandard.CheckboxLabeled("MapPreview.Settings.SkipRiverFlowCalc".Translate(), ref SkipRiverFlowCalc, "MapPreview.Settings.SkipRiverFlowCalc".Translate());
         
         listingStandard.Gap();
+
+        bool prevChanged = GUI.changed;
+        GUI.changed = false;
         
         CenteredLabel(listingStandard, "MapPreview.Settings.PreviewWindowSize".Translate(), PreviewWindowSize.ToString(CultureInfo.InvariantCulture));
         PreviewWindowSize = (int) listingStandard.Slider(PreviewWindowSize, 100f, 800f);
+        
+        if (GUI.changed)
+        {
+            PreviewWindowPos = new Vector2(-1, -1);
+            ToolbarWindowPos = new Vector2(-1, -1);
+                
+            var previewWindow = MapPreviewWindow.Instance;
+            if (previewWindow != null)
+            {
+                previewWindow.windowRect.position = previewWindow.DefaultPos;
+                previewWindow.windowRect.size = previewWindow.InitialSize;
+            }
+            
+            var toolbarWindow = MapPreviewToolbar.Instance;
+            if (toolbarWindow != null)
+            {
+                toolbarWindow.windowRect.position = toolbarWindow.DefaultPos;
+                toolbarWindow.windowRect.size = toolbarWindow.InitialSize;
+            }
+        }
+        
+        GUI.changed = prevChanged;
 
         if (Prefs.DevMode && listingStandard.ButtonText("[DEV] Clear cache and recalculate all terrain colors"))
         {
@@ -60,6 +95,8 @@ public class MapPreviewSettings : ModSettings
         }
 
         Widgets.EndScrollView();
+        
+        if (GUI.changed) Patch_RimWorld_WorldInterface.Refresh();
     }
 
     private void DoLoadFailMessage(Rect rect)
@@ -75,10 +112,17 @@ public class MapPreviewSettings : ModSettings
         Scribe_Values.Look(ref PreviewWindowSize, "PreviewWindowSize", DefaultPreviewWindowSize);
         Scribe_Values.Look(ref EnableTrueTerrainColors, "EnableTrueTerrainColors", true);
         Scribe_Values.Look(ref EnableMapPreview, "EnableMapPreview", true);
+        Scribe_Values.Look(ref EnableToolbar, "EnableToolbar", true);
         Scribe_Values.Look(ref EnableSeedRerollFeature, "EnableSeedRerollFeature");
         Scribe_Values.Look(ref SkipRiverFlowCalc, "SkipRiverFlowCalc", true);
-        Scribe_Values.Look(ref PreviewWindowPosition, "PreviewWindowPosition", new Vector2(-1, -1));
+        Scribe_Values.Look(ref PreviewWindowPos, "PreviewWindowPos", new Vector2(-1, -1));
+        Scribe_Values.Look(ref ToolbarWindowPos, "ToolbarWindowPos", new Vector2(-1, -1));
         base.ExposeData();
+
+        if (ToolbarWindowPos == new Vector2(-1, -1))
+        {
+            PreviewWindowPos = new Vector2(-1, -1);
+        }
     }
 
     public void ResetAll()
@@ -86,9 +130,11 @@ public class MapPreviewSettings : ModSettings
         PreviewWindowSize = DefaultPreviewWindowSize;
         EnableTrueTerrainColors = true;
         EnableMapPreview = true;
+        EnableToolbar = true;
         EnableSeedRerollFeature = false;
         SkipRiverFlowCalc = true;
-        PreviewWindowPosition = new Vector2(-1, -1);
+        PreviewWindowPos = new Vector2(-1, -1);
+        ToolbarWindowPos = new Vector2(-1, -1);
     }
     
     private static void CenteredLabel(Listing_Standard listingStandard, string left, string center)
