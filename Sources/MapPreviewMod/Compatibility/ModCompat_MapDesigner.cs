@@ -45,7 +45,7 @@ internal class ModCompat_MapDesigner : ModCompat
 
     private void OnSettingsChanged()
     {
-        Patch_RimWorld_WorldInterface.Refresh();
+        MapPreviewAPI.NotifyWorldChanged();
     }
 
     private void DrawSettingsButton(MapPreviewToolbar toolbar, LayoutRect layout)
