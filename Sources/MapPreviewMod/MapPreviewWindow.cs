@@ -33,7 +33,7 @@ public class MapPreviewWindow : Window
         preventCameraMotion = false;
         forcePause = false;
         resizeable = false;
-        draggable = true;
+        draggable = !MapPreviewMod.Settings.LockWindowPositions;
     }
 
     public void OnWorldTileSelected(World world, int tileId)

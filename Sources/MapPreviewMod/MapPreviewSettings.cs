@@ -16,6 +16,7 @@ public class MapPreviewSettings : ModSettings
     public bool EnableTrueTerrainColors = true;
     public bool EnableMapPreview = true;
     public bool EnableToolbar = true;
+    public bool LockWindowPositions;
     public bool EnableSeedRerollFeature;
     public bool SkipRiverFlowCalc = true;
     
@@ -60,10 +61,24 @@ public class MapPreviewSettings : ModSettings
         listingStandard.CheckboxLabeled("MapPreview.Settings.SkipRiverFlowCalc".Translate(), ref SkipRiverFlowCalc, "MapPreview.Settings.SkipRiverFlowCalc".Translate());
         
         listingStandard.Gap();
-
+        
         bool prevChanged = GUI.changed;
         GUI.changed = false;
         
+        listingStandard.CheckboxLabeled("MapPreview.Settings.LockWindowPositions".Translate(), ref LockWindowPositions, "MapPreview.Settings.LockWindowPositions".Translate());
+
+        listingStandard.Gap();
+
+        if (GUI.changed)
+        {
+            var previewWindow = MapPreviewWindow.Instance;
+            if (previewWindow != null) previewWindow.draggable = !LockWindowPositions;
+            var toolbarWindow = MapPreviewToolbar.Instance;
+            if (toolbarWindow != null) toolbarWindow.draggable = !LockWindowPositions;
+        }
+
+        GUI.changed = false;
+
         CenteredLabel(listingStandard, "MapPreview.Settings.PreviewWindowSize".Translate(), PreviewWindowSize.ToString(CultureInfo.InvariantCulture));
         PreviewWindowSize = (int) listingStandard.Slider(PreviewWindowSize, 100f, 800f);
         
@@ -113,6 +128,7 @@ public class MapPreviewSettings : ModSettings
         Scribe_Values.Look(ref EnableTrueTerrainColors, "EnableTrueTerrainColors", true);
         Scribe_Values.Look(ref EnableMapPreview, "EnableMapPreview", true);
         Scribe_Values.Look(ref EnableToolbar, "EnableToolbar", true);
+        Scribe_Values.Look(ref LockWindowPositions, "LockWindowPositions");
         Scribe_Values.Look(ref EnableSeedRerollFeature, "EnableSeedRerollFeature");
         Scribe_Values.Look(ref SkipRiverFlowCalc, "SkipRiverFlowCalc", true);
         Scribe_Values.Look(ref PreviewWindowPos, "PreviewWindowPos", new Vector2(-1, -1));
@@ -131,6 +147,7 @@ public class MapPreviewSettings : ModSettings
         EnableTrueTerrainColors = true;
         EnableMapPreview = true;
         EnableToolbar = true;
+        LockWindowPositions = false;
         EnableSeedRerollFeature = false;
         SkipRiverFlowCalc = true;
         PreviewWindowPos = new Vector2(-1, -1);
