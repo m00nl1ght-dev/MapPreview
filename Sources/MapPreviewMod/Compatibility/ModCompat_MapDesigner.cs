@@ -2,7 +2,6 @@ using System;
 using System.Reflection;
 using LunarFramework.GUI;
 using LunarFramework.Patching;
-using MapPreview.Patches;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -39,6 +38,7 @@ internal class ModCompat_MapDesigner : ModCompat
         eventInfo.AddEventHandler(null, OnSettingsChanged);
         
         MapPreviewToolbar.ExtToolbar += DrawSettingsButton;
+        MapPreviewToolbar.ExtraWidth(40);
 
         return true;
     }

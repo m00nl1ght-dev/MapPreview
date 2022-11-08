@@ -12,8 +12,9 @@ namespace MapPreview;
 
 public class MapPreviewToolbar : Window
 {
-    private const float MinWidth = 200f;
-    
+    public static float MinWidth { get; private set; } = 170f;
+    public static void ExtraWidth(float width) => MinWidth += width;
+
     public static MapPreviewToolbar Instance => Find.WindowStack?.WindowOfType<MapPreviewToolbar>();
     
     public Vector2 DefaultPos => new(UI.screenWidth - MapPreviewMod.Settings.PreviewWindowSize - 50f, 50f);
