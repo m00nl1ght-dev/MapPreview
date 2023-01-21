@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using LunarFramework.GUI;
 using LunarFramework.Patching;
 using UnityEngine;
 using Verse;
@@ -20,17 +19,18 @@ internal class ModCompat_WorldEdit : ModCompat
     public override string TargetAssemblyName => "WorldEdit 2.0";
     public override string DisplayName => "WorldEdit 2.0";
     
-    private FieldInfo _instance;
-    private PropertyInfo _editors;
-    private PropertyInfo _editorName;
-    private FieldInfo _openedEditor;
-    private MethodInfo _show;
-    private MethodInfo _close;
+    private static FieldInfo _instance;
+    private static PropertyInfo _editors;
+    private static PropertyInfo _editorName;
+    private static FieldInfo _openedEditor;
+    private static MethodInfo _show;
+    private static MethodInfo _close;
 
     protected override bool OnApply()
     {
         var type = FindType("WorldEdit_2_0.MainEditor.WorldEditor");
         var editorType = FindType("WorldEdit_2_0.MainEditor.Models.Editor");
+        
         _instance = Require(AccessTools.Field(type, "worldEditorInstance"));
         _editors = Require(AccessTools.Property(type, "Editors"));
         _editorName = Require(AccessTools.Property(editorType, "EditorName"));
@@ -38,17 +38,19 @@ internal class ModCompat_WorldEdit : ModCompat
         _show = Require(AccessTools.Method(editorType, "ShowEditor"));
         _close = Require(AccessTools.Method(editorType, "CloseEditor"));
 
-        MapPreviewToolbar.ExtToolbar += DrawSettingsButton;
-        MapPreviewToolbar.ExtraWidth(40);
+        MapPreviewToolbar.RegisterButton(new ButtonOpenWorldEdit());
+        
         return true;
     }
 
-    private void DrawSettingsButton(MapPreviewToolbar toolbar, LayoutRect layout)
+    private class ButtonOpenWorldEdit : MapPreviewToolbar.Button
     {
-        GUI.enabled = !MapPreviewAPI.IsGeneratingPreview;
-        var btnPos = layout.Abs();
-        TooltipHandler.TipRegion(btnPos, "MapPreview.Integration.WorldEdit.Open".Translate());
-        if (GUI.Button(btnPos, TexButton.GodModeDisabled))
+        public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview;
+
+        public override string Tooltip => "MapPreview.Integration.WorldEdit.Open".Translate();
+        public override Texture Icon => TexButton.GodModeDisabled;
+
+        public override void OnAction()
         {
             var instance = _instance.GetValue(null);
             if (instance != null && _editors.GetValue(instance) is IEnumerable<object> editorsEnumerable)
@@ -70,7 +72,5 @@ internal class ModCompat_WorldEdit : ModCompat
                 Find.WindowStack.Add(new FloatMenu(options));
             }
         }
-
-        GUI.enabled = true;
     }
 }

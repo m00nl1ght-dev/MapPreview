@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using LunarFramework.GUI;
@@ -12,19 +14,32 @@ namespace MapPreview;
 
 public class MapPreviewToolbar : Window
 {
-    public static float MinWidth { get; private set; } = 170f;
-    public static void ExtraWidth(float width) => MinWidth += width;
-
     public static MapPreviewToolbar Instance => Find.WindowStack?.WindowOfType<MapPreviewToolbar>();
+    
+    public static bool CurrentTileCanBeRerolled { get; private set; }
+    public static bool CurrentTileIsRerolled { get; private set; }
+    
+    private static readonly List<Button> RegisteredButtons = new();
+    
+    public static float MinWidth => 10f + RegisteredButtons.Count(b => b.IsVisible) * 40f;
+    
+    public static void RegisterButton(Button button)
+    {
+        RegisteredButtons.AddDistinct(button);
+    }
+
+    static MapPreviewToolbar()
+    {
+        RegisterButton(new ButtonRerollMap());
+        RegisterButton(new ButtonRerollMapUndo());
+        RegisterButton(new ButtonRerollWorld());
+        RegisterButton(new ButtonOpenSettings());
+    }
     
     public Vector2 DefaultPos => new(UI.screenWidth - MapPreviewMod.Settings.PreviewWindowSize - 50f, 50f);
     public override Vector2 InitialSize => new(Math.Max(MapPreviewMod.Settings.PreviewWindowSize, MinWidth), 50);
+    
     protected override float Margin => 0f;
-    
-    public static event Action<MapPreviewToolbar, LayoutRect> ExtToolbar;
-    
-    private bool _currentTileCanBeRerolled;
-    private bool _currentTileIsRerolled;
     
     public MapPreviewToolbar()
     {
@@ -46,13 +61,13 @@ public class MapPreviewToolbar : Window
         {
             var rerollData = world.GetComponent<SeedRerollData>();
             var mapParent = Find.WorldObjects.MapParentAt(tileId);
-            _currentTileIsRerolled = rerollData.TryGet(tileId, out _);
-            _currentTileCanBeRerolled = mapParent is not { HasMap: true };
+            CurrentTileIsRerolled = rerollData.TryGet(tileId, out _);
+            CurrentTileCanBeRerolled = mapParent is not { HasMap: true };
         }
         else
         {
-            _currentTileIsRerolled = false;
-            _currentTileCanBeRerolled = false;
+            CurrentTileIsRerolled = false;
+            CurrentTileCanBeRerolled = false;
         }
     }
 
@@ -85,101 +100,133 @@ public class MapPreviewToolbar : Window
     }
 
     private readonly LayoutRect _layout = new(MapPreviewMod.LunarAPI);
-    
-    private Texture2D _btnSettingsTex;
-    private Texture2D _btnRerollWorldTex;
-
-    private MethodInfo _wpCanDoNext;
-    private FieldInfo _wpSeedString;
 
     public override void DoWindowContents(Rect inRect)
     {
+        void DoButton(Button button)
+        {
+            if (button.IsVisible)
+            {
+                var buttonPos = _layout.Abs();
+                TooltipHandler.TipRegion(buttonPos, button.Tooltip);
+                GUI.enabled = button.IsInteractable;
+                if (GUI.Button(buttonPos, button.Icon)) button.OnAction();
+            }
+        }
+
         _layout.BeginRoot(inRect, new LayoutParams { Margin = new(10), Horizontal = true });
         
         _layout.BeginRel(0.5f, new LayoutParams { Spacing = 10, DefaultSize = 30, Horizontal = true });
-
-        var rerollAllowed = MapPreviewMod.Settings.EnableSeedRerollFeature || _currentTileIsRerolled;
-
-        if (rerollAllowed)
-        {
-            var canReroll = !MapPreviewAPI.IsGeneratingPreview && _currentTileCanBeRerolled;
-
-            GUI.enabled = canReroll;
-            var rerollPos = _layout.Abs();
-            TooltipHandler.TipRegion(rerollPos, "MapPreview.World.RerollMapSeed".Translate());
-            if (GUI.Button(rerollPos, MapPreviewWidgetWithPreloader.UIPreviewLoading))
-            {
-                var tile = Find.WorldSelector.selectedTile;
-                var rerollData = Find.World.GetComponent<SeedRerollData>();
-                var seed = rerollData.TryGet(tile, out var savedSeed) ? savedSeed : SeedRerollData.GetOriginalMapSeed(Find.World, tile);
-                unchecked { seed += 1; }
-                rerollData.Commit(tile, seed);
-            }
-
-            GUI.enabled = _currentTileIsRerolled && !MapPreviewAPI.IsGeneratingPreview && _currentTileCanBeRerolled;
-            var resetPos = _layout.Abs();
-            TooltipHandler.TipRegion(resetPos, "MapPreview.World.ResetMapSeed".Translate());
-            if (GUI.Button(resetPos, MapPreviewWidgetWithPreloader.UIPreviewReset))
-            {
-                var tile = Find.WorldSelector.selectedTile;
-                var rerollData = Find.World.GetComponent<SeedRerollData>();
-                rerollData.Reset(tile);
-            }
-        }
-
-        GUI.enabled = true;
-        ExtToolbar?.Invoke(this, _layout);
-        
-        if (Current.ProgramState == ProgramState.Entry)
-        {
-            GUI.enabled = !MapPreviewAPI.IsGeneratingPreview;
-            var rerollWorldPos = _layout.Abs();
-            TooltipHandler.TipRegion(rerollWorldPos, "MapPreview.World.RerollWorldSeed".Translate());
-            if (GUI.Button(rerollWorldPos, _btnRerollWorldTex ??= ContentFinder<Texture2D>.Get("RerollWorldSeedMP")))
-            {
-                var windowStack = Find.WindowStack;
-                var page = windowStack.WindowOfType<Page_SelectStartingSite>();
-                if (page is { prev: Page_CreateWorldParams paramsPage })
-                {
-                    _wpCanDoNext ??= AccessTools.Method(typeof(Page_CreateWorldParams), "CanDoNext");
-                    _wpSeedString ??= AccessTools.Field(typeof(Page_CreateWorldParams), "seedString");
-                    
-                    windowStack.Add(paramsPage);
-                    page.Close();
-                    
-                    windowStack.WindowOfType<WorldInspectPane>()?.Close();
-
-                    _wpSeedString?.SetValue(paramsPage, GenText.RandomSeedString());
-                    _wpCanDoNext?.Invoke(paramsPage, Array.Empty<object>());
-                }
-            }
-        }
-        
-        GUI.enabled = true;
-        
+        foreach (var button in RegisteredButtons.Where(b => !b.AlignRight)) DoButton(button);
         _layout.End();
         
         _layout.BeginRel(0.5f, new LayoutParams { Spacing = 10, DefaultSize = 30, Horizontal = true, Reversed = true });
-        
-        var settingsPos = _layout.Abs();
-        TooltipHandler.TipRegion(settingsPos, "MapPreview.World.OpenSettings".Translate());
-        if (GUI.Button(settingsPos, _btnSettingsTex ??= ContentFinder<Texture2D>.Get(OptionCategoryDefOf.General.texPath)))
-        {
-            var windowStack = Find.WindowStack;
-            var existing = windowStack.WindowOfType<Dialog_ModSettings>();
-            
-            if (existing != null)
-            {
-                existing.Close();
-            }
-            else
-            {
-                windowStack.Add(new Dialog_ModSettings(MapPreviewMod.Settings.Mod));
-            }
-        }
-        
+        foreach (var button in RegisteredButtons.Where(b => b.AlignRight)) DoButton(button);
         _layout.End();
 
         _layout.End();
+        
+        GUI.enabled = true;
+    }
+
+    public abstract class Button
+    {
+        public virtual bool IsVisible => true;
+        public virtual bool IsInteractable => true;
+        public virtual bool AlignRight => false;
+        
+        public abstract string Tooltip { get; }
+        public abstract Texture Icon { get; }
+
+        public abstract void OnAction();
+    }
+
+    private class ButtonRerollMap : Button
+    {
+        public override bool IsVisible => MapPreviewMod.Settings.EnableSeedRerollFeature || CurrentTileIsRerolled;
+        public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview && CurrentTileCanBeRerolled;
+
+        public override string Tooltip => "MapPreview.World.RerollMapSeed".Translate();
+        public override Texture Icon => MapPreviewWidgetWithPreloader.UIPreviewLoading;
+
+        public override void OnAction()
+        {
+            var tile = Find.WorldSelector.selectedTile;
+            var rerollData = Find.World.GetComponent<SeedRerollData>();
+            var seed = rerollData.TryGet(tile, out var savedSeed) ? savedSeed : SeedRerollData.GetOriginalMapSeed(Find.World, tile);
+            unchecked { seed += 1; }
+            rerollData.Commit(tile, seed);
+        }
+    }
+    
+    private class ButtonRerollMapUndo : Button
+    {
+        public override bool IsVisible => MapPreviewMod.Settings.EnableSeedRerollFeature || CurrentTileIsRerolled;
+        public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview && CurrentTileIsRerolled && CurrentTileCanBeRerolled;
+
+        public override string Tooltip => "MapPreview.World.ResetMapSeed".Translate();
+        public override Texture Icon => MapPreviewWidgetWithPreloader.UIPreviewReset;
+
+        public override void OnAction()
+        {
+            var tile = Find.WorldSelector.selectedTile;
+            var rerollData = Find.World.GetComponent<SeedRerollData>();
+            rerollData.Reset(tile);
+        }
+    }
+    
+    private class ButtonRerollWorld : Button
+    {
+        public override bool IsVisible => Current.ProgramState == ProgramState.Entry;
+        public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview;
+
+        public override string Tooltip => "MapPreview.World.RerollWorldSeed".Translate();
+        public override Texture Icon { get; } = ContentFinder<Texture2D>.Get("RerollWorldSeedMP");
+
+        private readonly MethodInfo _wpCanDoNext = AccessTools.Method(typeof(Page_CreateWorldParams), "CanDoNext");
+        private readonly FieldInfo _wpSeedString = AccessTools.Field(typeof(Page_CreateWorldParams), "seedString");
+
+        public override void OnAction()
+        {
+            var windowStack = Find.WindowStack;
+            var page = windowStack.WindowOfType<Page_SelectStartingSite>();
+            
+            if (page is { prev: Page_CreateWorldParams paramsPage })
+            {
+                windowStack.Add(paramsPage);
+                page.Close();
+
+                windowStack.WindowOfType<WorldInspectPane>()?.Close();
+
+                _wpSeedString.SetValue(paramsPage, GenText.RandomSeedString());
+                _wpCanDoNext.Invoke(paramsPage, Array.Empty<object>());
+            }
+        }
+    }
+    
+    private class ButtonOpenSettings : Button
+    {
+        public override string Tooltip => "MapPreview.World.OpenSettings".Translate();
+        public override Texture Icon { get; } = ContentFinder<Texture2D>.Get(OptionCategoryDefOf.General.texPath);
+
+        public override bool AlignRight => true;
+
+        public override void OnAction()
+        {
+            var windowStack = Find.WindowStack;
+            
+            if (Prefs.DevMode && Input.GetKey(KeyCode.LeftShift))
+            {
+                var existing = windowStack.WindowOfType<Dialog_Options>();
+                if (existing == null) windowStack.Add(new Dialog_Options(OptionCategoryDefOf.Mods));
+                else existing.Close();
+            }
+            else
+            {
+                var existing = windowStack.WindowOfType<Dialog_ModSettings>();
+                if (existing == null) windowStack.Add(new Dialog_ModSettings(MapPreviewMod.Settings.Mod));
+                else existing.Close();
+            }
+        }
     }
 }

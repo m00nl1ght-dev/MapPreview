@@ -1,7 +1,7 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using LunarFramework.GUI;
 using LunarFramework.Patching;
 using UnityEngine;
 using Verse;
@@ -18,30 +18,37 @@ internal class ModCompat_PrepareLanding : ModCompat
     public override string TargetAssemblyName => "PrepareLanding";
     public override string DisplayName => "Prepare Landing";
     
-    private PropertyInfo _instance;
-    private PropertyInfo _window;
-    private PropertyInfo _data;
-    private Type _windowType;
+    private static PropertyInfo _instance;
+    private static PropertyInfo _window;
+    private static PropertyInfo _data;
+    
+    private static Type _windowType;
+    private static Type _windowMinimizedType;
 
     protected override bool OnApply()
     {
         var type = FindType("PrepareLanding.PrepareLanding");
+        
         _instance = Require(AccessTools.Property(type, "Instance"));
         _window = Require(AccessTools.Property(type, "MainWindow"));
         _data = Require(AccessTools.Property(type, "GameData"));
+        
         _windowType = FindType("PrepareLanding.MainWindow");
+        _windowMinimizedType = FindType("PrepareLanding.Core.Gui.Window.MinimizedWindow");
 
-        MapPreviewToolbar.ExtToolbar += DrawSettingsButton;
-        MapPreviewToolbar.ExtraWidth(40);
+        MapPreviewToolbar.RegisterButton(new ButtonOpenPrepareLanding());
+        
         return true;
     }
 
-    private void DrawSettingsButton(MapPreviewToolbar toolbar, LayoutRect layout)
+    private class ButtonOpenPrepareLanding : MapPreviewToolbar.Button
     {
-        GUI.enabled = !MapPreviewAPI.IsGeneratingPreview;
-        var btnPos = layout.Abs();
-        TooltipHandler.TipRegion(btnPos, "MapPreview.Integration.PrepareLanding.Open".Translate());
-        if (GUI.Button(btnPos, TexButton.Search))
+        public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview;
+
+        public override string Tooltip => "MapPreview.Integration.PrepareLanding.Open".Translate();
+        public override Texture Icon => TexButton.Search;
+
+        public override void OnAction()
         {
             var windowStack = Find.WindowStack;
             
@@ -61,11 +68,10 @@ internal class ModCompat_PrepareLanding : ModCompat
                 }
                 else
                 {
+                    windowStack.Windows.FirstOrDefault(w => w.GetType() == _windowMinimizedType)?.Close();
                     windowStack.Add(window);
                 }
             }
         }
-
-        GUI.enabled = true;
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using LunarFramework.GUI;
 using LunarFramework.Patching;
 using RimWorld;
 using UnityEngine;
@@ -18,8 +17,8 @@ internal class ModCompat_MapDesigner : ModCompat
     public override string TargetAssemblyName => "MapDesigner";
     public override string DisplayName => "Map Designer";
 
-    private Type _modType;
-    private Mod _mod;
+    private static Type _modType;
+    private static Mod _mod;
 
     protected override bool OnApply()
     {
@@ -37,8 +36,7 @@ internal class ModCompat_MapDesigner : ModCompat
         
         eventInfo.AddEventHandler(null, OnSettingsChanged);
         
-        MapPreviewToolbar.ExtToolbar += DrawSettingsButton;
-        MapPreviewToolbar.ExtraWidth(40);
+        MapPreviewToolbar.RegisterButton(new ButtonOpenMapDesigner());
 
         return true;
     }
@@ -48,12 +46,14 @@ internal class ModCompat_MapDesigner : ModCompat
         MapPreviewAPI.NotifyWorldChanged();
     }
 
-    private void DrawSettingsButton(MapPreviewToolbar toolbar, LayoutRect layout)
+    private class ButtonOpenMapDesigner : MapPreviewToolbar.Button
     {
-        GUI.enabled = !MapPreviewAPI.IsGeneratingPreview;
-        var btnPos = layout.Abs();
-        TooltipHandler.TipRegion(btnPos, "MapPreview.Integration.MapDesigner.OpenSettings".Translate());
-        if (GUI.Button(btnPos, TexButton.InspectModeToggle))
+        public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview;
+
+        public override string Tooltip => "MapPreview.Integration.MapDesigner.OpenSettings".Translate();
+        public override Texture Icon => TexButton.InspectModeToggle;
+
+        public override void OnAction()
         {
             var windowStack = Find.WindowStack;
             var existing = windowStack.WindowOfType<Dialog_ModSettings>();
@@ -67,7 +67,5 @@ internal class ModCompat_MapDesigner : ModCompat
                 windowStack.Add(new Dialog_ModSettings(_mod));
             }
         }
-
-        GUI.enabled = true;
     }
 }
