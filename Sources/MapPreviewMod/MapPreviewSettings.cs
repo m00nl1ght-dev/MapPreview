@@ -1,5 +1,7 @@
-using System.Globalization;
+using System.Collections.Generic;
+using LunarFramework.GUI;
 using LunarFramework.Utility;
+using MapPreview.Compatibility;
 using MapPreview.Patches;
 using UnityEngine;
 using Verse;
@@ -10,116 +12,172 @@ public class MapPreviewSettings : ModSettings
 {
     private const float DefaultPreviewWindowSize = 250f;
 
-    private static Vector2 _scrollPos = Vector2.zero;
-
     public float PreviewWindowSize = DefaultPreviewWindowSize;
     public bool EnableTrueTerrainColors = true;
     public bool EnableMapPreview = true;
     public bool EnableToolbar = true;
     public bool LockWindowPositions;
     public bool EnableSeedRerollFeature;
+    public bool EnableWorldSeedRerollFeature;
     public bool SkipRiverFlowCalc = true;
+    public bool EnableMapDesignerIntegration = true;
+    public bool EnablePrepareLandingIntegration = true;
+    public bool EnableWorldEditIntegration = true;
     
     public Vector2 PreviewWindowPos = new(-1, -1);
     public Vector2 ToolbarWindowPos = new(-1, -1);
 
-    public void DoSettingsWindowContents(Rect inRect)
+    private readonly LayoutRect _layout = new(MapPreviewMod.LunarAPI);
+    
+    private Tab _tab = Tab.Preview;
+    private List<TabRecord> _tabs;
+    private Vector2 _scrollPos;
+    private Rect _viewRect;
+
+    public void DoSettingsWindowContents(Rect rect)
     {
         if (!MapPreviewMod.LunarAPI.IsInitialized())
         {
-            DoLoadFailMessage(inRect);
+            _layout.BeginRoot(rect);
+            LunarGUI.Label(_layout, "An error occured whie loading this mod. Check the log file for more information.");
+            _layout.End();
             return;
         }
         
-        Rect rect = new(0.0f, 0.0f, inRect.width, 300f);
-        rect.xMax *= 0.95f;
+        _tabs ??= new()
+        {
+            new("MapPreview.Settings.Tab.Preview".Translate(), () => _tab = Tab.Preview, () => _tab == Tab.Preview),
+            new("MapPreview.Settings.Tab.Toolbar".Translate(), () => _tab = Tab.Toolbar, () => _tab == Tab.Toolbar)
+        };
         
-        Listing_Standard listingStandard = new();
-        listingStandard.Begin(rect);
-        GUI.EndGroup();
-        Widgets.BeginScrollView(inRect, ref _scrollPos, rect);
+        rect.yMin += 35;
+        rect.yMax -= 12;
         
-        listingStandard.CheckboxLabeled("MapPreview.Settings.EnableMapPreview".Translate(), ref EnableMapPreview, "MapPreview.Settings.EnableMapPreview".Translate());
+        Widgets.DrawMenuSection(rect);
+        TabDrawer.DrawTabs(rect, _tabs);
         
-        listingStandard.Gap();
+        rect = rect.ContractedBy(18f);
         
-        listingStandard.CheckboxLabeled("MapPreview.Settings.EnableToolbar".Translate(), ref EnableToolbar, "MapPreview.Settings.EnableToolbar".Translate());
+        switch (_tab)
+        {
+            case Tab.Preview: DoPreviewSettingsTab(rect); break;
+            case Tab.Toolbar: DoToolbarSettingsTab(rect); break;
+        }
+    }
+    
+    public void DoPreviewSettingsTab(Rect rect)
+    {
+        LunarGUI.BeginScrollView(rect, ref _viewRect, ref _scrollPos);
         
-        listingStandard.Gap();
+        _layout.BeginRoot(_viewRect, new LayoutParams { Spacing = 10 });
+        
+        LunarGUI.PushChanged();
+        
+        LunarGUI.Checkbox(_layout, ref EnableMapPreview, "MapPreview.Settings.EnableMapPreview".Translate());
 
-        GUI.enabled = EnableToolbar;
-        if (!EnableToolbar) EnableSeedRerollFeature = false;
-        listingStandard.CheckboxLabeled("MapPreview.Settings.EnableSeedRerollFeature".Translate(), ref EnableSeedRerollFeature, "MapPreview.Settings.EnableSeedRerollFeature".Translate());
-        GUI.enabled = true;
+        _layout.Abs(10f);
         
-        listingStandard.Gap();
+        LunarGUI.PushEnabled(EnableMapPreview);
+        
+        LunarGUI.Checkbox(_layout, ref EnableTrueTerrainColors, "MapPreview.Settings.EnableTrueTerrainColors".Translate());
+        LunarGUI.Checkbox(_layout, ref SkipRiverFlowCalc, "MapPreview.Settings.SkipRiverFlowCalc".Translate());
+        
+        if (LunarGUI.PopChanged())
+        {
+            Patch_RimWorld_WorldInterface.Refresh();
+        }
 
-        listingStandard.CheckboxLabeled("MapPreview.Settings.EnableTrueTerrainColors".Translate(), ref EnableTrueTerrainColors, "MapPreview.Settings.EnableTrueTerrainColors".Translate());
+        _layout.Abs(10f);
         
-        listingStandard.Gap();
+        LunarGUI.PushChanged();
         
-        listingStandard.CheckboxLabeled("MapPreview.Settings.SkipRiverFlowCalc".Translate(), ref SkipRiverFlowCalc, "MapPreview.Settings.SkipRiverFlowCalc".Translate());
+        LunarGUI.Checkbox(_layout, ref LockWindowPositions, "MapPreview.Settings.LockWindowPositions".Translate());
         
-        listingStandard.Gap();
-        
-        bool prevChanged = GUI.changed;
-        GUI.changed = false;
-        
-        listingStandard.CheckboxLabeled("MapPreview.Settings.LockWindowPositions".Translate(), ref LockWindowPositions, "MapPreview.Settings.LockWindowPositions".Translate());
-
-        listingStandard.Gap();
-
-        if (GUI.changed)
+        if (LunarGUI.PopChanged())
         {
             var previewWindow = MapPreviewWindow.Instance;
             if (previewWindow != null) previewWindow.draggable = !LockWindowPositions;
             var toolbarWindow = MapPreviewToolbar.Instance;
             if (toolbarWindow != null) toolbarWindow.draggable = !LockWindowPositions;
         }
-
-        GUI.changed = false;
-
-        CenteredLabel(listingStandard, "MapPreview.Settings.PreviewWindowSize".Translate(), PreviewWindowSize.ToString(CultureInfo.InvariantCulture));
-        PreviewWindowSize = (int) listingStandard.Slider(PreviewWindowSize, 100f, 800f);
         
-        if (GUI.changed)
+        _layout.Abs(10f);
+        
+        LunarGUI.PushChanged();
+
+        LunarGUI.DoubleLabel(_layout, "MapPreview.Settings.PreviewWindowSize".Translate(), PreviewWindowSize.ToString("F0"));
+        LunarGUI.Slider(_layout, ref PreviewWindowSize, 100f, 800f);
+        
+        if (LunarGUI.PopChanged())
         {
             PreviewWindowPos = new Vector2(-1, -1);
             ToolbarWindowPos = new Vector2(-1, -1);
-                
-            var previewWindow = MapPreviewWindow.Instance;
-            if (previewWindow != null)
-            {
-                previewWindow.windowRect.position = previewWindow.DefaultPos;
-                previewWindow.windowRect.size = previewWindow.InitialSize;
-            }
-            
-            var toolbarWindow = MapPreviewToolbar.Instance;
-            if (toolbarWindow != null)
-            {
-                toolbarWindow.windowRect.position = toolbarWindow.DefaultPos;
-                toolbarWindow.windowRect.size = toolbarWindow.InitialSize;
-            }
-        }
-        
-        GUI.changed = prevChanged;
 
-        if (Prefs.DevMode && listingStandard.ButtonText("[DEV] Clear cache and recalculate all terrain colors"))
+            MapPreviewWindow.Instance?.ResetPositionAndSize();
+            MapPreviewToolbar.Instance?.ResetPositionAndSize();
+        }
+
+        LunarGUI.PopEnabled();
+        
+        _layout.Abs(10f);
+        
+        if (Prefs.DevMode && LunarGUI.Button(_layout, "[DEV] Clear cache and recalculate all terrain colors"))
         {
             TrueTerrainColors.CalculateTrueTerrainColors(true);
+            Patch_RimWorld_WorldInterface.Refresh();
         }
 
-        Widgets.EndScrollView();
+        _viewRect.height = _layout.OccupiedSpace;
         
-        if (GUI.changed) Patch_RimWorld_WorldInterface.Refresh();
+        _layout.End();
+        
+        LunarGUI.EndScrollView();
     }
-
-    private void DoLoadFailMessage(Rect rect)
+    
+    public void DoToolbarSettingsTab(Rect rect)
     {
-        Listing_Standard listingStandard = new();
-        listingStandard.Begin(rect);
-        listingStandard.Label("An error occured whie loading this mod. Check the log file for more information.");
-        listingStandard.End();
+        LunarGUI.BeginScrollView(rect, ref _viewRect, ref _scrollPos);
+        
+        _layout.BeginRoot(_viewRect, new LayoutParams { Spacing = 10 });
+        
+        LunarGUI.PushChanged();
+        
+        LunarGUI.Checkbox(_layout,  ref EnableToolbar, "MapPreview.Settings.EnableToolbar".Translate());
+        
+        if (LunarGUI.PopChanged())
+        {
+            Patch_RimWorld_WorldInterface.Refresh();
+        }
+
+        _layout.Abs(10f);
+
+        LunarGUI.PushEnabled(EnableToolbar);
+        
+        LunarGUI.Checkbox(_layout, ref EnableSeedRerollFeature, "MapPreview.Settings.EnableSeedRerollFeature".Translate());
+        LunarGUI.Checkbox(_layout, ref EnableWorldSeedRerollFeature, "MapPreview.Settings.EnableWorldSeedRerollFeature".Translate());
+
+        if (ModCompat_MapDesigner.IsPresent)
+        {
+            LunarGUI.Checkbox(_layout, ref EnableMapDesignerIntegration, "MapPreview.Integration.MapDesigner.Enabled".Translate());
+        }
+        
+        if (ModCompat_PrepareLanding.IsPresent)
+        {
+            LunarGUI.Checkbox(_layout, ref EnablePrepareLandingIntegration, "MapPreview.Integration.PrepareLanding.Enabled".Translate());
+        }
+        
+        if (ModCompat_WorldEdit.IsPresent)
+        {
+            LunarGUI.Checkbox(_layout, ref EnableWorldEditIntegration, "MapPreview.Integration.WorldEdit.Enabled".Translate());
+        }
+        
+        LunarGUI.PopEnabled();
+
+        _viewRect.height = _layout.OccupiedSpace;
+        
+        _layout.End();
+        
+        LunarGUI.EndScrollView();
     }
 
     public override void ExposeData()
@@ -130,9 +188,14 @@ public class MapPreviewSettings : ModSettings
         Scribe_Values.Look(ref EnableToolbar, "EnableToolbar", true);
         Scribe_Values.Look(ref LockWindowPositions, "LockWindowPositions");
         Scribe_Values.Look(ref EnableSeedRerollFeature, "EnableSeedRerollFeature");
+        Scribe_Values.Look(ref EnableWorldSeedRerollFeature, "EnableWorldSeedRerollFeature", true);
         Scribe_Values.Look(ref SkipRiverFlowCalc, "SkipRiverFlowCalc", true);
+        Scribe_Values.Look(ref EnableMapDesignerIntegration, "EnableMapDesignerIntegration", true);
+        Scribe_Values.Look(ref EnablePrepareLandingIntegration, "EnablePrepareLandingIntegration", true);
+        Scribe_Values.Look(ref EnableWorldEditIntegration, "EnableWorldEditIntegration", true);
         Scribe_Values.Look(ref PreviewWindowPos, "PreviewWindowPos", new Vector2(-1, -1));
         Scribe_Values.Look(ref ToolbarWindowPos, "ToolbarWindowPos", new Vector2(-1, -1));
+        
         base.ExposeData();
 
         if (ToolbarWindowPos == new Vector2(-1, -1))
@@ -149,18 +212,17 @@ public class MapPreviewSettings : ModSettings
         EnableToolbar = true;
         LockWindowPositions = false;
         EnableSeedRerollFeature = false;
+        EnableWorldSeedRerollFeature = true;
         SkipRiverFlowCalc = true;
+        EnableMapDesignerIntegration = true;
+        EnablePrepareLandingIntegration = true;
+        EnableWorldEditIntegration = true;
         PreviewWindowPos = new Vector2(-1, -1);
         ToolbarWindowPos = new Vector2(-1, -1);
     }
     
-    private static void CenteredLabel(Listing_Standard listingStandard, string left, string center)
+    public enum Tab
     {
-        var labelSize = Text.CalcSize(center);
-        var rect = listingStandard.GetRect(28f);
-        var centerRect = rect.RightHalf();
-        centerRect.xMin -= labelSize.x * 0.5f;
-        Widgets.Label(centerRect, center);
-        Widgets.Label(rect, left);
+        Preview, Toolbar
     }
 }

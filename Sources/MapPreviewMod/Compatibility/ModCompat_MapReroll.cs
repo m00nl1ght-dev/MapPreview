@@ -13,10 +13,18 @@ namespace MapPreview.Compatibility;
 [HarmonyPatch]
 internal class ModCompat_MapReroll : ModCompat
 {
+    public static bool IsPresent { get; private set; }
+    
     public override string TargetAssemblyName => "MapReroll";
     public override string DisplayName => "Map Reroll";
     
     private static bool _trueTerrainColorsApplied;
+
+    protected override bool OnApply()
+    {
+        IsPresent = true;
+        return true;
+    }
 
     [HarmonyPrefix]
     [HarmonyPatch("MapReroll.MapPreviewGenerator", "GeneratePreviewForSeed")]

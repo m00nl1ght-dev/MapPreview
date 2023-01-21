@@ -110,6 +110,12 @@ public class MapPreviewWindow : Window
         return new IntVec2(250, 250);
     }
 
+    public void ResetPositionAndSize()
+    {
+        windowRect.size = InitialSize;
+        windowRect.position = DefaultPos;
+    }
+
     public override void PreOpen()
     {
         base.PreOpen();

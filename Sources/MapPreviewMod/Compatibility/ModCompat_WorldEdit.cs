@@ -16,6 +16,8 @@ namespace MapPreview.Compatibility;
 
 internal class ModCompat_WorldEdit : ModCompat
 {
+    public static bool IsPresent { get; private set; }
+    
     public override string TargetAssemblyName => "WorldEdit 2.0";
     public override string DisplayName => "WorldEdit 2.0";
     
@@ -39,12 +41,14 @@ internal class ModCompat_WorldEdit : ModCompat
         _close = Require(AccessTools.Method(editorType, "CloseEditor"));
 
         MapPreviewToolbar.RegisterButton(new ButtonOpenWorldEdit());
-        
+
+        IsPresent = true;
         return true;
     }
 
     private class ButtonOpenWorldEdit : MapPreviewToolbar.Button
     {
+        public override bool IsVisible => MapPreviewMod.Settings.EnableWorldEditIntegration;
         public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview;
 
         public override string Tooltip => "MapPreview.Integration.WorldEdit.Open".Translate();

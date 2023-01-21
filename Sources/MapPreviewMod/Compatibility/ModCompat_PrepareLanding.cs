@@ -15,6 +15,8 @@ namespace MapPreview.Compatibility;
 
 internal class ModCompat_PrepareLanding : ModCompat
 {
+    public static bool IsPresent { get; private set; }
+    
     public override string TargetAssemblyName => "PrepareLanding";
     public override string DisplayName => "Prepare Landing";
     
@@ -37,12 +39,14 @@ internal class ModCompat_PrepareLanding : ModCompat
         _windowMinimizedType = FindType("PrepareLanding.Core.Gui.Window.MinimizedWindow");
 
         MapPreviewToolbar.RegisterButton(new ButtonOpenPrepareLanding());
-        
+
+        IsPresent = true;
         return true;
     }
 
     private class ButtonOpenPrepareLanding : MapPreviewToolbar.Button
     {
+        public override bool IsVisible => MapPreviewMod.Settings.EnablePrepareLandingIntegration;
         public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview;
 
         public override string Tooltip => "MapPreview.Integration.PrepareLanding.Open".Translate();

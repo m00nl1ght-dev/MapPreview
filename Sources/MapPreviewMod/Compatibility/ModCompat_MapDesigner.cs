@@ -14,6 +14,8 @@ namespace MapPreview.Compatibility;
 
 internal class ModCompat_MapDesigner : ModCompat
 {
+    public static bool IsPresent { get; private set; }
+    
     public override string TargetAssemblyName => "MapDesigner";
     public override string DisplayName => "Map Designer";
 
@@ -38,6 +40,7 @@ internal class ModCompat_MapDesigner : ModCompat
         
         MapPreviewToolbar.RegisterButton(new ButtonOpenMapDesigner());
 
+        IsPresent = true;
         return true;
     }
 
@@ -48,6 +51,7 @@ internal class ModCompat_MapDesigner : ModCompat
 
     private class ButtonOpenMapDesigner : MapPreviewToolbar.Button
     {
+        public override bool IsVisible => MapPreviewMod.Settings.EnableMapDesignerIntegration;
         public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview;
 
         public override string Tooltip => "MapPreview.Integration.MapDesigner.OpenSettings".Translate();

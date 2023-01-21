@@ -36,7 +36,7 @@ public class MapPreviewToolbar : Window
         RegisterButton(new ButtonOpenSettings());
     }
     
-    public Vector2 DefaultPos => new(UI.screenWidth - MapPreviewMod.Settings.PreviewWindowSize - 50f, 50f);
+    public Vector2 DefaultPos => new(UI.screenWidth - Mathf.Max(MapPreviewMod.Settings.PreviewWindowSize, MinWidth) - 50f, 50f);
     public override Vector2 InitialSize => new(Math.Max(MapPreviewMod.Settings.PreviewWindowSize, MinWidth), 50);
     
     protected override float Margin => 0f;
@@ -69,6 +69,12 @@ public class MapPreviewToolbar : Window
             CurrentTileIsRerolled = false;
             CurrentTileCanBeRerolled = false;
         }
+    }
+    
+    public void ResetPositionAndSize()
+    {
+        windowRect.position = DefaultPos;
+        windowRect.size = InitialSize;
     }
 
     public override void PreOpen()
@@ -177,7 +183,7 @@ public class MapPreviewToolbar : Window
     
     private class ButtonRerollWorld : Button
     {
-        public override bool IsVisible => Current.ProgramState == ProgramState.Entry;
+        public override bool IsVisible => Current.ProgramState == ProgramState.Entry && MapPreviewMod.Settings.EnableWorldSeedRerollFeature;
         public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview;
 
         public override string Tooltip => "MapPreview.World.RerollWorldSeed".Translate();
