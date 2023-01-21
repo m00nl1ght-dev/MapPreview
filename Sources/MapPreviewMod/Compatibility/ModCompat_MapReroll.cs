@@ -22,6 +22,7 @@ internal class ModCompat_MapReroll : ModCompat
 
     protected override bool OnApply()
     {
+        MapPreviewMod.Settings.EnableSeedRerollFeature = false;
         IsPresent = true;
         return true;
     }

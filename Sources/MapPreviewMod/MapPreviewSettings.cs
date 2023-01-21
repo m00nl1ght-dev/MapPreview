@@ -151,9 +151,15 @@ public class MapPreviewSettings : ModSettings
 
         _layout.Abs(10f);
 
-        LunarGUI.PushEnabled(EnableToolbar);
+        LunarGUI.PushEnabled(EnableToolbar && !ModCompat_MapReroll.IsPresent);
         
-        LunarGUI.Checkbox(_layout, ref EnableSeedRerollFeature, "MapPreview.Settings.EnableSeedRerollFeature".Translate());
+        var trEntry = "MapPreview.Settings.EnableSeedRerollFeature";
+        if (ModCompat_MapReroll.IsPresent) trEntry += ".MapRerollConflict";
+        LunarGUI.Checkbox(_layout, ref EnableSeedRerollFeature, trEntry.Translate());
+
+        LunarGUI.PopEnabled();
+        LunarGUI.PushEnabled(EnableToolbar);
+
         LunarGUI.Checkbox(_layout, ref EnableWorldSeedRerollFeature, "MapPreview.Settings.EnableWorldSeedRerollFeature".Translate());
 
         if (ModCompat_MapDesigner.IsPresent)
