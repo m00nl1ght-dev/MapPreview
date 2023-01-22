@@ -26,6 +26,7 @@ SOFTWARE.
 
  */
 
+using System.Diagnostics;
 using MapPreview.Promises;
 using UnityEngine;
 using Verse;
@@ -45,6 +46,10 @@ public class MapPreviewRequest
     
     public bool UseTrueTerrainColors { get; set; }
     public bool SkipRiverFlowCalc { get; set; } = true;
+    
+    public readonly Stopwatch Timer = new();
+
+    public bool Pending => Promise?.CurState == PromiseState.Pending;
 
     public MapPreviewRequest(string worldSeed, int mapTile, IntVec2 mapSize) : 
         this(SeedFromWorldSeed(worldSeed, mapTile), mapTile, mapSize) {}

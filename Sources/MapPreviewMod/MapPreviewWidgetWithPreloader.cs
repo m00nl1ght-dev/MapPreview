@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using LunarFramework.Logging;
 using UnityEngine;
 using Verse;
@@ -20,6 +21,8 @@ public class MapPreviewWidgetWithPreloader : MapPreviewWidget
 
     protected override void HandleError(Exception ex)
     {
+        if (ex is ThreadAbortException) return;
+        
         Find.WindowStack.Add(new Dialog_MessageBox(
             "MapPreview.PreviewGenerationFailed".Translate(),
             null, () =>

@@ -57,6 +57,8 @@ public class MapPreviewGenerator : IDisposable
     
     private static readonly ThreadLocal<Map> GeneratingPreviewMap = new();
     
+    public static MapPreviewRequest CurrentRequest { get; private set; }
+    
     public static MapPreviewGenerator Instance { get; private set; }
     
     private readonly Queue<MapPreviewRequest> _queuedRequests = new();
@@ -102,7 +104,7 @@ public class MapPreviewGenerator : IDisposable
         
         _workerThread = new Thread(DoThreadWork);
         _workerThread.Start();
-        
+
         MapPreviewAPI.LunarAPI.LifecycleHooks.DoOnceOnShutdown(Dispose);
     }
 
@@ -144,6 +146,7 @@ public class MapPreviewGenerator : IDisposable
                     MapPreviewResult result = null;
                     try
                     {
+                        CurrentRequest = request;
                         OnBeginGenerating?.Invoke(request);
                         
                         result = new MapPreviewResult(request);
@@ -153,6 +156,7 @@ public class MapPreviewGenerator : IDisposable
                             throw new Exception("No terrain was generated for at least one map cell.");
 
                         OnFinishedGenerating?.Invoke(result);
+                        CurrentRequest = null;
                     }
                     catch (Exception e)
                     {
@@ -197,6 +201,22 @@ public class MapPreviewGenerator : IDisposable
         }
     }
 
+    public bool Abort()
+    {
+        try
+        {
+            Dispose();
+            _workerThread.Abort();
+            _workerThread.Join(3 * 1000);
+            return true;
+        }
+        catch (Exception e)
+        {
+            MapPreviewAPI.Logger.Warn("Failed to abort preview thread", e);
+            return false;
+        }
+    }
+
     public void Dispose()
     {
         if (Instance == this)
@@ -234,10 +254,14 @@ public class MapPreviewGenerator : IDisposable
             var mapParent = new MapParent { Tile = request.MapTile, def = WorldObjectDefOf.Settlement };
             mapParent.SetFaction(Faction.OfPlayer);
 
+            request.Timer.Start();
+
             var mapSizeVec = new IntVec3(request.MapSize.x, 1, request.MapSize.z);
             GenerateMap(request.Seed, mapSizeVec, mapParent, MapGeneratorDefOf.Base_Player, result, request.UseTrueTerrainColors);
 
             AddBevelToSolidStone(result);
+            
+            request.Timer.Stop();
         }
         catch (Exception e)
         {

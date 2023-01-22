@@ -7,6 +7,8 @@ namespace MapPreview;
 
 public class MapPreviewWindow : Window
 {
+    public const int Timeout = 30 * 1000;
+    
     public static IntVec2 MinMapSize = new(10, 10);
     public static IntVec2 MaxMapSize = new(500, 500);
 
@@ -44,6 +46,20 @@ public class MapPreviewWindow : Window
         {
             Close();
             return;
+        }
+        
+        if (MapPreviewGenerator.CurrentRequest is { Pending: true } && MapPreviewGenerator.CurrentRequest.Timer.ElapsedMilliseconds > Timeout)
+        {
+            MapPreviewMod.Logger.Error("Map preview generation timed out! Stopping preview thread...");
+            if (MapPreviewGenerator.Instance.Abort())
+            {
+                MapPreviewGenerator.Init();
+            }
+            else
+            {
+                Close();
+                return;
+            }
         }
         
         int seed = SeedRerollData.GetMapSeed(world, tileId);

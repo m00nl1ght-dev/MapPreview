@@ -105,7 +105,7 @@ public class MapPreviewSettings : ModSettings
         
         LunarGUI.PushChanged();
 
-        LunarGUI.DoubleLabel(_layout, "MapPreview.Settings.PreviewWindowSize".Translate(), PreviewWindowSize.ToString("F0"));
+        LunarGUI.LabelDouble(_layout, "MapPreview.Settings.PreviewWindowSize".Translate(), PreviewWindowSize.ToString("F0"));
         LunarGUI.Slider(_layout, ref PreviewWindowSize, 100f, 800f);
         
         if (LunarGUI.PopChanged())
