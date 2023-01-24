@@ -83,11 +83,10 @@ public class MapPreviewToolbar : Window
         
         if (Instance != this) Instance?.Close();
 
-        float lastX = MapPreviewMod.Settings.ToolbarWindowPos.x;
-        float lastY = MapPreviewMod.Settings.ToolbarWindowPos.y;
+        Vector2 pos = MapPreviewMod.Settings.ToolbarWindowPos;
 
-        windowRect.x = lastX >= 0 ? lastX : DefaultPos.x;
-        windowRect.y = lastY >= 0 ? lastY : DefaultPos.y;
+        windowRect.x = pos.x >= 0 ? pos.x : DefaultPos.x;
+        windowRect.y = pos.y >= 0 ? pos.y : DefaultPos.y;
         
         if (windowRect.x + windowRect.width > UI.screenWidth) windowRect.x = DefaultPos.x;
         if (windowRect.y + windowRect.height > UI.screenHeight) windowRect.y = DefaultPos.y;
@@ -100,7 +99,7 @@ public class MapPreviewToolbar : Window
         var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
         if (pos != MapPreviewMod.Settings.ToolbarWindowPos)
         {
-            MapPreviewMod.Settings.ToolbarWindowPos = pos;
+            MapPreviewMod.Settings.ToolbarWindowPos.Value = pos;
             MapPreviewMod.Settings.Write();
         }
     }

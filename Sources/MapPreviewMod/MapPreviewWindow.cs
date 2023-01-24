@@ -88,7 +88,7 @@ public class MapPreviewWindow : Window
         var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
         if (pos != MapPreviewMod.Settings.PreviewWindowPos)
         {
-            MapPreviewMod.Settings.PreviewWindowPos = pos;
+            MapPreviewMod.Settings.PreviewWindowPos.Value = pos;
             MapPreviewMod.Settings.Write();
         }
     }
@@ -111,7 +111,7 @@ public class MapPreviewWindow : Window
         if (MapSizeOverride != null)
         {
             var fromOverride = MapSizeOverride.Invoke();
-            if (fromOverride.x > 0 && fromOverride.z > 0)
+            if (fromOverride is { x: > 0, z: > 0 })
             {
                 return new IntVec2(fromOverride.x, fromOverride.z);
             }
@@ -140,11 +140,10 @@ public class MapPreviewWindow : Window
         
         MapPreviewGenerator.Init();
         
-        float lastX = MapPreviewMod.Settings.PreviewWindowPos.x;
-        float lastY = MapPreviewMod.Settings.PreviewWindowPos.y;
+        Vector2 pos = MapPreviewMod.Settings.PreviewWindowPos;
         
-        windowRect.x = lastX >= 0 ? lastX : DefaultPos.x;
-        windowRect.y = lastY >= 0 ? lastY : DefaultPos.y;
+        windowRect.x = pos.x >= 0 ? pos.x : DefaultPos.x;
+        windowRect.y = pos.y >= 0 ? pos.y : DefaultPos.y;
         
         if (windowRect.x + windowRect.width > UI.screenWidth) windowRect.x = DefaultPos.x;
         if (windowRect.y + windowRect.height > UI.screenHeight) windowRect.y = DefaultPos.y;
@@ -161,7 +160,7 @@ public class MapPreviewWindow : Window
         var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
         if (pos != MapPreviewMod.Settings.PreviewWindowPos)
         {
-            MapPreviewMod.Settings.PreviewWindowPos = pos;
+            MapPreviewMod.Settings.PreviewWindowPos.Value = pos;
             MapPreviewMod.Settings.Write();
         }
     }
