@@ -13,6 +13,7 @@ public class MapPreviewSettings : LunarModSettings
     public readonly Entry<bool> EnableMapPreview = MakeEntry(true);
     public readonly Entry<bool> EnableToolbar = MakeEntry(true);
     public readonly Entry<bool> LockWindowPositions = MakeEntry(false);
+    public readonly Entry<bool> AutoOpenPreviewOnWorldMap = MakeEntry(false);
     public readonly Entry<bool> EnableSeedRerollFeature = MakeEntry(false);
     public readonly Entry<bool> EnableWorldSeedRerollFeature = MakeEntry(true);
     public readonly Entry<bool> SkipRiverFlowCalc = MakeEntry(true);
@@ -45,10 +46,16 @@ public class MapPreviewSettings : LunarModSettings
         
         if (layout.PopChanged())
         {
-            Patch_RimWorld_WorldInterface.Refresh();
+            Patch_RimWorld_WorldInterface.Refresh(true);
         }
 
         layout.Abs(10f);
+        layout.PushChanged();
+        
+        LunarGUI.Checkbox(layout, ref AutoOpenPreviewOnWorldMap.Value, Label("AutoOpenPreviewOnWorldMap"));
+        
+        if (layout.PopChanged() && AutoOpenPreviewOnWorldMap) Patch_RimWorld_WorldInterface.Refresh(true);
+        
         layout.PushChanged();
         
         LunarGUI.Checkbox(layout, ref LockWindowPositions.Value, Label("LockWindowPositions"));

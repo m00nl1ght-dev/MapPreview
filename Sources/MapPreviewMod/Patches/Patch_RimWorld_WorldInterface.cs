@@ -15,6 +15,7 @@ namespace MapPreview.Patches;
 internal class Patch_RimWorld_WorldInterface
 {
     private static int _tileId = -1;
+    private static bool _activeSinceEnteringMap;
     private static bool _openedPreviewSinceEnteringMap;
 
     static Patch_RimWorld_WorldInterface() => MapPreviewAPI.OnWorldChanged += Refresh;
@@ -27,12 +28,18 @@ internal class Patch_RimWorld_WorldInterface
     {
         if (!WorldRendererUtility.WorldRenderedNow)
         {
-            if (_openedPreviewSinceEnteringMap)
+            if (_activeSinceEnteringMap)
             {
                 MapPreviewWindow.Instance?.Close();
                 MapPreviewToolbar.Instance?.Close();
-                MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
-                _openedPreviewSinceEnteringMap = false;
+
+                if (_openedPreviewSinceEnteringMap)
+                {
+                    MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
+                    _openedPreviewSinceEnteringMap = false;
+                }
+
+                _activeSinceEnteringMap = false;
                 _tileId = -1;
             }
             return;
@@ -40,12 +47,23 @@ internal class Patch_RimWorld_WorldInterface
         
         if (_tileId != __instance.SelectedTile)
         {
+            var wasAutoSelect = Current.ProgramState == ProgramState.Playing && _tileId == -1 && !_openedPreviewSinceEnteringMap;
+            
             _tileId = __instance.SelectedTile;
 
-            if (_tileId != -1)
+            if (_tileId >= 0)
             {
                 var tile = Find.World.grid[_tileId];
-                if (ShouldPreviewForTile(tile, _tileId))
+                _activeSinceEnteringMap = true;
+                
+                if (MapPreviewMod.Settings.EnableToolbar)
+                {
+                    var toolbar = MapPreviewToolbar.Instance;
+                    if (toolbar == null) Find.WindowStack.Add(toolbar = new MapPreviewToolbar());
+                    toolbar.OnWorldTileSelected(Find.World, _tileId);
+                }
+                
+                if (ShouldPreviewForTile(tile, _tileId) && (!wasAutoSelect || MapPreviewMod.Settings.AutoOpenPreviewOnWorldMap))
                 {
                     if (MapPreviewMod.Settings.EnableMapPreview && MapPreviewAPI.IsReady)
                     {
@@ -59,19 +77,11 @@ internal class Patch_RimWorld_WorldInterface
                         if (window == null) Find.WindowStack.Add(window = new MapPreviewWindow());
                         window.OnWorldTileSelected(Find.World, _tileId);
                     }
-                    
-                    if (MapPreviewMod.Settings.EnableToolbar)
-                    {
-                        var toolbar = MapPreviewToolbar.Instance;
-                        if (toolbar == null) Find.WindowStack.Add(toolbar = new MapPreviewToolbar());
-                        toolbar.OnWorldTileSelected(Find.World, _tileId);
-                    }
 
                     return;
                 }
             }
             
-            MapPreviewToolbar.Instance?.OnWorldTileSelected(Find.World, _tileId);
             MapPreviewWindow.Instance?.Close();
         }
     }
@@ -81,9 +91,11 @@ internal class Patch_RimWorld_WorldInterface
         return !tile.biome.impassable && (tile.hilliness != Hilliness.Impassable || TileFinder.IsValidTileForNewSettlement(tileId));
     }
 
-    public static void Refresh()
+    public static void Refresh() => Refresh(false);
+
+    public static void Refresh(bool autoOpen)
     {
-        _tileId = -1;
+        _tileId = autoOpen ? -2 : -1;
         if (!MapPreviewMod.Settings.EnableMapPreview)
         {
             MapPreviewWindow.Instance?.Close();

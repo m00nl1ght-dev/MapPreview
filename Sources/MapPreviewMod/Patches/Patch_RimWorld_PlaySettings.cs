@@ -21,7 +21,7 @@ internal class Patch_RimWorld_PlaySettings
         {
             bool prev = MapPreviewMod.Settings.EnableMapPreview;
             row.ToggleableIcon(ref MapPreviewMod.Settings.EnableMapPreview.Value, TexButton.TogglePauseOnError, "MapPreview.World.ShowHidePreview".Translate(), SoundDefOf.Mouseover_ButtonToggle);
-            if (prev != MapPreviewMod.Settings.EnableMapPreview) Patch_RimWorld_WorldInterface.Refresh();
+            if (prev != MapPreviewMod.Settings.EnableMapPreview) Patch_RimWorld_WorldInterface.Refresh(true);
         }
     }
 }
