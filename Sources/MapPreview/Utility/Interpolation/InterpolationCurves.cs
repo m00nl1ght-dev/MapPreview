@@ -121,7 +121,7 @@ namespace MapPreview.Interpolation
                 if ((t *= 2f) < 1f) return 0.5f * t * t;
                 return -0.5f * ((t -= 1f) * (t - 2f) - 1f);
             }
-        };
+        }
 
         public class Cubic
         {
@@ -140,7 +140,7 @@ namespace MapPreview.Interpolation
                 if ((t *= 2f) < 1f) return 0.5f * t * t * t;
                 return 0.5f * ((t -= 2f) * t * t + 2f);
             }
-        };
+        }
 
         public class Quartic
         {
@@ -159,7 +159,7 @@ namespace MapPreview.Interpolation
                 if ((t *= 2f) < 1f) return 0.5f * t * t * t * t;
                 return -0.5f * ((t -= 2f) * t * t * t - 2f);
             }
-        };
+        }
 
         public class Quintic
         {
@@ -178,7 +178,7 @@ namespace MapPreview.Interpolation
                 if ((t *= 2f) < 1f) return 0.5f * t * t * t * t * t;
                 return 0.5f * ((t -= 2f) * t * t * t * t + 2f);
             }
-        };
+        }
 
         public class Sinusoidal
         {
@@ -196,7 +196,7 @@ namespace MapPreview.Interpolation
             {
                 return 0.5f * (1f - Mathf.Cos(Mathf.PI * t));
             }
-        };
+        }
 
         public class Exponential
         {
@@ -217,7 +217,7 @@ namespace MapPreview.Interpolation
                 if ((t *= 2f) < 1f) return 0.5f * Mathf.Pow(1024f, t - 1f);
                 return 0.5f * (-Mathf.Pow(2f, -10f * (t - 1f)) + 2f);
             }
-        };
+        }
 
         public class Circular
         {
@@ -236,7 +236,7 @@ namespace MapPreview.Interpolation
                 if ((t *= 2f) < 1f) return -0.5f * (Mathf.Sqrt(1f - t * t) - 1);
                 return 0.5f * (Mathf.Sqrt(1f - (t -= 2f) * t) + 1f);
             }
-        };
+        }
 
         public class Elastic
         {
@@ -260,7 +260,7 @@ namespace MapPreview.Interpolation
                     return -0.5f * Mathf.Pow(2f, 10f * (t -= 1f)) * Mathf.Sin((t - 0.1f) * (2f * Mathf.PI) / 0.4f);
                 return Mathf.Pow(2f, -10f * (t -= 1f)) * Mathf.Sin((t - 0.1f) * (2f * Mathf.PI) / 0.4f) * 0.5f + 1f;
             }
-        };
+        }
 
         public class Back
         {
@@ -282,7 +282,7 @@ namespace MapPreview.Interpolation
                 if ((t *= 2f) < 1f) return 0.5f * (t * t * ((s2 + 1f) * t - s2));
                 return 0.5f * ((t -= 2f) * t * ((s2 + 1f) * t + s2) + 2f);
             }
-        };
+        }
 
         public class Bounce
         {
@@ -297,18 +297,18 @@ namespace MapPreview.Interpolation
                 {
                     return 7.5625f * t * t;
                 }
-                else if (t < (2f / 2.75f))
+
+                if (t < (2f / 2.75f))
                 {
                     return 7.5625f * (t -= (1.5f / 2.75f)) * t + 0.75f;
                 }
-                else if (t < (2.5f / 2.75f))
+
+                if (t < (2.5f / 2.75f))
                 {
                     return 7.5625f * (t -= (2.25f / 2.75f)) * t + 0.9375f;
                 }
-                else
-                {
-                    return 7.5625f * (t -= (2.625f / 2.75f)) * t + 0.984375f;
-                }
+
+                return 7.5625f * (t -= (2.625f / 2.75f)) * t + 0.984375f;
             }
 
             public static float InOut(float t)
@@ -316,6 +316,6 @@ namespace MapPreview.Interpolation
                 if (t < 0.5f) return In(t * 2f) * 0.5f;
                 return Out(t * 2f - 1f) * 0.5f + 0.5f;
             }
-        };
+        }
     }
 }

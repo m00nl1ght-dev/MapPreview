@@ -8,12 +8,12 @@ namespace MapPreview;
 public class MapPreviewWindow : Window
 {
     public const int Timeout = 30 * 1000;
-    
+
     public static IntVec2 MinMapSize = new(10, 10);
     public static IntVec2 MaxMapSize = new(500, 500);
 
     public static Func<IntVec2> MapSizeOverride;
-    
+
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
 
     public Vector2 DefaultPos => new(UI.screenWidth - InitialSize.x - 50f, 105f);
@@ -47,7 +47,7 @@ public class MapPreviewWindow : Window
             Close();
             return;
         }
-        
+
         if (MapPreviewGenerator.CurrentRequest is { Pending: true } && MapPreviewGenerator.CurrentRequest.Timer.ElapsedMilliseconds > Timeout)
         {
             MapPreviewMod.Logger.Error("Map preview generation timed out! Stopping preview thread...");
@@ -61,10 +61,10 @@ public class MapPreviewWindow : Window
                 return;
             }
         }
-        
+
         int seed = SeedRerollData.GetMapSeed(world, tileId);
         var mapSize = DetermineMapSize(world, tileId);
-        
+
         mapSize = new IntVec2(Mathf.Clamp(mapSize.x, MinMapSize.x, MaxMapSize.x), Mathf.Clamp(mapSize.z, MinMapSize.z, MaxMapSize.z));
 
         float desiredSize = MapPreviewMod.Settings.PreviewWindowSize;
@@ -84,7 +84,7 @@ public class MapPreviewWindow : Window
 
         MapPreviewGenerator.Instance.QueuePreviewRequest(request);
         _previewWidget.Await(request);
-        
+
         var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
         if (pos != MapPreviewMod.Settings.PreviewWindowPos)
         {
@@ -101,13 +101,13 @@ public class MapPreviewWindow : Window
             var fromSite = site.PreferredMapSize;
             return new IntVec2(fromSite.x, fromSite.z);
         }
-        
+
         if (Current.Game.Maps.Any())
         {
             var fromWorld = world.info.initialMapSize;
             return new IntVec2(fromWorld.x, fromWorld.z);
         }
-        
+
         if (MapSizeOverride != null)
         {
             var fromOverride = MapSizeOverride.Invoke();
@@ -122,7 +122,7 @@ public class MapPreviewWindow : Window
         {
             return new IntVec2(gameInitData.mapSize, gameInitData.mapSize);
         }
-        
+
         return new IntVec2(250, 250);
     }
 
@@ -135,16 +135,16 @@ public class MapPreviewWindow : Window
     public override void PreOpen()
     {
         base.PreOpen();
-        
+
         if (Instance != this) Instance?.Close();
-        
+
         MapPreviewGenerator.Init();
-        
+
         Vector2 pos = MapPreviewMod.Settings.PreviewWindowPos;
-        
+
         windowRect.x = pos.x >= 0 ? pos.x : DefaultPos.x;
         windowRect.y = pos.y >= 0 ? pos.y : DefaultPos.y;
-        
+
         if (windowRect.x + windowRect.width > UI.screenWidth) windowRect.x = DefaultPos.x;
         if (windowRect.y + windowRect.height > UI.screenHeight) windowRect.y = DefaultPos.y;
     }
@@ -152,19 +152,19 @@ public class MapPreviewWindow : Window
     public override void PreClose()
     {
         base.PreClose();
-        
+
         _previewWidget.Dispose();
-        
+
         MapPreviewGenerator.Instance.ClearQueue();
-        
-        var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
+
+        var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
         if (pos != MapPreviewMod.Settings.PreviewWindowPos)
         {
             MapPreviewMod.Settings.PreviewWindowPos.Value = pos;
             MapPreviewMod.Settings.Write();
         }
     }
-    
+
     public override void DoWindowContents(Rect inRect)
     {
         _previewWidget.Draw(inRect.ContractedBy(5f));

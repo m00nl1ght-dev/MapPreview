@@ -2,12 +2,6 @@ using HarmonyLib;
 using LunarFramework.Patching;
 using Verse;
 
-// ReSharper disable RedundantAssignment
-// ReSharper disable UnusedParameter.Local
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 namespace MapPreview.Patches;
 
 [PatchGroup("Gen")]
@@ -21,7 +15,7 @@ internal static class Patch_Verse_GenSpawn
         if (!MapPreviewAPI.IsGeneratingPreview) return true;
         var generating = MapPreviewGenerator.GeneratingMapOnCurrentThread;
         if (generating != map) return true;
-        
+
         MapPreviewAPI.Logger.Warn("Some mod attempted to spawn thing " + newThing + " on a preview map, this is not supported!");
 
         __result = null;

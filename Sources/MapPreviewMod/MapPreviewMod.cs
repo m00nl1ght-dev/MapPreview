@@ -9,12 +9,12 @@ namespace MapPreview;
 public class MapPreviewMod : Mod
 {
     internal static readonly LunarAPI LunarAPI = LunarAPI.Create("Map Preview Mod", Init, Cleanup);
-    
+
     internal static LogContext Logger => LunarAPI.LogContext;
-    
+
     internal static PatchGroup MainPatchGroup;
     internal static PatchGroup CompatPatchGroup;
-    
+
     internal static MapPreviewSettings Settings;
 
     private static void Init()
@@ -22,15 +22,15 @@ public class MapPreviewMod : Mod
         MainPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Main");
         MainPatchGroup.AddPatches(typeof(MapPreviewMod).Assembly);
         MainPatchGroup.Subscribe();
-        
+
         CompatPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Compat");
         CompatPatchGroup.Subscribe();
 
         ModCompat.ApplyAll(LunarAPI, CompatPatchGroup);
-        
+
         MapPreviewAPI.AddStableSeedCondition(map => Settings.SkipRiverFlowCalc && map.TileInfo.Rivers?.Count > 0);
     }
-    
+
     private static void Cleanup()
     {
         MainPatchGroup?.UnsubscribeAll();

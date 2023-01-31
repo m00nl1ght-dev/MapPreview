@@ -5,10 +5,6 @@ using Verse;
 
 namespace MapPreview.Compatibility;
 
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 [HarmonyPatch]
 internal class ModCompat_SaveOurShip : ModCompat
 {

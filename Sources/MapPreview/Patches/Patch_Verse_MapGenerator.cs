@@ -3,10 +3,6 @@ using HarmonyLib;
 using LunarFramework.Patching;
 using Verse;
 
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 namespace MapPreview.Patches;
 
 [PatchGroup("Main")]
@@ -20,7 +16,7 @@ internal static class Patch_Verse_MapGenerator
         if (!MapPreviewAPI.IsGeneratingPreview) return true;
         throw new Exception("Attempted to use MapGenerator while a map preview is being generated!");
     }
-    
+
     [HarmonyPrefix]
     [HarmonyPatch("GenerateContentsIntoMap")]
     private static void GenerateContentsIntoMap(Map map, ref int seed)

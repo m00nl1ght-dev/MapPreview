@@ -4,11 +4,6 @@ using RimWorld;
 using Verse;
 using Verse.Noise;
 
-// ReSharper disable RedundantAssignment
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 namespace MapPreview.Patches;
 
 /// <summary>
@@ -25,7 +20,7 @@ internal static class Patch_RimWorld_TerrainPatchMaker
     private static bool Init(Map map, ref ModuleBase ___noise, ref Map ___currentlyInitializedForMap, TerrainPatchMaker __instance)
     {
         if (!MapPreviewAPI.ShouldUseStableSeed(map)) return true;
-        
+
         ___noise = new Perlin(
             __instance.perlinFrequency,
             __instance.perlinLacunarity,
@@ -33,11 +28,11 @@ internal static class Patch_RimWorld_TerrainPatchMaker
             __instance.perlinOctaves,
             MakeStableSeed(__instance, map),
             QualityMode.Medium);
-        
+
         ___currentlyInitializedForMap = map;
         return false;
     }
-    
+
     private static int MakeStableSeed(TerrainPatchMaker tpm, Map map)
     {
         int idx = map.Biome.terrainPatchMakers.IndexOf(tpm);
@@ -47,26 +42,26 @@ internal static class Patch_RimWorld_TerrainPatchMaker
         if (idx >= 0) return seed ^ 9305 + idx;
         return seed ^ GetHashCode(tpm);
     }
-    
+
     public static int GetHashCode(TerrainPatchMaker tpm)
     {
         unchecked
         {
-            var hashCode =  tpm.perlinFrequency.GetHashCode();
+            var hashCode = tpm.perlinFrequency.GetHashCode();
             hashCode = (hashCode * 397) ^ tpm.perlinLacunarity.GetHashCode();
             hashCode = (hashCode * 397) ^ tpm.perlinPersistence.GetHashCode();
             hashCode = (hashCode * 397) ^ tpm.perlinOctaves;
             hashCode = (hashCode * 397) ^ tpm.minFertility.GetHashCode();
             hashCode = (hashCode * 397) ^ tpm.maxFertility.GetHashCode();
             hashCode = (hashCode * 397) ^ tpm.minSize;
-            
+
             foreach (var threshold in tpm.thresholds)
             {
                 hashCode = (hashCode * 397) ^ threshold.min.GetHashCode();
                 hashCode = (hashCode * 397) ^ threshold.max.GetHashCode();
                 hashCode = (hashCode * 397) ^ threshold.terrain.defName.GetHashCode();
             }
-            
+
             return hashCode;
         }
     }

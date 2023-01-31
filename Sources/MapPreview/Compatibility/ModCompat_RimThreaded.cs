@@ -4,10 +4,6 @@ using LunarFramework.Patching;
 
 namespace MapPreview.Compatibility;
 
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 internal class ModCompat_RimThreaded : ModCompat
 {
     public override string TargetAssemblyName => "RimThreaded";
@@ -21,7 +17,7 @@ internal class ModCompat_RimThreaded : ModCompat
         {
             method.Invoke(null, Array.Empty<object>());
         };
-        
+
         return true;
     }
 }

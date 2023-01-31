@@ -15,14 +15,14 @@ namespace MapPreview;
 public class MapPreviewToolbar : Window
 {
     public static MapPreviewToolbar Instance => Find.WindowStack?.WindowOfType<MapPreviewToolbar>();
-    
+
     public static bool CurrentTileCanBeRerolled { get; private set; }
     public static bool CurrentTileIsRerolled { get; private set; }
-    
+
     private static readonly List<Button> RegisteredButtons = new();
-    
+
     public static float MinWidth => 10f + RegisteredButtons.Count(b => b.IsVisible) * 40f;
-    
+
     public static void RegisterButton(Button button)
     {
         RegisteredButtons.AddDistinct(button);
@@ -35,12 +35,12 @@ public class MapPreviewToolbar : Window
         RegisterButton(new ButtonRerollWorld());
         RegisterButton(new ButtonOpenSettings());
     }
-    
+
     public Vector2 DefaultPos => new(UI.screenWidth - Mathf.Max(MapPreviewMod.Settings.PreviewWindowSize, MinWidth) - 50f, 50f);
     public override Vector2 InitialSize => new(Math.Max(MapPreviewMod.Settings.PreviewWindowSize, MinWidth), 50);
-    
+
     protected override float Margin => 0f;
-    
+
     public MapPreviewToolbar()
     {
         layer = WindowLayer.SubSuper;
@@ -70,7 +70,7 @@ public class MapPreviewToolbar : Window
             CurrentTileCanBeRerolled = false;
         }
     }
-    
+
     public void ResetPositionAndSize()
     {
         windowRect.position = DefaultPos;
@@ -80,14 +80,14 @@ public class MapPreviewToolbar : Window
     public override void PreOpen()
     {
         base.PreOpen();
-        
+
         if (Instance != this) Instance?.Close();
 
         Vector2 pos = MapPreviewMod.Settings.ToolbarWindowPos;
 
         windowRect.x = pos.x >= 0 ? pos.x : DefaultPos.x;
         windowRect.y = pos.y >= 0 ? pos.y : DefaultPos.y;
-        
+
         if (windowRect.x + windowRect.width > UI.screenWidth) windowRect.x = DefaultPos.x;
         if (windowRect.y + windowRect.height > UI.screenHeight) windowRect.y = DefaultPos.y;
     }
@@ -96,7 +96,7 @@ public class MapPreviewToolbar : Window
     {
         base.PreClose();
 
-        var pos = new Vector2((int)windowRect.x, (int)windowRect.y);
+        var pos = new Vector2((int) windowRect.x, (int) windowRect.y);
         if (pos != MapPreviewMod.Settings.ToolbarWindowPos)
         {
             MapPreviewMod.Settings.ToolbarWindowPos.Value = pos;
@@ -120,17 +120,17 @@ public class MapPreviewToolbar : Window
         }
 
         _layout.BeginRoot(inRect, new LayoutParams { Margin = new(10), Horizontal = true });
-        
+
         _layout.BeginRel(0.5f, new LayoutParams { Spacing = 10, DefaultSize = 30, Horizontal = true });
         foreach (var button in RegisteredButtons.Where(b => !b.AlignRight)) DoButton(button);
         _layout.End();
-        
+
         _layout.BeginRel(0.5f, new LayoutParams { Spacing = 10, DefaultSize = 30, Horizontal = true, Reversed = true });
         foreach (var button in RegisteredButtons.Where(b => b.AlignRight)) DoButton(button);
         _layout.End();
 
         _layout.End();
-        
+
         GUI.enabled = true;
     }
 
@@ -139,7 +139,7 @@ public class MapPreviewToolbar : Window
         public virtual bool IsVisible => true;
         public virtual bool IsInteractable => true;
         public virtual bool AlignRight => false;
-        
+
         public abstract string Tooltip { get; }
         public abstract Texture Icon { get; }
 
@@ -160,10 +160,11 @@ public class MapPreviewToolbar : Window
             var rerollData = Find.World.GetComponent<SeedRerollData>();
             var seed = rerollData.TryGet(tile, out var savedSeed) ? savedSeed : SeedRerollData.GetOriginalMapSeed(Find.World, tile);
             unchecked { seed += 1; }
+
             rerollData.Commit(tile, seed);
         }
     }
-    
+
     private class ButtonRerollMapUndo : Button
     {
         public override bool IsVisible => MapPreviewMod.Settings.EnableSeedRerollFeature || CurrentTileIsRerolled;
@@ -179,7 +180,7 @@ public class MapPreviewToolbar : Window
             rerollData.Reset(tile);
         }
     }
-    
+
     private class ButtonRerollWorld : Button
     {
         public override bool IsVisible => Current.ProgramState == ProgramState.Entry && MapPreviewMod.Settings.EnableWorldSeedRerollFeature;
@@ -195,7 +196,7 @@ public class MapPreviewToolbar : Window
         {
             var windowStack = Find.WindowStack;
             var page = windowStack.WindowOfType<Page_SelectStartingSite>();
-            
+
             if (page is { prev: Page_CreateWorldParams paramsPage })
             {
                 windowStack.Add(paramsPage);
@@ -208,7 +209,7 @@ public class MapPreviewToolbar : Window
             }
         }
     }
-    
+
     private class ButtonOpenSettings : Button
     {
         public override string Tooltip => "MapPreview.World.OpenSettings".Translate();
@@ -219,7 +220,7 @@ public class MapPreviewToolbar : Window
         public override void OnAction()
         {
             var windowStack = Find.WindowStack;
-            
+
             if (Prefs.DevMode && Input.GetKey(KeyCode.LeftShift))
             {
                 var existing = windowStack.WindowOfType<Dialog_Options>();

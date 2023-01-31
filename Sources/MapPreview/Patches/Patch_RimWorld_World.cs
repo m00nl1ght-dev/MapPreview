@@ -6,12 +6,6 @@ using RimWorld;
 using RimWorld.Planet;
 using Verse;
 
-// ReSharper disable RedundantAssignment
-// ReSharper disable UnusedParameter.Local
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 namespace MapPreview.Patches;
 
 /// <summary>
@@ -32,7 +26,7 @@ internal static class Patch_RimWorld_World
     private static bool CoastDirectionAt(World __instance, int tileID, ref Rot4 __result)
     {
         if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        
+
         var grid = __instance.grid;
         if (!grid[tileID].biome.canBuildBase)
         {
@@ -42,7 +36,7 @@ internal static class Patch_RimWorld_World
 
         tmpOceanDirs.Clear();
         grid.GetTileNeighbors(tileID, tmpNeighbors);
-        
+
         int index1 = 0;
         for (int count = tmpNeighbors.Count; index1 < count; ++index1)
         {
@@ -52,7 +46,7 @@ internal static class Patch_RimWorld_World
                 if (!tmpOceanDirs.Contains(rotFromTo)) tmpOceanDirs.Add(rotFromTo);
             }
         }
-        
+
         if (tmpOceanDirs.Count == 0)
         {
             __result = Rot4.Invalid;
@@ -62,29 +56,29 @@ internal static class Patch_RimWorld_World
         Rand.PushState(tileID);
         int index2 = Rand.Range(0, tmpOceanDirs.Count);
         Rand.PopState();
-        
+
         __result = tmpOceanDirs[index2];
         return false;
     }
-    
+
     [HarmonyPatch(nameof(World.NaturalRockTypesIn))]
     [HarmonyPriority(Priority.VeryLow)]
     [HarmonyPrefix]
     private static bool NaturalRockTypesIn(int tile, ref IEnumerable<ThingDef> __result, ref List<ThingDef> ___allNaturalRockDefs)
     {
         if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        
+
         Rand.PushState(tile);
-        
+
         ___allNaturalRockDefs ??= DefDatabase<ThingDef>.AllDefs.Where(d => d.IsNonResourceNaturalRock).ToList();
-        
+
         int num = Rand.RangeInclusive(2, 3);
         if (num > ___allNaturalRockDefs.Count)
             num = ___allNaturalRockDefs.Count;
-        
+
         tmpNaturalRockDefs.Clear();
         tmpNaturalRockDefs.AddRange(___allNaturalRockDefs);
-        
+
         var thingDefList = new List<ThingDef>();
         for (int index = 0; index < num; ++index)
         {
@@ -92,9 +86,9 @@ internal static class Patch_RimWorld_World
             tmpNaturalRockDefs.Remove(thingDef);
             thingDefList.Add(thingDef);
         }
-        
+
         Rand.PopState();
-        
+
         __result = thingDefList;
         return false;
     }

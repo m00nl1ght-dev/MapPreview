@@ -4,12 +4,6 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-// ReSharper disable RedundantAssignment
-// ReSharper disable UnusedParameter.Local
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 namespace MapPreview.Patches;
 
 [PatchGroup("Main")]
@@ -22,7 +16,7 @@ internal class Patch_RimWorld_Dialog_AdvancedGameConfig
     {
         var world = Find.World;
         if (!GUI.changed && world != null) return;
-        
+
         var currentPreviewMap = MapPreviewWindow.Instance?.CurrentPreviewMap;
         if (currentPreviewMap != null)
         {

@@ -3,12 +3,6 @@ using HarmonyLib;
 using LunarFramework.Patching;
 using RimWorld.Planet;
 
-// ReSharper disable RedundantAssignment
-// ReSharper disable UnusedParameter.Local
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 namespace MapPreview.Patches;
 
 /// <summary>
@@ -31,7 +25,7 @@ internal static class Patch_RimWorld_WorldGrid
         __result = tmpNeighbors.Contains(tile2);
         return false;
     }
-    
+
     [HarmonyPatch(typeof(WorldGrid), nameof(WorldGrid.GetNeighborId))]
     [HarmonyPriority(Priority.VeryLow)]
     [HarmonyPrefix]
@@ -42,7 +36,7 @@ internal static class Patch_RimWorld_WorldGrid
         __result = tmpNeighbors.IndexOf(tile2);
         return false;
     }
-    
+
     [HarmonyPatch(typeof(WorldGrid), nameof(WorldGrid.GetTileNeighbor))]
     [HarmonyPriority(Priority.VeryLow)]
     [HarmonyPrefix]

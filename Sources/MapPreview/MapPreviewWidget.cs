@@ -39,7 +39,7 @@ namespace MapPreview;
 public abstract class MapPreviewWidget : IDisposable
 {
     protected static readonly Color DefaultOutlineColor = GenColor.FromHex("616C7A");
-    
+
     protected virtual float SpawnInterpolationDuration => 0.3f;
     protected virtual Color OutlineColor => DefaultOutlineColor;
 
@@ -48,7 +48,7 @@ public abstract class MapPreviewWidget : IDisposable
     protected Rect TexCoords;
     protected int AwaitingMapTile = -1;
     protected MapPreviewRequest AwaitingRequest;
-    
+
     public Color[] Buffer { get; private set; }
     public Texture2D Texture { get; private set; }
     public Map PreviewMap { get; private set; }
@@ -66,7 +66,7 @@ public abstract class MapPreviewWidget : IDisposable
         if (overlay.PreviewWidget != this) throw new Exception();
         Overlays.Add(overlay);
     }
-    
+
     public void Await(MapPreviewRequest request)
     {
         AwaitingRequest = request;
@@ -78,7 +78,7 @@ public abstract class MapPreviewWidget : IDisposable
         SpawnInterpolator.finished = true;
         SpawnInterpolator.value = 0f;
         AwaitingMapTile = mapTile;
-        
+
         promise.Done(OnPromiseResolved, OnPromiseRejected);
     }
 
@@ -103,11 +103,11 @@ public abstract class MapPreviewWidget : IDisposable
         }
 
         DrawOutline(rect);
-        
+
         if (Texture != null && SpawnInterpolator.value > 0)
         {
             DrawGenerated(rect);
-            
+
             foreach (var overlay in Overlays)
             {
                 overlay.Draw(rect);
@@ -130,7 +130,7 @@ public abstract class MapPreviewWidget : IDisposable
         int iz = Math.Min(PreviewMap.Size.z - 1, Math.Max(0, (int) Math.Round(z, 0)));
         return new IntVec3(ix, 0, iz);
     }
-    
+
     public Vector2 PosInRectFromMapPos(Rect mapRect, IntVec3 mapPos)
     {
         float rx = PreviewMap.Size.x / mapRect.width;
@@ -146,7 +146,7 @@ public abstract class MapPreviewWidget : IDisposable
         return map.terrainGrid.TerrainAt(pos).label.CapitalizeFirst() + " ( " + pos.x + " | " + pos.z + " )";
     }
 
-    protected virtual void DrawGenerating(Rect inRect) {}
+    protected virtual void DrawGenerating(Rect inRect) { }
 
     protected virtual void DrawGenerated(Rect inRect)
     {
@@ -163,16 +163,16 @@ public abstract class MapPreviewWidget : IDisposable
         TexCoords = result.TexCoords;
         result.CopyToTexture(Texture);
         Texture.Apply();
-        
+
         AwaitingMapTile = -1;
         AwaitingRequest = null;
         Buffer = result.Pixels;
-        
+
         foreach (var overlay in Overlays)
         {
             overlay.Update(result);
         }
-        
+
         SpawnInterpolator.value = 0f;
         SpawnInterpolator.StartInterpolation(1f, SpawnInterpolationDuration, CurveType.CubicOut);
     }
@@ -182,19 +182,19 @@ public abstract class MapPreviewWidget : IDisposable
         if (Texture == null) return;
 
         PreviewMap = null;
-        
+
         foreach (var overlay in Overlays)
         {
             overlay.Reset();
         }
-        
+
         SpawnInterpolator.value = 0f;
         SpawnInterpolator.finished = true;
-        
+
         HandleError(ex);
     }
 
-    protected virtual void HandleError(Exception ex) {}
+    protected virtual void HandleError(Exception ex) { }
 
     private void DrawOutline(Rect rect)
     {

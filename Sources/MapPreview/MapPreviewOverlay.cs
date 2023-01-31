@@ -12,8 +12,8 @@ public abstract class MapPreviewOverlay
     }
 
     public abstract void Draw(Rect rect);
-    
-    public virtual void Update(MapPreviewResult result) {}
 
-    public virtual void Reset() {}
+    public virtual void Update(MapPreviewResult result) { }
+
+    public virtual void Reset() { }
 }

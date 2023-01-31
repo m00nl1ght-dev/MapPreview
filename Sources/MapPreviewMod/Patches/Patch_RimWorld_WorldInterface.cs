@@ -4,10 +4,6 @@ using RimWorld;
 using RimWorld.Planet;
 using Verse;
 
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 namespace MapPreview.Patches;
 
 [PatchGroup("Main")]
@@ -19,9 +15,9 @@ internal class Patch_RimWorld_WorldInterface
     private static bool _openedPreviewSinceEnteringMap;
 
     static Patch_RimWorld_WorldInterface() => MapPreviewAPI.OnWorldChanged += Refresh;
-    
+
     private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(Patch_RimWorld_WorldInterface));
-    
+
     [HarmonyPostfix]
     [HarmonyPatch("WorldInterfaceUpdate")]
     private static void WorldInterfaceUpdate(WorldInterface __instance)
@@ -42,27 +38,28 @@ internal class Patch_RimWorld_WorldInterface
                 _activeSinceEnteringMap = false;
                 _tileId = -1;
             }
+
             return;
         }
-        
+
         if (_tileId != __instance.SelectedTile)
         {
             var wasAutoSelect = Current.ProgramState == ProgramState.Playing && _tileId == -1 && !_openedPreviewSinceEnteringMap;
-            
+
             _tileId = __instance.SelectedTile;
 
             if (_tileId >= 0)
             {
                 var tile = Find.World.grid[_tileId];
                 _activeSinceEnteringMap = true;
-                
+
                 if (MapPreviewMod.Settings.EnableToolbar)
                 {
                     var toolbar = MapPreviewToolbar.Instance;
                     if (toolbar == null) Find.WindowStack.Add(toolbar = new MapPreviewToolbar());
                     toolbar.OnWorldTileSelected(Find.World, _tileId);
                 }
-                
+
                 if (ShouldPreviewForTile(tile, _tileId) && (!wasAutoSelect || MapPreviewMod.Settings.AutoOpenPreviewOnWorldMap))
                 {
                     if (MapPreviewMod.Settings.EnableMapPreview && MapPreviewAPI.IsReady)
@@ -72,7 +69,7 @@ internal class Patch_RimWorld_WorldInterface
                             MapPreviewAPI.SubscribeGenPatches(PatchGroupSubscriber);
                             _openedPreviewSinceEnteringMap = true;
                         }
-                    
+
                         var window = MapPreviewWindow.Instance;
                         if (window == null) Find.WindowStack.Add(window = new MapPreviewWindow());
                         window.OnWorldTileSelected(Find.World, _tileId);
@@ -81,7 +78,7 @@ internal class Patch_RimWorld_WorldInterface
                     return;
                 }
             }
-            
+
             MapPreviewWindow.Instance?.Close();
         }
     }
@@ -100,7 +97,7 @@ internal class Patch_RimWorld_WorldInterface
         {
             MapPreviewWindow.Instance?.Close();
             MapPreviewToolbar.Instance?.Close();
-        } 
+        }
         else if (!MapPreviewMod.Settings.EnableToolbar)
         {
             MapPreviewToolbar.Instance?.Close();

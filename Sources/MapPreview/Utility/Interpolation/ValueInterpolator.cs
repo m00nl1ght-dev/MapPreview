@@ -38,9 +38,10 @@ namespace MapPreview.Interpolation
 	 */
     public class ValueInterpolator : IExposable
     {
-        public delegate void FinishedCallback(ValueInterpolator interpolator, float finalValue,
-            float interpolationDuration, InterpolationCurves.Curve interpolationCurve);
-        
+        public delegate void FinishedCallback(
+            ValueInterpolator interpolator, float finalValue, float interpolationDuration,
+            InterpolationCurves.Curve interpolationCurve);
+
         private static readonly BindingFlags AllBindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
         public float value;
@@ -55,9 +56,7 @@ namespace MapPreview.Interpolation
         private FinishedCallback callback;
 
         // deserialization constructor
-        public ValueInterpolator()
-        {
-        }
+        public ValueInterpolator() { }
 
         public ValueInterpolator(float value = 0f)
         {
@@ -102,7 +101,7 @@ namespace MapPreview.Interpolation
                     }
                     else
                     {
-                        curve = (InterpolationCurves.Curve)Delegate.CreateDelegate(typeof(InterpolationCurves.Curve),
+                        curve = (InterpolationCurves.Curve) Delegate.CreateDelegate(typeof(InterpolationCurves.Curve),
                             curveMethod, true);
                     }
                 }

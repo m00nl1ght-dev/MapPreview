@@ -5,17 +5,12 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-// ReSharper disable RedundantAssignment
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 namespace MapPreview.Compatibility;
 
 internal class ModCompat_MapDesigner : ModCompat
 {
     public static bool IsPresent { get; private set; }
-    
+
     public override string TargetAssemblyName => "MapDesigner";
     public override string DisplayName => "Map Designer";
 
@@ -35,9 +30,9 @@ internal class ModCompat_MapDesigner : ModCompat
             MapPreviewMod.Logger.Warn("Could not apply integration with Map Designer. Most likely you are using an old version of Map Designer.");
             return false;
         }
-        
+
         eventInfo.AddEventHandler(null, OnSettingsChanged);
-        
+
         MapPreviewToolbar.RegisterButton(new ButtonOpenMapDesigner());
 
         IsPresent = true;
@@ -61,7 +56,7 @@ internal class ModCompat_MapDesigner : ModCompat
         {
             var windowStack = Find.WindowStack;
             var existing = windowStack.WindowOfType<Dialog_ModSettings>();
-            
+
             if (existing != null)
             {
                 existing.Close();

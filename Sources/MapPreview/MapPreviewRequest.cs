@@ -43,16 +43,16 @@ public class MapPreviewRequest
 
     public IntVec2 TextureSize { get; set; }
     public Color[] ExistingBuffer { get; set; }
-    
+
     public bool UseTrueTerrainColors { get; set; }
     public bool SkipRiverFlowCalc { get; set; } = true;
-    
+
     public readonly Stopwatch Timer = new();
 
     public bool Pending => Promise?.CurState == PromiseState.Pending;
 
-    public MapPreviewRequest(string worldSeed, int mapTile, IntVec2 mapSize) : 
-        this(SeedFromWorldSeed(worldSeed, mapTile), mapTile, mapSize) {}
+    public MapPreviewRequest(string worldSeed, int mapTile, IntVec2 mapSize) :
+        this(SeedFromWorldSeed(worldSeed, mapTile), mapTile, mapSize) { }
 
     public MapPreviewRequest(int seed, int mapTile, IntVec2 mapSize)
     {
@@ -62,11 +62,11 @@ public class MapPreviewRequest
         MapSize = mapSize;
         TextureSize = MapSize;
     }
-    
+
     private static int SeedFromWorldSeed(string worldSeed, int mapTile)
     {
         var world = Find.World;
-        
+
         if (world != null && world.info.seedString == worldSeed)
         {
             if (SeedRerollData.IsMapSeedRerolled(world, mapTile, out var seed)) return seed;

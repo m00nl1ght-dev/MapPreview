@@ -3,10 +3,6 @@ using LunarFramework.Patching;
 
 namespace MapPreview.Compatibility;
 
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 [HarmonyPatch]
 internal class ModCompat_BiomesCore : ModCompat
 {

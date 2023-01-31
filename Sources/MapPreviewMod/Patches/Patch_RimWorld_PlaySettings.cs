@@ -3,10 +3,6 @@ using LunarFramework.Patching;
 using RimWorld;
 using Verse;
 
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 namespace MapPreview.Patches;
 
 [PatchGroup("Main")]

@@ -34,9 +34,9 @@ namespace MapPreview;
 public class MapPreviewResult
 {
     public readonly Color[] Pixels;
-    
+
     public readonly MapPreviewRequest Request;
-    
+
     public IntVec2 TextureSize => Request.TextureSize;
     public IntVec2 MapSize => Request.MapSize;
     public int MapTile => Request.MapTile;

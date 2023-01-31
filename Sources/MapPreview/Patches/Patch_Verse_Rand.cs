@@ -4,12 +4,6 @@ using HarmonyLib;
 using LunarFramework.Patching;
 using Verse;
 
-// ReSharper disable RedundantAssignment
-// ReSharper disable UnusedParameter.Local
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 namespace MapPreview.Patches;
 
 /// <summary>
@@ -20,18 +14,19 @@ namespace MapPreview.Patches;
 [HarmonyPatch(typeof(Rand))]
 internal static class Patch_Verse_Rand
 {
-    private static uint seed = (uint) DateTime.Now.GetHashCode();
-    private static uint iterations;
-    
-    private static readonly Stack<ulong> stateStack = new();
-    
+    private static uint _seed = (uint) DateTime.Now.GetHashCode();
+    private static uint _iterations;
+
+    private static readonly Stack<ulong> _stateStack = new();
+
     private static ulong StateCompressed
     {
-        get => seed | (ulong) iterations << 32;
+        get => _seed | (ulong) _iterations << 32;
+
         set
         {
-            seed = (uint) (value & uint.MaxValue);
-            iterations = (uint) (value >> 32 & uint.MaxValue);
+            _seed = (uint) (value & uint.MaxValue);
+            _iterations = (uint) (value >> 32 & uint.MaxValue);
         }
     }
 
@@ -40,26 +35,26 @@ internal static class Patch_Verse_Rand
     private static bool Seed(int value)
     {
         if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        seed = (uint) value;
-        iterations = 0U;
+        _seed = (uint) value;
+        _iterations = 0U;
         return false;
     }
-    
+
     [HarmonyPrefix]
     [HarmonyPatch("Value", MethodType.Getter)]
     private static bool Value(ref float __result)
     {
         if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        __result = (float) ((MurmurHash.GetInt(seed, iterations++) - (double) int.MinValue) / uint.MaxValue);
+        __result = (float) ((MurmurHash.GetInt(_seed, _iterations++) - (double) int.MinValue) / uint.MaxValue);
         return false;
     }
-    
+
     [HarmonyPrefix]
     [HarmonyPatch("Int", MethodType.Getter)]
     private static bool Int(ref int __result)
     {
         if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        __result = MurmurHash.GetInt(seed, iterations++);
+        __result = MurmurHash.GetInt(_seed, _iterations++);
         return false;
     }
 
@@ -68,27 +63,27 @@ internal static class Patch_Verse_Rand
     private static bool PushState()
     {
         if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        stateStack.Push(StateCompressed);
+        _stateStack.Push(StateCompressed);
         return false;
     }
-    
+
     [HarmonyPrefix]
     [HarmonyPatch("PushState", typeof(int))]
     private static bool PushState(int replacementSeed)
     {
         if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        stateStack.Push(StateCompressed);
-        seed = (uint) replacementSeed;
-        iterations = 0U;
+        _stateStack.Push(StateCompressed);
+        _seed = (uint) replacementSeed;
+        _iterations = 0U;
         return false;
     }
-    
+
     [HarmonyPrefix]
     [HarmonyPatch("PopState")]
     private static bool PopState()
     {
         if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        StateCompressed = stateStack.Pop();
+        StateCompressed = _stateStack.Pop();
         return false;
     }
 }

@@ -3,10 +3,6 @@ using LunarFramework.Patching;
 
 namespace MapPreview.Compatibility;
 
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 /// <summary>
 /// Patch to disable WorldGrid:LongLatOf chache optimization.
 /// That feature otherwise causes the game to freeze and all sorts of other problems during preview generation.

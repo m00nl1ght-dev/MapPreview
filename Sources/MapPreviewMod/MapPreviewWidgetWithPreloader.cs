@@ -12,7 +12,7 @@ public class MapPreviewWidgetWithPreloader : MapPreviewWidget
     public static readonly Texture2D UIPreviewLoading = ContentFinder<Texture2D>.Get("UIPreviewLoadingMP");
     public static readonly Texture2D UIPreviewReset = ContentFinder<Texture2D>.Get("UIPreviewResetMP");
 
-    public MapPreviewWidgetWithPreloader(IntVec2 maxMapSize) : base(maxMapSize) {}
+    public MapPreviewWidgetWithPreloader(IntVec2 maxMapSize) : base(maxMapSize) { }
 
     protected override void DrawGenerating(Rect inRect)
     {
@@ -22,7 +22,7 @@ public class MapPreviewWidgetWithPreloader : MapPreviewWidget
     protected override void HandleError(Exception ex)
     {
         if (ex is ThreadAbortException) return;
-        
+
         Find.WindowStack.Add(new Dialog_MessageBox(
             "MapPreview.PreviewGenerationFailed".Translate(),
             null, () =>

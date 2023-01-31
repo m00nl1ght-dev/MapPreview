@@ -3,10 +3,6 @@ using LunarFramework.Patching;
 
 namespace MapPreview.Compatibility;
 
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Local
-// ReSharper disable InconsistentNaming
-
 /// <summary>
 /// Patch to conditionally disable ComponentCache from the SmashTools utility mod used by The Vehicle Framework.
 /// That feature otherwise causes preview generation to fail.

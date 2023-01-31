@@ -54,18 +54,18 @@ public class MapPreviewGenerator : IDisposable
     public static event Action OnPreviewThreadInit;
     public static event Action<MapPreviewRequest> OnBeginGenerating;
     public static event Action<MapPreviewResult> OnFinishedGenerating;
-    
+
     private static readonly ThreadLocal<Map> GeneratingPreviewMap = new();
-    
+
     public static MapPreviewRequest CurrentRequest { get; private set; }
-    
+
     public static MapPreviewGenerator Instance { get; private set; }
-    
+
     private readonly Queue<MapPreviewRequest> _queuedRequests = new();
     private readonly Thread _workerThread;
     private EventWaitHandle _workHandle = new AutoResetEvent(false);
     private EventWaitHandle _disposeHandle = new AutoResetEvent(false);
-    
+
     private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(MapPreviewGenerator));
 
     private static FieldInfo _fieldMapGenData;
@@ -101,7 +101,7 @@ public class MapPreviewGenerator : IDisposable
     {
         _fieldMapGenData ??= AccessTools.Field(typeof(MapGenerator), "data");
         if (_fieldMapGenData == null) throw new Exception("Failed to reflect MapGenerator.data");
-        
+
         _workerThread = new Thread(DoThreadWork);
         _workerThread.Start();
 
@@ -114,17 +114,17 @@ public class MapPreviewGenerator : IDisposable
         {
             throw new Exception("MapPreviewGenerator has already been disposed.");
         }
-        
+
         if (request.MapSize.x > request.TextureSize.x || request.MapSize.z > request.TextureSize.z)
         {
             throw new Exception("Map size exceeds max preview size: " + request.MapSize + " > " + request.TextureSize);
         }
-        
+
         MapPreviewAPI.SubscribeGenPatches(PatchGroupSubscriber);
-        
+
         _queuedRequests.Enqueue(request);
         _workHandle.Set();
-        
+
         return request.Promise;
     }
 
@@ -148,7 +148,7 @@ public class MapPreviewGenerator : IDisposable
                     {
                         CurrentRequest = request;
                         OnBeginGenerating?.Invoke(request);
-                        
+
                         result = new MapPreviewResult(request);
                         GeneratePreview(request, result);
 
@@ -165,7 +165,7 @@ public class MapPreviewGenerator : IDisposable
 
                     var promise = request.Promise;
                     var mapTile = request.MapTile;
-                    
+
                     MapPreviewAPI.LunarAPI.LifecycleHooks.DoOnce(() =>
                     {
                         if (rejectException == null)
@@ -178,7 +178,7 @@ public class MapPreviewGenerator : IDisposable
                             MapPreviewAPI.Logger.Log("Map Info: \n" + PrintMapTileInfo(mapTile));
                             promise.Reject(rejectException);
                         }
-                        
+
                         if (_queuedRequests.Count == 0 && !MapPreviewAPI.IsGeneratingPreview)
                         {
                             MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
@@ -231,7 +231,7 @@ public class MapPreviewGenerator : IDisposable
     {
         _queuedRequests.Clear();
     }
-    
+
     public void WaitForDisposal()
     {
         if (Instance == this || _workerThread is not { IsAlive: true } || _workerThread.ThreadState == ThreadState.WaitSleepJoin) return;
@@ -248,7 +248,7 @@ public class MapPreviewGenerator : IDisposable
             MapPreviewAPI.IsGeneratingPreview = true;
 
             Patch_RimWorld_GenStep_Terrain.SkipRiverFlowCalc = request.SkipRiverFlowCalc;
-            
+
             tickManager?.Pause();
 
             var mapParent = new MapParent { Tile = request.MapTile, def = WorldObjectDefOf.Settlement };
@@ -260,7 +260,7 @@ public class MapPreviewGenerator : IDisposable
             GenerateMap(request.Seed, mapSizeVec, mapParent, MapGeneratorDefOf.Base_Player, result, request.UseTrueTerrainColors);
 
             AddBevelToSolidStone(result);
-            
+
             request.Timer.Stop();
         }
         catch (Exception e)
@@ -274,7 +274,7 @@ public class MapPreviewGenerator : IDisposable
             MapPreviewAPI.IsGeneratingPreview = false;
 
             Patch_RimWorld_GenStep_Terrain.SkipRiverFlowCalc = false;
-            
+
             if (tickManager is { CurTimeSpeed: TimeSpeed.Paused })
             {
                 tickManager.CurTimeSpeed = speedWas;
@@ -295,17 +295,17 @@ public class MapPreviewGenerator : IDisposable
 
         var tickManager = Current.Game.tickManager;
         int startTick = tickManager.gameStartAbsTick;
-        
+
         var map = new Map { generationTick = GenTicks.TicksGame };
         GeneratingPreviewMap.Value = map;
-        
+
         Rand.PushState(seed);
 
         try
         {
             if (MapGenerator.mapBeingGenerated != null)
                 throw new Exception("Attempted to generate map preview while another map is generating!");
-            
+
             MapGenerator.mapBeingGenerated = map;
             if (startTick == 0) tickManager.gameStartAbsTick = GenTicks.ConfiguredTicksAbsAtGameStart;
 
@@ -321,9 +321,9 @@ public class MapPreviewGenerator : IDisposable
                 .Where(d => IncludedGenStepDefs.Contains(d.defName))
                 .Select(x => new GenStepWithParams(x, new GenStepParams()))
                 .Append(new GenStepWithParams(previewGenStepDef, new GenStepParams()));
-            
+
             MapGenerator.GenerateContentsIntoMap(genStepWithParamses, map, seed);
-            
+
             map.weatherManager.EndAllSustainers();
             Find.SoundRoot.sustainerManager.EndAllInMap(map);
             Find.TickManager.RemoveAllFromMap(map);
@@ -346,7 +346,7 @@ public class MapPreviewGenerator : IDisposable
 
         var tile = worldGrid[tileId];
         if (tile == null) return "No Tile";
-        
+
         var tickManager = Find.TickManager;
 
         var str = new StringBuilder();
@@ -390,7 +390,7 @@ public class MapPreviewGenerator : IDisposable
                 {
                     pixelColor = Color.black;
                     _texture.MapGenErrored = true;
-                } 
+                }
                 else if (MapGenerator.Elevation[cell] >= 0.7 && !terrainDef.IsRiver)
                 {
                     pixelColor = MapGenerator.Caves[cell] > 0 ? CaveColor : SolidStoneColor;

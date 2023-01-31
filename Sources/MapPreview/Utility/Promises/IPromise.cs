@@ -315,7 +315,6 @@ namespace MapPreview.Promises
             InvokeRejectHandlers(ex);
         }
 
-
         /// <summary>
         ///     Resolve the promise with a particular value.
         /// </summary>
@@ -435,8 +434,7 @@ namespace MapPreview.Promises
         ///     Add a resolved callback and a rejected callback.
         ///     The resolved callback chains a value promise (optionally converting to a different value type).
         /// </summary>
-        public IPromise<ConvertedT> Then<ConvertedT>(Func<IPromise<ConvertedT>> onResolved,
-            Action<Exception> onRejected)
+        public IPromise<ConvertedT> Then<ConvertedT>(Func<IPromise<ConvertedT>> onResolved, Action<Exception> onRejected)
         {
             // This version of the function must supply an onResolved.
             // Otherwise there is now way to get the converted value to pass to the resulting promise.
@@ -765,7 +763,7 @@ namespace MapPreview.Promises
         /// </summary>
         public static IPromise All(params IPromise[] promises)
         {
-            return All((IEnumerable<IPromise>)promises); // Cast is required to force use of the other All function.
+            return All((IEnumerable<IPromise>) promises); // Cast is required to force use of the other All function.
         }
 
         /// <summary>
@@ -805,7 +803,7 @@ namespace MapPreview.Promises
         /// </summary>
         public static IPromise Sequence(params Func<IPromise>[] fns)
         {
-            return Sequence((IEnumerable<Func<IPromise>>)fns);
+            return Sequence((IEnumerable<Func<IPromise>>) fns);
         }
 
         /// <summary>
@@ -826,7 +824,7 @@ namespace MapPreview.Promises
         /// </summary>
         public static IPromise Race(params IPromise[] promises)
         {
-            return Race((IEnumerable<IPromise>)promises); // Cast is required to force use of the other function.
+            return Race((IEnumerable<IPromise>) promises); // Cast is required to force use of the other function.
         }
 
         /// <summary>
