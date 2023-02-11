@@ -29,10 +29,8 @@ SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
-using HarmonyLib;
 using LunarFramework.Patching;
 using MapPreview.Patches;
 using MapPreview.Promises;
@@ -68,8 +66,6 @@ public class MapPreviewGenerator : IDisposable
 
     private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(MapPreviewGenerator));
 
-    private static FieldInfo _fieldMapGenData;
-
     private static readonly Color MissingTerrainColor = new(0.38f, 0.38f, 0.38f);
     private static readonly Color SolidStoneColor = GenColor.FromHex("36271C");
     private static readonly Color SolidStoneHighlightColor = GenColor.FromHex("4C3426");
@@ -99,9 +95,6 @@ public class MapPreviewGenerator : IDisposable
 
     private MapPreviewGenerator()
     {
-        _fieldMapGenData ??= AccessTools.Field(typeof(MapGenerator), "data");
-        if (_fieldMapGenData == null) throw new Exception("Failed to reflect MapGenerator.data");
-
         _workerThread = new Thread(DoThreadWork);
         _workerThread.Start();
 
@@ -290,8 +283,7 @@ public class MapPreviewGenerator : IDisposable
         MapPreviewResult result,
         bool useTrueTerrainColors)
     {
-        var mapGeneratorData = (Dictionary<string, object>) _fieldMapGenData.GetValue(null);
-        mapGeneratorData.Clear();
+        MapGenerator.data.Clear();
 
         var tickManager = Current.Game.tickManager;
         int startTick = tickManager.gameStartAbsTick;
@@ -335,7 +327,7 @@ public class MapPreviewGenerator : IDisposable
             MapGenerator.mapBeingGenerated = null;
             if (startTick == 0) tickManager.gameStartAbsTick = 0;
             GeneratingPreviewMap.Value = null;
-            mapGeneratorData.Clear();
+            MapGenerator.data.Clear();
         }
     }
 

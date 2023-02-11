@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using HarmonyLib;
 using LunarFramework.GUI;
 using MapPreview.Patches;
 using RimWorld;
@@ -189,9 +187,6 @@ public class MapPreviewToolbar : Window
         public override string Tooltip => "MapPreview.World.RerollWorldSeed".Translate();
         public override Texture Icon { get; } = ContentFinder<Texture2D>.Get("RerollWorldSeedMP");
 
-        private readonly MethodInfo _wpCanDoNext = AccessTools.Method(typeof(Page_CreateWorldParams), "CanDoNext");
-        private readonly FieldInfo _wpSeedString = AccessTools.Field(typeof(Page_CreateWorldParams), "seedString");
-
         public override void OnAction()
         {
             var windowStack = Find.WindowStack;
@@ -204,8 +199,8 @@ public class MapPreviewToolbar : Window
 
                 windowStack.WindowOfType<WorldInspectPane>()?.Close();
 
-                _wpSeedString.SetValue(paramsPage, GenText.RandomSeedString());
-                _wpCanDoNext.Invoke(paramsPage, Array.Empty<object>());
+                paramsPage.seedString = GenText.RandomSeedString();
+                paramsPage.CanDoNext();
             }
         }
     }
