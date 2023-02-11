@@ -7,7 +7,7 @@ using Verse;
 
 namespace MapPreview;
 
-[StaticConstructorOnStartup]
+[LunarComponentEntrypoint]
 public static class MapPreviewAPI
 {
     // ### Init ###

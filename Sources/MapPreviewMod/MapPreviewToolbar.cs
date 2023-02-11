@@ -223,15 +223,39 @@ public class MapPreviewToolbar : Window
 
             if (Prefs.DevMode && Input.GetKey(KeyCode.LeftShift))
             {
-                var existing = windowStack.WindowOfType<Dialog_Options>();
-                if (existing == null) windowStack.Add(new Dialog_Options(OptionCategoryDefOf.Mods));
-                else existing.Close();
+                if (Input.GetKey(KeyCode.S))
+                {
+                    LunarGUI.OpenGenericWindow(MapPreviewMod.LunarAPI, new Vector2(500, 500), BiomeWorkerScoresDebugGUI);
+                }
+                else
+                {
+                    var existing = windowStack.WindowOfType<Dialog_Options>();
+                    if (existing == null) windowStack.Add(new Dialog_Options(OptionCategoryDefOf.Mods));
+                    else existing.Close();
+                }
             }
             else
             {
                 var existing = windowStack.WindowOfType<Dialog_ModSettings>();
                 if (existing == null) windowStack.Add(new Dialog_ModSettings(MapPreviewMod.Settings.Mod));
                 else existing.Close();
+            }
+        }
+
+        private void BiomeWorkerScoresDebugGUI(Window window, LayoutRect layout)
+        {
+            LunarGUI.Label(layout, "Biome worker scores for selected tile");
+            LunarGUI.SeparatorLine(layout, 3f);
+
+            var tileId = Find.WorldSelector.selectedTile;
+            if (tileId < 0) return;
+
+            var tile = Find.WorldGrid[tileId];
+            var dict = DefDatabase<BiomeDef>.AllDefs.ToDictionary(b => b, b => b.Worker.GetScore(tile, tileId));
+
+            foreach (var pair in dict.OrderByDescending(p => p.Value))
+            {
+                LunarGUI.LabelDouble(layout, pair.Key.LabelCap, pair.Value.ToString("F2"), false);
             }
         }
     }

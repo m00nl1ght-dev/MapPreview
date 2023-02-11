@@ -6,6 +6,7 @@ using Verse;
 
 namespace MapPreview;
 
+[LunarComponentEntrypoint]
 public class MapPreviewMod : Mod
 {
     internal static readonly LunarAPI LunarAPI = LunarAPI.Create("Map Preview Mod", Init, Cleanup);
