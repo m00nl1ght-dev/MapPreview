@@ -1,95 +1,86 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using HarmonyLib;
 using LunarFramework.Patching;
-using RimWorld;
 using RimWorld.Planet;
 using Verse;
 
 namespace MapPreview.Patches;
 
-/// <summary>
-/// Holds a separate state for World caches on the preview thread.
-/// All patches are conditional and are only active while a preview is actually generating.
-/// </summary>
-[PatchGroup("Gen")]
+[PatchGroup("Main")]
 [HarmonyPatch(typeof(World))]
 internal static class Patch_RimWorld_World
 {
-    private static readonly List<ThingDef> tmpNaturalRockDefs = new();
-    private static readonly List<int> tmpNeighbors = new();
-    private static readonly List<Rot4> tmpOceanDirs = new();
+    internal static readonly Type Self = typeof(Patch_RimWorld_World);
 
+    [ThreadStatic]
+    private static List<int> tmpNeighbors = null;
+
+    [ThreadStatic]
+    private static List<Rot4> tmpOceanDirs = null;
+
+    [ThreadStatic]
+    private static List<ThingDef> tmpNaturalRockDefs = null;
+
+    [HarmonyTranspiler]
     [HarmonyPatch(nameof(World.CoastDirectionAt))]
     [HarmonyPriority(Priority.VeryLow)]
-    [HarmonyPrefix]
-    private static bool CoastDirectionAt(World __instance, int tileID, ref Rot4 __result)
+    private static IEnumerable<CodeInstruction> CoastDirectionAt_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
-        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        var begin = generator.DefineLabel();
 
-        var grid = __instance.grid;
-        if (!grid[tileID].biome.canBuildBase)
+        var constructorInt = AccessTools.Constructor(typeof(List<int>), Type.EmptyTypes) ?? throw new Exception();
+        var constructorRot4 = AccessTools.Constructor(typeof(List<Rot4>), Type.EmptyTypes) ?? throw new Exception();
+
+        var setup = new List<CodeInstruction>
         {
-            __result = Rot4.Invalid;
-            return false;
-        }
+            CodeInstruction.LoadField(Self, nameof(tmpNeighbors)),
+            new(OpCodes.Brtrue, begin),
+            new(OpCodes.Newobj, constructorInt),
+            CodeInstruction.StoreField(Self, nameof(tmpNeighbors)),
+            new(OpCodes.Newobj, constructorRot4),
+            CodeInstruction.StoreField(Self, nameof(tmpOceanDirs))
+        };
 
-        tmpOceanDirs.Clear();
-        grid.GetTileNeighbors(tileID, tmpNeighbors);
+        var tsNeighbors = TranspilerPattern.Build("ThreadStaticNeighbors")
+            .MatchLoad(typeof(World), "tmpNeighbors")
+            .ReplaceOperandWithField(Self, nameof(tmpNeighbors))
+            .Greedy();
 
-        int index1 = 0;
-        for (int count = tmpNeighbors.Count; index1 < count; ++index1)
-        {
-            if (grid[tmpNeighbors[index1]].biome == BiomeDefOf.Ocean)
-            {
-                var rotFromTo = grid.GetRotFromTo(tileID, tmpNeighbors[index1]);
-                if (!tmpOceanDirs.Contains(rotFromTo)) tmpOceanDirs.Add(rotFromTo);
-            }
-        }
+        var tsOceanDirs = TranspilerPattern.Build("ThreadStaticOceanDirs")
+            .MatchLoad(typeof(World), "tmpOceanDirs")
+            .ReplaceOperandWithField(Self, nameof(tmpOceanDirs))
+            .Greedy();
 
-        if (tmpOceanDirs.Count == 0)
-        {
-            __result = Rot4.Invalid;
-            return false;
-        }
-
-        Rand.PushState(tileID);
-        int index2 = Rand.Range(0, tmpOceanDirs.Count);
-        Rand.PopState();
-
-        __result = tmpOceanDirs[index2];
-        return false;
+        instructions.First().labels.Add(begin);
+        return setup.Concat(TranspilerPattern.Apply(instructions, tsNeighbors, tsOceanDirs));
     }
 
+    [HarmonyTranspiler]
     [HarmonyPatch(nameof(World.NaturalRockTypesIn))]
     [HarmonyPriority(Priority.VeryLow)]
-    [HarmonyPrefix]
-    private static bool NaturalRockTypesIn(int tile, ref IEnumerable<ThingDef> __result, ref List<ThingDef> ___allNaturalRockDefs)
+    private static IEnumerable<CodeInstruction> NaturalRockTypesIn_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
-        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        var begin = generator.DefineLabel();
 
-        Rand.PushState(tile);
+        var constructor = AccessTools.Constructor(typeof(List<ThingDef>), Type.EmptyTypes) ?? throw new Exception();
 
-        ___allNaturalRockDefs ??= DefDatabase<ThingDef>.AllDefs.Where(d => d.IsNonResourceNaturalRock).ToList();
-
-        int num = Rand.RangeInclusive(2, 3);
-        if (num > ___allNaturalRockDefs.Count)
-            num = ___allNaturalRockDefs.Count;
-
-        tmpNaturalRockDefs.Clear();
-        tmpNaturalRockDefs.AddRange(___allNaturalRockDefs);
-
-        var thingDefList = new List<ThingDef>();
-        for (int index = 0; index < num; ++index)
+        var setup = new List<CodeInstruction>
         {
-            var thingDef = tmpNaturalRockDefs.RandomElement();
-            tmpNaturalRockDefs.Remove(thingDef);
-            thingDefList.Add(thingDef);
-        }
+            CodeInstruction.LoadField(Self, nameof(tmpNaturalRockDefs)),
+            new(OpCodes.Brtrue, begin),
+            new(OpCodes.Newobj, constructor),
+            CodeInstruction.StoreField(Self, nameof(tmpNaturalRockDefs))
+        };
 
-        Rand.PopState();
+        var pattern = TranspilerPattern.Build("ThreadStaticNaturalRockDefs")
+            .MatchLoad(typeof(World), "tmpNaturalRockDefs")
+            .ReplaceOperandWithField(Self, nameof(tmpNaturalRockDefs))
+            .Greedy();
 
-        __result = thingDefList;
-        return false;
+        instructions.First().labels.Add(begin);
+        return setup.Concat(TranspilerPattern.Apply(instructions, pattern));
     }
 }

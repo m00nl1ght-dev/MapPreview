@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using HarmonyLib;
 using LunarFramework.Patching;
 using Verse;
@@ -32,33 +33,40 @@ internal static class Patch_Verse_Map
         "DubRoss.MapComponent_PaintShop"
     };
 
+    internal static readonly Type Self = typeof(Patch_Verse_Map);
+
     [HarmonyPrefix]
     [HarmonyPatch("FillComponents")]
-    private static bool FillComponents(Map __instance)
+    private static bool FillComponents_Prefix(Map __instance)
     {
         if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
+        FillComponents_ForPreviewMap(__instance);
+        return false;
+    }
 
-        __instance.components.RemoveAll(component => component == null);
-        foreach (var type in typeof(MapComponent).AllSubclassesNonAbstract())
+    [HarmonyPatch("FillComponents")]
+    [HarmonyReversePatch(HarmonyReversePatchType.Snapshot)]
+    [HarmonyPriority(Priority.VeryLow)]
+    private static void FillComponents_ForPreviewMap(Map __instance)
+    {
+        IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            if (__instance.GetComponent(type) == null)
-            {
-                if (IncludedMapComponents.Contains(type.FullName))
-                {
-                    try
-                    {
-                        __instance.components.Add((MapComponent) Activator.CreateInstance(type, __instance));
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error("Could not instantiate a MapComponent of type " + type + ": " + ex);
-                    }
-                }
-            }
+            var ldlocType = new CodeInstruction(OpCodes.Ldloc);
+            var brfalseSkip = new CodeInstruction(OpCodes.Brfalse_S);
+
+            var pattern = TranspilerPattern.Build("FillComponents")
+                .MatchLdloc().StoreOperandIn(ldlocType).Keep()
+                .MatchCall(typeof(Map), nameof(Map.GetComponent), new[] { typeof(Type) }).Keep()
+                .Match(OpCodes.Brtrue_S).StoreOperandIn(brfalseSkip).Keep()
+                .Insert(CodeInstruction.LoadField(Self, nameof(IncludedMapComponents)))
+                .Insert(ldlocType)
+                .Insert(CodeInstruction.Call(typeof(Type), "get_FullName"))
+                .Insert(CodeInstruction.Call(typeof(HashSet<string>), "Contains", new[] { typeof(string) }))
+                .Insert(brfalseSkip);
+
+            return TranspilerPattern.Apply(instructions, pattern);
         }
 
-        __instance.roadInfo = __instance.GetComponent<RoadInfo>();
-        __instance.waterInfo = __instance.GetComponent<WaterInfo>();
-        return false;
+        _ = Transpiler(null);
     }
 }

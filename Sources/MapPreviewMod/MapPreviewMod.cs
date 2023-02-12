@@ -29,6 +29,8 @@ public class MapPreviewMod : Mod
 
         ModCompat.ApplyAll(LunarAPI, CompatPatchGroup);
 
+        MainPatchGroup.CheckForConflicts(Logger);
+
         MapPreviewAPI.AddStableSeedCondition(map => Settings.SkipRiverFlowCalc && map.TileInfo.Rivers?.Count > 0);
     }
 

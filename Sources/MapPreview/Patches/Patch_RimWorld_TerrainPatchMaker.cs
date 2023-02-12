@@ -1,8 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using HarmonyLib;
 using LunarFramework.Patching;
 using RimWorld;
 using Verse;
-using Verse.Noise;
 
 namespace MapPreview.Patches;
 
@@ -14,33 +16,44 @@ namespace MapPreview.Patches;
 [HarmonyPatch(typeof(TerrainPatchMaker))]
 internal static class Patch_RimWorld_TerrainPatchMaker
 {
+    internal static readonly Type Self = typeof(Patch_RimWorld_TerrainPatchMaker);
+
     [HarmonyPrefix]
     [HarmonyPatch("Init")]
     [HarmonyPriority(750)]
-    private static bool Init(Map map, ref ModuleBase ___noise, ref Map ___currentlyInitializedForMap, TerrainPatchMaker __instance)
+    private static bool Init_Prefix(TerrainPatchMaker __instance, Map map)
     {
         if (!MapPreviewAPI.ShouldUseStableSeed(map)) return true;
-
-        ___noise = new Perlin(
-            __instance.perlinFrequency,
-            __instance.perlinLacunarity,
-            __instance.perlinPersistence,
-            __instance.perlinOctaves,
-            MakeStableSeed(__instance, map),
-            QualityMode.Medium);
-
-        ___currentlyInitializedForMap = map;
+        Init_WithStableSeed(__instance, map);
         return false;
+    }
+
+    [HarmonyPatch("Init")]
+    [HarmonyReversePatch(HarmonyReversePatchType.Snapshot)]
+    [HarmonyPriority(Priority.VeryLow)]
+    private static void Init_WithStableSeed(TerrainPatchMaker __instance, Map map)
+    {
+        IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var pattern = TranspilerPattern.Build("UseStableSeed")
+                .Match(OpCodes.Ldc_I4_0).Replace(OpCodes.Ldarg_0)
+                .Match(OpCodes.Ldc_I4).Replace(OpCodes.Ldarg_1)
+                .MatchCall(typeof(Rand), "Range", new[] { typeof(int), typeof(int) }).Remove()
+                .Insert(CodeInstruction.Call(Self, nameof(MakeStableSeed)));
+
+            return TranspilerPattern.Apply(instructions, pattern);
+        }
+
+        _ = Transpiler(null);
     }
 
     private static int MakeStableSeed(TerrainPatchMaker tpm, Map map)
     {
         int idx = map.Biome.terrainPatchMakers.IndexOf(tpm);
-        var seed = SeedRerollData.IsMapSeedRerolled(Find.World, map.Tile, out var savedSeed)
-            ? savedSeed : Find.World.info.Seed ^ map.Tile;
+        var mapSeed = SeedRerollData.GetMapSeed(Find.World, map.Tile);
 
-        if (idx >= 0) return seed ^ 9305 + idx;
-        return seed ^ GetHashCode(tpm);
+        if (idx >= 0) return mapSeed ^ 9305 + idx;
+        return mapSeed ^ GetHashCode(tpm);
     }
 
     public static int GetHashCode(TerrainPatchMaker tpm)

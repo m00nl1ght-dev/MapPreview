@@ -1,50 +1,60 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
 using HarmonyLib;
 using LunarFramework.Patching;
 using RimWorld.Planet;
 
 namespace MapPreview.Patches;
 
-/// <summary>
-/// Holds a separate state for WorldGrid caches on the preview thread.
-/// All patches are conditional and are only active while a preview is actually generating.
-/// </summary>
-[PatchGroup("Gen")]
+[PatchGroup("Main")]
 [HarmonyPatch(typeof(WorldGrid))]
 internal static class Patch_RimWorld_WorldGrid
 {
-    private static readonly List<int> tmpNeighbors = new();
+    internal static readonly Type Self = typeof(Patch_RimWorld_WorldGrid);
 
-    [HarmonyPatch(typeof(WorldGrid), nameof(WorldGrid.IsNeighbor))]
-    [HarmonyPriority(Priority.VeryLow)]
-    [HarmonyPrefix]
-    private static bool IsNeighbor(int tile1, int tile2, ref bool __result, WorldGrid __instance)
+    [ThreadStatic]
+    private static List<int> tmpNeighbors = null;
+
+    private static IEnumerable<CodeInstruction> InjectThreadStatic(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
-        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        __instance.GetTileNeighbors(tile1, tmpNeighbors);
-        __result = tmpNeighbors.Contains(tile2);
-        return false;
+        var begin = generator.DefineLabel();
+
+        var constructor = AccessTools.Constructor(typeof(List<int>), Type.EmptyTypes) ?? throw new Exception();
+
+        var setup = new List<CodeInstruction>
+        {
+            CodeInstruction.LoadField(Self, nameof(tmpNeighbors)),
+            new(OpCodes.Brtrue, begin),
+            new(OpCodes.Newobj, constructor),
+            CodeInstruction.StoreField(Self, nameof(tmpNeighbors))
+        };
+
+        var pattern = TranspilerPattern.Build("ThreadStaticNeighbors")
+            .MatchLoad(typeof(WorldGrid), "tmpNeighbors")
+            .ReplaceOperandWithField(Self, nameof(tmpNeighbors))
+            .Greedy();
+
+        instructions.First().labels.Add(begin);
+        return setup.Concat(TranspilerPattern.Apply(instructions, pattern));
     }
 
-    [HarmonyPatch(typeof(WorldGrid), nameof(WorldGrid.GetNeighborId))]
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(WorldGrid.IsNeighbor))]
     [HarmonyPriority(Priority.VeryLow)]
-    [HarmonyPrefix]
-    private static bool GetNeighborId(int tile1, int tile2, ref int __result, WorldGrid __instance)
-    {
-        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        __instance.GetTileNeighbors(tile1, tmpNeighbors);
-        __result = tmpNeighbors.IndexOf(tile2);
-        return false;
-    }
+    private static IEnumerable<CodeInstruction> IsNeighbor_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        => InjectThreadStatic(instructions, generator);
 
-    [HarmonyPatch(typeof(WorldGrid), nameof(WorldGrid.GetTileNeighbor))]
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(WorldGrid.GetNeighborId))]
     [HarmonyPriority(Priority.VeryLow)]
-    [HarmonyPrefix]
-    private static bool GetTileNeighbor(int tileID, int adjacentId, ref int __result, WorldGrid __instance)
-    {
-        if (!MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread) return true;
-        __instance.GetTileNeighbors(tileID, tmpNeighbors);
-        __result = tmpNeighbors[adjacentId];
-        return false;
-    }
+    private static IEnumerable<CodeInstruction> GetNeighborId_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        => InjectThreadStatic(instructions, generator);
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(WorldGrid.GetTileNeighbor))]
+    [HarmonyPriority(Priority.VeryLow)]
+    private static IEnumerable<CodeInstruction> GetTileNeighbor_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        => InjectThreadStatic(instructions, generator);
 }

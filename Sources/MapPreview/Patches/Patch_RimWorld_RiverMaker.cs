@@ -10,6 +10,7 @@ internal static class Patch_RimWorld_RiverMaker
 {
     [HarmonyPrefix]
     [HarmonyPatch("ValidatePassage")]
+    [HarmonyPriority(Priority.VeryHigh)]
     private static bool ValidatePassage()
     {
         return !MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;

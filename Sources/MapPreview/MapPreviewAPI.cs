@@ -34,6 +34,8 @@ public static class MapPreviewAPI
 
         ModCompat.ApplyAll(LunarAPI, CompatPatchGroup);
 
+        MainPatchGroup.CheckForConflicts(Logger);
+
         if (Logger is IngameLogContext ingameLogger)
         {
             ingameLogger.IgnoreLogLimitLevel = LogContext.LogLevel.Error;
