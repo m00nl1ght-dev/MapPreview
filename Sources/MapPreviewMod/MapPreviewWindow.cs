@@ -82,6 +82,11 @@ public class MapPreviewWindow : Window
             ExistingBuffer = _previewWidget.Buffer
         };
 
+        if (MapPreviewMod.Settings.IncludeCaves)
+        {
+            request.GenStepFilter = s => MapPreviewRequest.DefaultGenStepFilter(s) || s.defName == "Caves";
+        }
+
         MapPreviewGenerator.Instance.QueuePreviewRequest(request);
         _previewWidget.Await(request);
 

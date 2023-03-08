@@ -43,7 +43,8 @@ public class MapPreviewResult
 
     public Rect TexCoords => new(0, 0, MapSize.x / (float) TextureSize.x, MapSize.z / (float) TextureSize.z);
 
-    public bool MapGenErrored;
+    public int InvalidCells { get; internal set; }
+    
     public Map Map;
 
     public MapPreviewResult(MapPreviewRequest request)

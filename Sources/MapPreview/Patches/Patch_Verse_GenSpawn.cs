@@ -10,6 +10,7 @@ internal static class Patch_Verse_GenSpawn
 {
     [HarmonyPrefix]
     [HarmonyPatch("Spawn", typeof(Thing), typeof(IntVec3), typeof(Map), typeof(Rot4), typeof(WipeMode), typeof(bool))]
+    [PatchExcludedFromConflictCheck]
     private static bool Spawn(Thing newThing, IntVec3 loc, Map map, ref Thing __result)
     {
         if (!MapPreviewAPI.IsGeneratingPreview) return true;

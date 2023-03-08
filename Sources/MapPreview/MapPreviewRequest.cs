@@ -26,8 +26,12 @@ SOFTWARE.
 
  */
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using MapPreview.Promises;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -46,6 +50,9 @@ public class MapPreviewRequest
 
     public bool UseTrueTerrainColors { get; set; }
     public bool SkipRiverFlowCalc { get; set; } = true;
+
+    public MapGeneratorDef GeneratorDef { get; set; } = MapGeneratorDefOf.Base_Player;
+    public Predicate<GenStepDef> GenStepFilter { get; set; } = DefaultGenStepFilter;
 
     public readonly Stopwatch Timer = new();
 
@@ -74,4 +81,21 @@ public class MapPreviewRequest
 
         return Gen.HashCombineInt(GenText.StableStringHash(worldSeed), mapTile);
     }
+
+    public static readonly Predicate<GenStepDef> DefaultGenStepFilter = g => DefaultGenSteps.Contains(g.defName);
+
+    public static readonly IReadOnlyCollection<string> DefaultGenSteps = new HashSet<string>
+    {
+        // Vanilla
+        "ElevationFertility",
+        "Terrain",
+
+        // CaveBiomes
+        "CaveElevation",
+        "CaveRiver",
+
+        // TerraProjectCore
+        "ElevationFertilityPost",
+        "BetterCaves"
+    };
 }

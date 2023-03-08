@@ -72,22 +72,6 @@ public class MapPreviewGenerator : IDisposable
     private static readonly Color SolidStoneShadowColor = GenColor.FromHex("1C130E");
     private static readonly Color CaveColor = GenColor.FromHex("42372b");
 
-    private static readonly IReadOnlyCollection<string> IncludedGenStepDefs = new HashSet<string>
-    {
-        // Vanilla
-        "ElevationFertility",
-        "Caves",
-        "Terrain",
-
-        // CaveBiomes
-        "CaveElevation",
-        "CaveRiver",
-
-        // TerraProjectCore
-        "ElevationFertilityPost",
-        "BetterCaves"
-    };
-
     public static MapPreviewGenerator Init()
     {
         return Instance ??= new MapPreviewGenerator();
@@ -134,26 +118,28 @@ public class MapPreviewGenerator : IDisposable
                 Exception rejectException = null;
                 if (_queuedRequests.Count > 0)
                 {
-                    request = _queuedRequests.Dequeue();
+                    request = CurrentRequest = _queuedRequests.Dequeue();
 
                     MapPreviewResult result = null;
                     try
                     {
-                        CurrentRequest = request;
                         OnBeginGenerating?.Invoke(request);
 
                         result = new MapPreviewResult(request);
                         GeneratePreview(request, result);
 
-                        if (result.MapGenErrored)
-                            throw new Exception("No terrain was generated for at least one map cell.");
+                        if (result.InvalidCells > 0)
+                            throw new Exception($"No valid terrain was generated for {result.InvalidCells} map cells");
 
                         OnFinishedGenerating?.Invoke(result);
-                        CurrentRequest = null;
                     }
                     catch (Exception e)
                     {
                         rejectException = e;
+                    }
+                    finally
+                    {
+                        CurrentRequest = null;
                     }
 
                     var promise = request.Promise;
@@ -179,10 +165,6 @@ public class MapPreviewGenerator : IDisposable
                     });
                 }
             }
-
-            _workHandle.Close();
-            _disposeHandle.Close();
-            _disposeHandle = _workHandle = null;
         }
         catch (Exception e)
         {
@@ -191,6 +173,12 @@ public class MapPreviewGenerator : IDisposable
                 MapPreviewAPI.Logger.Error("Exception in preview generator thread!", e);
                 request?.Promise.Reject(e);
             });
+        }
+        finally
+        {
+            _workHandle.Close();
+            _disposeHandle.Close();
+            _disposeHandle = _workHandle = null;
         }
     }
 
@@ -244,23 +232,13 @@ public class MapPreviewGenerator : IDisposable
 
             tickManager?.Pause();
 
-            var mapParent = new MapParent { Tile = request.MapTile, def = WorldObjectDefOf.Settlement };
-            mapParent.SetFaction(Faction.OfPlayer);
-
             request.Timer.Start();
 
-            var mapSizeVec = new IntVec3(request.MapSize.x, 1, request.MapSize.z);
-            GenerateMap(request.Seed, mapSizeVec, mapParent, MapGeneratorDefOf.Base_Player, result, request.UseTrueTerrainColors);
+            GenerateContentsIntoPreview(request, result);
 
             AddBevelToSolidStone(result);
 
             request.Timer.Stop();
-        }
-        catch (Exception e)
-        {
-            MapPreviewAPI.Logger.Error("Error in preview generator!", e);
-            MapPreviewAPI.Logger.Log("Map Info: \n" + PrintMapTileInfo(request.MapTile));
-            result.MapGenErrored = true;
         }
         finally
         {
@@ -275,14 +253,11 @@ public class MapPreviewGenerator : IDisposable
         }
     }
 
-    private static void GenerateMap(
-        int seed,
-        IntVec3 mapSize,
-        MapParent parent,
-        MapGeneratorDef mapGenerator,
-        MapPreviewResult result,
-        bool useTrueTerrainColors)
+    private static void GenerateContentsIntoPreview(MapPreviewRequest request, MapPreviewResult result)
     {
+        if (MapGenerator.mapBeingGenerated != null)
+            throw new Exception("Attempted to generate map preview while another map is generating!");
+        
         MapGenerator.data.Clear();
 
         var tickManager = Current.Game.tickManager;
@@ -291,30 +266,30 @@ public class MapPreviewGenerator : IDisposable
         var map = new Map { generationTick = GenTicks.TicksGame };
         GeneratingPreviewMap.Value = map;
 
-        Rand.PushState(seed);
+        Rand.PushState(request.Seed);
 
         try
         {
-            if (MapGenerator.mapBeingGenerated != null)
-                throw new Exception("Attempted to generate map preview while another map is generating!");
-
             MapGenerator.mapBeingGenerated = map;
             if (startTick == 0) tickManager.gameStartAbsTick = GenTicks.ConfiguredTicksAbsAtGameStart;
 
-            map.info.Size = mapSize;
-            map.info.parent = parent;
+            var mapParent = new MapParent { Tile = request.MapTile, def = WorldObjectDefOf.Settlement };
+            mapParent.SetFaction(Faction.OfPlayer);
+
+            map.info.Size = new IntVec3(request.MapSize.x, 1, request.MapSize.z);
+            map.info.parent = mapParent;
             map.ConstructComponents();
 
             result.Map = map;
 
-            var previewGenStep = new PreviewTextureGenStep(result, useTrueTerrainColors);
+            var previewGenStep = new PreviewTextureGenStep(result, request.UseTrueTerrainColors);
             var previewGenStepDef = new GenStepDef { genStep = previewGenStep, order = 9999 };
-            var genStepWithParamses = mapGenerator.genSteps
-                .Where(d => IncludedGenStepDefs.Contains(d.defName))
+            var genStepWithParamses = request.GeneratorDef.genSteps
+                .Where(s => request.GenStepFilter(s))
                 .Select(x => new GenStepWithParams(x, new GenStepParams()))
                 .Append(new GenStepWithParams(previewGenStepDef, new GenStepParams()));
 
-            MapGenerator.GenerateContentsIntoMap(genStepWithParamses, map, seed);
+            MapGenerator.GenerateContentsIntoMap(genStepWithParamses, map, request.Seed);
 
             map.weatherManager.EndAllSustainers();
             Find.SoundRoot.sustainerManager.EndAllInMap(map);
@@ -358,12 +333,12 @@ public class MapPreviewGenerator : IDisposable
 
     private class PreviewTextureGenStep : GenStep
     {
-        private readonly MapPreviewResult _texture;
+        private readonly MapPreviewResult _result;
         private readonly bool _useTrueTerrainColors;
 
-        public PreviewTextureGenStep(MapPreviewResult texture, bool useTrueTerrainColors)
+        public PreviewTextureGenStep(MapPreviewResult result, bool useTrueTerrainColors)
         {
-            _texture = texture;
+            _result = result;
             _useTrueTerrainColors = useTrueTerrainColors;
         }
 
@@ -381,7 +356,7 @@ public class MapPreviewGenerator : IDisposable
                 if (terrainDef == null)
                 {
                     pixelColor = Color.black;
-                    _texture.MapGenErrored = true;
+                    _result.InvalidCells++;
                 }
                 else if (MapGenerator.Elevation[cell] >= 0.7 && !terrainDef.IsRiver)
                 {
@@ -392,7 +367,7 @@ public class MapPreviewGenerator : IDisposable
                     pixelColor = MissingTerrainColor;
                 }
 
-                _texture.SetPixel(cell.x, cell.z, pixelColor);
+                _result.SetPixel(cell.x, cell.z, pixelColor);
             }
         }
     }

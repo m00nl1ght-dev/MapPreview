@@ -43,18 +43,21 @@ internal static class Patch_RimWorld_WorldGrid
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(WorldGrid.IsNeighbor))]
     [HarmonyPriority(Priority.VeryLow)]
+    [PatchExcludedFromConflictCheck]
     private static IEnumerable<CodeInstruction> IsNeighbor_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         => InjectThreadStatic(instructions, generator);
 
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(WorldGrid.GetNeighborId))]
     [HarmonyPriority(Priority.VeryLow)]
+    [PatchExcludedFromConflictCheck]
     private static IEnumerable<CodeInstruction> GetNeighborId_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         => InjectThreadStatic(instructions, generator);
 
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(WorldGrid.GetTileNeighbor))]
     [HarmonyPriority(Priority.VeryLow)]
+    [PatchExcludedFromConflictCheck]
     private static IEnumerable<CodeInstruction> GetTileNeighbor_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         => InjectThreadStatic(instructions, generator);
 }

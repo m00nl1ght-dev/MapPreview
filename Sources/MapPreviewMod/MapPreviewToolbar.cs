@@ -130,6 +130,23 @@ public class MapPreviewToolbar : Window
         _layout.End();
 
         GUI.enabled = true;
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            var mpWindow = MapPreviewWindow.Instance;
+            if (mpWindow != null)
+            {
+                var rect = mpWindow.windowRect;
+                if (Math.Abs(windowRect.x - rect.x) < 15)
+                {
+                    windowRect.x = rect.x;
+                }
+                else if (Math.Abs(windowRect.xMax - rect.xMax) < 15)
+                {
+                    windowRect.x = rect.xMax - windowRect.width;
+                }
+            }
+        }
     }
 
     public abstract class Button

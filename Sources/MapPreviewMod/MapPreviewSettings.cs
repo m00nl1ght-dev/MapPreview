@@ -9,6 +9,7 @@ namespace MapPreview;
 
 public class MapPreviewSettings : LunarModSettings
 {
+    public readonly Entry<bool> IncludeCaves = MakeEntry(true);
     public readonly Entry<bool> EnableTrueTerrainColors = MakeEntry(true);
     public readonly Entry<bool> EnableMapPreview = MakeEntry(true);
     public readonly Entry<bool> EnableToolbar = MakeEntry(true);
@@ -41,8 +42,9 @@ public class MapPreviewSettings : LunarModSettings
         layout.Abs(10f);
         layout.PushEnabled(EnableMapPreview);
 
-        LunarGUI.Checkbox(layout, ref EnableTrueTerrainColors.Value, Label("EnableTrueTerrainColors"));
+        LunarGUI.Checkbox(layout, ref IncludeCaves.Value, Label("IncludeCaves"));
         LunarGUI.Checkbox(layout, ref SkipRiverFlowCalc.Value, Label("SkipRiverFlowCalc"));
+        LunarGUI.Checkbox(layout, ref EnableTrueTerrainColors.Value, Label("EnableTrueTerrainColors"));
 
         if (layout.PopChanged())
         {

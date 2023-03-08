@@ -27,6 +27,7 @@ internal static class Patch_RimWorld_World
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(World.CoastDirectionAt))]
     [HarmonyPriority(Priority.VeryLow)]
+    [PatchExcludedFromConflictCheck]
     private static IEnumerable<CodeInstruction> CoastDirectionAt_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
         var begin = generator.DefineLabel();
@@ -61,6 +62,7 @@ internal static class Patch_RimWorld_World
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(World.NaturalRockTypesIn))]
     [HarmonyPriority(Priority.VeryLow)]
+    [PatchExcludedFromConflictCheck]
     private static IEnumerable<CodeInstruction> NaturalRockTypesIn_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
         var begin = generator.DefineLabel();
