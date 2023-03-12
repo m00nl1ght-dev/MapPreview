@@ -59,6 +59,14 @@ public class MapPreviewToolbar : Window
         {
             var rerollData = world.GetComponent<SeedRerollData>();
             var mapParent = Find.WorldObjects.MapParentAt(tileId);
+
+            if (rerollData == null)
+            {
+                MapPreviewMod.Logger.Warn("This world is missing the SeedRerollData component, adding it.");
+                rerollData = new SeedRerollData(world);
+                world.components.Add(rerollData);
+            }
+            
             CurrentTileIsRerolled = rerollData.TryGet(tileId, out _);
             CurrentTileCanBeRerolled = mapParent is not { HasMap: true };
         }
