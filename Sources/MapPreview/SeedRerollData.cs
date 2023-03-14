@@ -41,16 +41,20 @@ public class SeedRerollData : WorldComponent
         return _mapSeeds.TryGetValue(tileId, out seed);
     }
 
-    public void Commit(int tileId, int seed)
+    public void Commit(int tileId, int seed) => Commit(tileId, seed, true);
+
+    public void Commit(int tileId, int seed, bool notifyWorldChanged)
     {
         _mapSeeds[tileId] = seed;
-        MapPreviewAPI.NotifyWorldChanged();
+        if (notifyWorldChanged) MapPreviewAPI.NotifyWorldChanged();
     }
 
-    public void Reset(int tileId)
+    public void Reset(int tileId) => Reset(tileId, true);
+
+    public void Reset(int tileId, bool notifyWorldChanged)
     {
         _mapSeeds.Remove(tileId);
-        MapPreviewAPI.NotifyWorldChanged();
+        if (notifyWorldChanged) MapPreviewAPI.NotifyWorldChanged();
     }
 
     public override void ExposeData()

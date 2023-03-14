@@ -16,6 +16,7 @@ public class MapPreviewSettings : LunarModSettings
     public readonly Entry<bool> LockWindowPositions = MakeEntry(false);
     public readonly Entry<bool> AutoOpenPreviewOnWorldMap = MakeEntry(false);
     public readonly Entry<bool> EnableSeedRerollFeature = MakeEntry(false);
+    public readonly Entry<bool> EnableSeedRerollWindow = MakeEntry(true);
     public readonly Entry<bool> EnableWorldSeedRerollFeature = MakeEntry(true);
     public readonly Entry<bool> SkipRiverFlowCalc = MakeEntry(true);
     public readonly Entry<bool> EnableMapDesignerIntegration = MakeEntry(true);
@@ -131,6 +132,13 @@ public class MapPreviewSettings : LunarModSettings
         if (ModCompat_WorldEdit.IsPresent)
         {
             LunarGUI.Checkbox(layout, ref EnableWorldEditIntegration.Value, "MapPreview.Integration.WorldEdit.Enabled".Translate());
+        }
+
+        layout.Abs(10f);
+
+        if (EnableSeedRerollFeature)
+        {
+            LunarGUI.Checkbox(layout, ref EnableSeedRerollWindow.Value, Label("EnableSeedRerollWindow"));
         }
 
         layout.PopEnabled();

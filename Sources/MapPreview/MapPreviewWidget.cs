@@ -53,7 +53,7 @@ public abstract class MapPreviewWidget : IDisposable
     public Texture2D Texture { get; private set; }
     public Map PreviewMap { get; private set; }
 
-    protected readonly List<MapPreviewOverlay> Overlays = new();
+    protected readonly List<MapPreviewOverlay> Overlays = new(1);
 
     protected MapPreviewWidget(IntVec2 maxMapSize)
     {
@@ -123,6 +123,7 @@ public abstract class MapPreviewWidget : IDisposable
 
     public IntVec3 MapPosFromScreenPos(Rect mapRect, Vector2 screenPos)
     {
+        if (PreviewMap == null) return new IntVec3();
         double rx = PreviewMap.Size.x / mapRect.width;
         double rz = PreviewMap.Size.z / mapRect.height;
         double x = screenPos.x * rx, z = PreviewMap.Size.z - screenPos.y * rz;
@@ -143,6 +144,7 @@ public abstract class MapPreviewWidget : IDisposable
 
     protected virtual string MakeTooltip(Map map, IntVec3 pos)
     {
+        if (map == null) return "None";
         return map.terrainGrid.TerrainAt(pos).label.CapitalizeFirst() + " ( " + pos.x + " | " + pos.z + " )";
     }
 
@@ -196,7 +198,7 @@ public abstract class MapPreviewWidget : IDisposable
 
     protected virtual void HandleError(Exception ex) { }
 
-    private void DrawOutline(Rect rect)
+    protected virtual void DrawOutline(Rect rect)
     {
         var oldColor = GUI.color;
         GUI.color = OutlineColor;

@@ -75,6 +75,7 @@
         <Compile Include="Compatibility\ModCompat_MapReroll.cs" />
         <Compile Include="MapPreviewWindow.cs" />
         <Compile Include="MapPreviewMod.cs" />
+        <Compile Include="MapSeedRerollWindow.cs" />
         <Compile Include="Patches\Patch_RimWorld_Dialog_AdvancedGameConfig.cs" />
         <Compile Include="Patches\Patch_RimWorld_Page_SelectStartingSite.cs" />
         <Compile Include="Patches\Patch_RimWorld_PlaySettings.cs" />

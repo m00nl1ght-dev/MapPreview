@@ -179,18 +179,26 @@ public class MapPreviewToolbar : Window
 
         public override void OnAction()
         {
-            var tile = Find.WorldSelector.selectedTile;
-            var rerollData = Find.World.GetComponent<SeedRerollData>();
-            var seed = rerollData.TryGet(tile, out var savedSeed) ? savedSeed : SeedRerollData.GetOriginalMapSeed(Find.World, tile);
-            unchecked { seed += 1; }
+            if (MapPreviewMod.Settings.EnableSeedRerollWindow == Input.GetKey(KeyCode.LeftShift))
+            {
+                var tile = Find.WorldSelector.selectedTile;
+                var rerollData = Find.World.GetComponent<SeedRerollData>();
+                var seed = rerollData.TryGet(tile, out var savedSeed) ? savedSeed : SeedRerollData.GetOriginalMapSeed(Find.World, tile);
 
-            rerollData.Commit(tile, seed);
+                unchecked { seed += 1; }
+
+                rerollData.Commit(tile, seed);
+            }
+            else
+            {
+                Find.WindowStack.Add(new MapSeedRerollWindow());
+            }
         }
     }
 
     private class ButtonRerollMapUndo : Button
     {
-        public override bool IsVisible => MapPreviewMod.Settings.EnableSeedRerollFeature || CurrentTileIsRerolled;
+        public override bool IsVisible => CurrentTileIsRerolled;
         public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview && CurrentTileIsRerolled && CurrentTileCanBeRerolled;
 
         public override string Tooltip => "MapPreview.World.ResetMapSeed".Translate();
