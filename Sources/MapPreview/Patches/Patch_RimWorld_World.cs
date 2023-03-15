@@ -48,12 +48,12 @@ internal static class Patch_RimWorld_World
         var tsNeighbors = TranspilerPattern.Build("ThreadStaticNeighbors")
             .MatchLoad(typeof(World), "tmpNeighbors")
             .ReplaceOperandWithField(Self, nameof(tmpNeighbors))
-            .Greedy();
+            .Greedy(0);
 
         var tsOceanDirs = TranspilerPattern.Build("ThreadStaticOceanDirs")
             .MatchLoad(typeof(World), "tmpOceanDirs")
             .ReplaceOperandWithField(Self, nameof(tmpOceanDirs))
-            .Greedy();
+            .Greedy(0);
 
         instructions.First().labels.Add(begin);
         return setup.Concat(TranspilerPattern.Apply(instructions, tsNeighbors, tsOceanDirs));
@@ -80,7 +80,7 @@ internal static class Patch_RimWorld_World
         var pattern = TranspilerPattern.Build("ThreadStaticNaturalRockDefs")
             .MatchLoad(typeof(World), "tmpNaturalRockDefs")
             .ReplaceOperandWithField(Self, nameof(tmpNaturalRockDefs))
-            .Greedy();
+            .Greedy(0);
 
         instructions.First().labels.Add(begin);
         return setup.Concat(TranspilerPattern.Apply(instructions, pattern));

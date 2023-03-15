@@ -34,7 +34,7 @@ internal static class Patch_RimWorld_WorldGrid
         var pattern = TranspilerPattern.Build("ThreadStaticNeighbors")
             .MatchLoad(typeof(WorldGrid), "tmpNeighbors")
             .ReplaceOperandWithField(Self, nameof(tmpNeighbors))
-            .Greedy();
+            .Greedy(0);
 
         instructions.First().labels.Add(begin);
         return setup.Concat(TranspilerPattern.Apply(instructions, pattern));

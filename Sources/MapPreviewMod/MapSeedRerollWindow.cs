@@ -5,6 +5,7 @@ using Verse;
 
 namespace MapPreview;
 
+[StaticConstructorOnStartup]
 public class MapSeedRerollWindow : Window
 {
     public static MapSeedRerollWindow Instance => Find.WindowStack?.WindowOfType<MapSeedRerollWindow>();
@@ -130,12 +131,20 @@ public class MapSeedRerollWindow : Window
 
     private void RefreshSeeds()
     {
-        foreach (var element in _elements) element.Dispose();
-        _elements.Clear();
+        _elements.RemoveAll(e =>
+        {
+            if (e.Pinned) return false;
+            e.Dispose();
+            return true;
+        });
+        
         TryAddElement();
     }
 
-    private static readonly Object _refreshSeedsIcon = ContentFinder<Texture2D>.Get("RerollWorldSeedMP");
+    private static readonly Texture2D _pinIcon = ContentFinder<Texture2D>.Get("UI/Icons/Pin-Outline");
+    private static readonly Texture2D _unpinIcon = ContentFinder<Texture2D>.Get("UI/Icons/Pin");
+    private static readonly Texture2D _confirmIcon = ContentFinder<Texture2D>.Get("ConfirmMP");
+    private static readonly Texture2D _refreshSeedsIcon = ContentFinder<Texture2D>.Get("RerollWorldSeedMP");
 
     public override void DoWindowContents(Rect inRect)
     {
@@ -170,7 +179,7 @@ public class MapSeedRerollWindow : Window
             Close();
         }
 
-        if (DoButton((Texture) _refreshSeedsIcon, "MapPreview.World.RerollWindow.RefreshSeeds".Translate(), gridFull))
+        if (DoButton(_refreshSeedsIcon, "MapPreview.World.RerollWindow.RefreshSeeds".Translate(), gridFull))
         {
             RefreshSeeds();
         }
@@ -186,7 +195,6 @@ public class MapSeedRerollWindow : Window
         }
 
         _layout.End();
-
         _layout.End();
 
         _layout.Abs(WindowMargin);
@@ -205,16 +213,39 @@ public class MapSeedRerollWindow : Window
 
                 var element = _elements[idx];
 
-                var rect = _layout.Abs(_elementSize.x);
-                element.Draw(rect);
+                _layout.BeginAbs(_elementSize.x, new LayoutParams { Horizontal = true, Reversed = true });
 
-                LunarGUI.HighlightOnHover(rect);
+                element.Draw(_layout);
 
-                if (Widgets.ButtonInvisible(rect))
+                var hovered = Mouse.IsOver(_layout);
+
+                if (hovered) Widgets.DrawHighlight(_layout);
+
+                _layout.BeginAbs(50f, new LayoutParams { Margin = new(10), Spacing = 10 });
+
+                if (hovered || element.Pinned)
                 {
-                    _actSeed = element.Seed;
-                    Close();
+                    var btnRect = _layout.Abs(30);
+                    TooltipHandler.TipRegion(btnRect, ("MapPreview.World.RerollWindow." + (element.Pinned ? "Unpin" : "Pin")).Translate());
+                    if (Widgets.ButtonImage(btnRect, element.Pinned ? _unpinIcon : _pinIcon))
+                    {
+                        element.Pinned = !element.Pinned;
+                    }
                 }
+
+                if (hovered)
+                {
+                    var btnRect = _layout.Abs(30);
+                    TooltipHandler.TipRegion(btnRect, "MapPreview.World.RerollWindow.Apply".Translate());
+                    if (Widgets.ButtonImage(btnRect, _confirmIcon))
+                    {
+                        _actSeed = element.Seed;
+                        Close();
+                    }
+                }
+
+                _layout.End();
+                _layout.End();
 
                 idx++;
             }
@@ -229,6 +260,8 @@ public class MapSeedRerollWindow : Window
     private class Element : MapPreviewWidgetWithPreloader
     {
         public readonly int Seed;
+
+        public bool Pinned;
 
         public Element(IntVec2 maxMapSize, int seed) : base(maxMapSize)
         {
