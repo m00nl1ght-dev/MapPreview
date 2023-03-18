@@ -53,13 +53,11 @@ public class MapPreviewToolbar : Window
         draggable = !MapPreviewMod.Settings.LockWindowPositions;
     }
 
-    public void OnWorldTileSelected(World world, int tileId)
+    public void OnWorldTileSelected(World world, int tileId, MapParent mapParent)
     {
-        if (tileId >= 0 && Patch_RimWorld_WorldInterface.ShouldPreviewForTile(world.grid[tileId], tileId))
+        if (tileId >= 0 && Patch_RimWorld_WorldInterface.ShouldPreviewForTile(world.grid[tileId], tileId, mapParent))
         {
             var rerollData = world.GetComponent<SeedRerollData>();
-            var mapParent = Find.WorldObjects.MapParentAt(tileId);
-
             if (rerollData == null)
             {
                 MapPreviewMod.Logger.Warn("This world is missing the SeedRerollData component, adding it.");
@@ -181,7 +179,7 @@ public class MapPreviewToolbar : Window
         {
             if (MapPreviewMod.Settings.EnableSeedRerollWindow == Input.GetKey(KeyCode.LeftShift))
             {
-                var tile = Find.WorldSelector.selectedTile;
+                var tile = MapPreviewWindow.CurrentTile;
                 var rerollData = Find.World.GetComponent<SeedRerollData>();
                 var seed = rerollData.TryGet(tile, out var savedSeed) ? savedSeed : SeedRerollData.GetOriginalMapSeed(Find.World, tile);
 
@@ -206,7 +204,7 @@ public class MapPreviewToolbar : Window
 
         public override void OnAction()
         {
-            var tile = Find.WorldSelector.selectedTile;
+            var tile = MapPreviewWindow.CurrentTile;
             var rerollData = Find.World.GetComponent<SeedRerollData>();
             rerollData.Reset(tile);
         }
@@ -275,7 +273,7 @@ public class MapPreviewToolbar : Window
             LunarGUI.Label(layout, "Biome worker scores for selected tile");
             LunarGUI.SeparatorLine(layout, 3f);
 
-            var tileId = Find.WorldSelector.selectedTile;
+            var tileId = MapPreviewWindow.CurrentTile;
             if (tileId < 0) return;
 
             var tile = Find.WorldGrid[tileId];

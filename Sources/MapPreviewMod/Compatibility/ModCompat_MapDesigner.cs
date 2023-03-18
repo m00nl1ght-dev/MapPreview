@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using LunarFramework.Patching;
 using RimWorld;
@@ -44,6 +46,21 @@ internal class ModCompat_MapDesigner : ModCompat
         MapPreviewAPI.NotifyWorldChanged();
     }
 
+    private static bool CanUseOnTile(int tile)
+    {
+        if (tile < 0) return true;
+        var mapParent = Find.WorldObjects?.MapParentAt(tile);
+        if (mapParent == null) return true;
+        var genSteps = mapParent.MapGeneratorDef?.genSteps;
+        if (genSteps == null) return false;
+        return RequiredGenSteps.All(name => genSteps.Any(def => def.defName == name));
+    }
+
+    private static readonly List<string> RequiredGenSteps = new()
+    {
+        "Terrain", "ElevationFertility"
+    };
+
     private class ButtonOpenMapDesigner : MapPreviewToolbar.Button
     {
         public override bool IsVisible => MapPreviewMod.Settings.EnableMapDesignerIntegration;
@@ -61,9 +78,13 @@ internal class ModCompat_MapDesigner : ModCompat
             {
                 existing.Close();
             }
-            else
+            else if (CanUseOnTile(MapPreviewWindow.CurrentTile))
             {
                 windowStack.Add(new Dialog_ModSettings(_mod));
+            }
+            else
+            {
+                Messages.Message("MapPreview.Integration.MapDesigner.UnavailableForTile".Translate(), MessageTypeDefOf.RejectInput, false);
             }
         }
     }

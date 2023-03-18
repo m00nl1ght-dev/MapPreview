@@ -1,4 +1,6 @@
 using System;
+using MapPreview.Patches;
+using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
@@ -15,6 +17,8 @@ public class MapPreviewWindow : Window
     public static Func<IntVec2> MapSizeOverride;
 
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
+
+    public static int CurrentTile => Patch_RimWorld_WorldInterface.TileId;
 
     public Vector2 DefaultPos => new(UI.screenWidth - InitialSize.x - 50f, 105f);
     public override Vector2 InitialSize => new(MapPreviewMod.Settings.PreviewWindowSize, MapPreviewMod.Settings.PreviewWindowSize);
@@ -38,7 +42,7 @@ public class MapPreviewWindow : Window
         draggable = !MapPreviewMod.Settings.LockWindowPositions;
     }
 
-    public void OnWorldTileSelected(World world, int tileId)
+    public void OnWorldTileSelected(World world, int tileId, MapParent mapParent)
     {
         MapPreviewGenerator.Instance.ClearQueue();
 
@@ -63,7 +67,7 @@ public class MapPreviewWindow : Window
         }
 
         int seed = SeedRerollData.GetMapSeed(world, tileId);
-        var mapSize = DetermineMapSize(world, tileId);
+        var mapSize = DetermineMapSize(world, tileId, mapParent);
 
         mapSize = new IntVec2(Mathf.Clamp(mapSize.x, MinMapSize.x, MaxMapSize.x), Mathf.Clamp(mapSize.z, MinMapSize.z, MaxMapSize.z));
 
@@ -77,6 +81,7 @@ public class MapPreviewWindow : Window
         var request = new MapPreviewRequest(seed, tileId, mapSize)
         {
             TextureSize = new IntVec2(_previewWidget.Texture.width, _previewWidget.Texture.height),
+            GeneratorDef = mapParent?.MapGeneratorDef ?? MapGeneratorDefOf.Base_Player,
             UseTrueTerrainColors = MapPreviewMod.Settings.EnableTrueTerrainColors,
             SkipRiverFlowCalc = MapPreviewMod.Settings.SkipRiverFlowCalc,
             ExistingBuffer = _previewWidget.Buffer
@@ -100,7 +105,11 @@ public class MapPreviewWindow : Window
 
     public static IntVec2 DetermineMapSize(World world, int tileId)
     {
-        var mapParent = world.worldObjects.MapParentAt(tileId);
+        return DetermineMapSize(world, tileId, world.worldObjects.MapParentAt(tileId));
+    }
+
+    public static IntVec2 DetermineMapSize(World world, int tileId, MapParent mapParent)
+    {
         if (mapParent is Site site)
         {
             var fromSite = site.PreferredMapSize;

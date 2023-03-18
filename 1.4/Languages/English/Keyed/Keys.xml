@@ -37,6 +37,7 @@
   <MapPreview.PreviewGenerationFailed>A conflict with one of your mods has caused the map preview generator to fail. Please report this on the Map Preview workshop page so that a compatibility patch can be created. After closing this message, please upload your log file and include that link in your bug report.</MapPreview.PreviewGenerationFailed>
   
   <MapPreview.Integration.MapDesigner.OpenSettings>Open Map Designer.</MapPreview.Integration.MapDesigner.OpenSettings>
+  <MapPreview.Integration.MapDesigner.UnavailableForTile>Map Designer can not be used on this tile.</MapPreview.Integration.MapDesigner.UnavailableForTile>
   <MapPreview.Integration.MapDesigner.Enabled>Show Map Designer button</MapPreview.Integration.MapDesigner.Enabled>
   
   <MapPreview.Integration.PrepareLanding.Open>Open Prepare Landing.</MapPreview.Integration.PrepareLanding.Open>
@@ -44,5 +45,8 @@
   
   <MapPreview.Integration.WorldEdit.Open>Open World Edit.</MapPreview.Integration.WorldEdit.Open>
   <MapPreview.Integration.WorldEdit.Enabled>Show World Edit button</MapPreview.Integration.WorldEdit.Enabled>
+
+  <MapPreview.Integration.LandformSettings.Open>Open landform settings.</MapPreview.Integration.LandformSettings.Open>
+  <MapPreview.Integration.LandformSettings.Enabled>Show landform settings button</MapPreview.Integration.LandformSettings.Enabled>
   
 </LanguageData>

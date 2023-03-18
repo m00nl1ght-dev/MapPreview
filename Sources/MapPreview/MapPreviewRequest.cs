@@ -29,7 +29,6 @@ SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using MapPreview.Promises;
 using RimWorld;
 using UnityEngine;
@@ -82,20 +81,17 @@ public class MapPreviewRequest
         return Gen.HashCombineInt(GenText.StableStringHash(worldSeed), mapTile);
     }
 
-    public static readonly Predicate<GenStepDef> DefaultGenStepFilter = g => DefaultGenSteps.Contains(g.defName);
+    public static void AddDefaultGenStepPredicate(Predicate<GenStepDef> predicate) => DefaultGenStepPredicates.Add(predicate);
 
-    public static readonly IReadOnlyCollection<string> DefaultGenSteps = new HashSet<string>
+    public static readonly Predicate<GenStepDef> DefaultGenStepFilter = genStep => DefaultGenStepPredicates.Any(p => p(genStep));
+
+    private static readonly List<Predicate<GenStepDef>> DefaultGenStepPredicates = new()
     {
-        // Vanilla
-        "ElevationFertility",
-        "Terrain",
+        genStep => DefaultGenSteps.Contains(genStep.defName)
+    };
 
-        // CaveBiomes
-        "CaveElevation",
-        "CaveRiver",
-
-        // TerraProjectCore
-        "ElevationFertilityPost",
-        "BetterCaves"
+    private static readonly List<string> DefaultGenSteps = new()
+    {
+        "ElevationFertility", "Terrain"
     };
 }

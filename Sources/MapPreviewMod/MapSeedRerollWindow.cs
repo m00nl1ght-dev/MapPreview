@@ -1,5 +1,9 @@
+using System;
 using System.Collections.Generic;
 using LunarFramework.GUI;
+using LunarFramework.Patching;
+using RimWorld;
+using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 
@@ -9,6 +13,8 @@ namespace MapPreview;
 public class MapSeedRerollWindow : Window
 {
     public static MapSeedRerollWindow Instance => Find.WindowStack?.WindowOfType<MapSeedRerollWindow>();
+
+    private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(MapSeedRerollWindow));
 
     public override Vector2 InitialSize => new(UI.screenWidth, UI.screenHeight);
 
@@ -22,6 +28,7 @@ public class MapSeedRerollWindow : Window
     private int _actSeed;
     private int _lastSeed;
     private IntVec2 _mapSize;
+    private MapParent _mapParent;
     private SeedRerollData _data;
 
     private static Vector2 _elementSize;
@@ -64,14 +71,13 @@ public class MapSeedRerollWindow : Window
 
         var world = Find.World;
 
+        _tileId = MapPreviewWindow.CurrentTile;
         _data = world.GetComponent<SeedRerollData>();
-        _tileId = Find.WorldSelector.selectedTile;
+        _mapParent = world.worldObjects.MapParentAt(_tileId);
 
-        if (world == null || _data == null || _tileId < 0 || !MapPreviewAPI.IsReadyForPreviewGen)
-        {
-            Close();
-            return;
-        }
+        if (world == null || _data == null || _tileId < 0) throw new Exception("Reroll helper window is missing context");
+
+        MapPreviewAPI.SubscribeGenPatches(PatchGroupSubscriber);
 
         MapPreviewGenerator.Init();
         MapPreviewGenerator.Instance.ClearQueue();
@@ -94,6 +100,8 @@ public class MapSeedRerollWindow : Window
 
         MapPreviewGenerator.Instance.ClearQueue();
         foreach (var element in _elements) element.Dispose();
+
+        MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
     }
 
     private void TryAddElement()
@@ -106,6 +114,7 @@ public class MapSeedRerollWindow : Window
         var request = new MapPreviewRequest(_lastSeed, _tileId, _mapSize)
         {
             TextureSize = new IntVec2(element.Texture.width, element.Texture.height),
+            GeneratorDef = _mapParent?.MapGeneratorDef ?? MapGeneratorDefOf.Base_Player,
             UseTrueTerrainColors = MapPreviewMod.Settings.EnableTrueTerrainColors,
             SkipRiverFlowCalc = MapPreviewMod.Settings.SkipRiverFlowCalc,
             ExistingBuffer = element.Buffer

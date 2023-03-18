@@ -10,7 +10,8 @@ namespace MapPreview.Patches;
 [HarmonyPatch(typeof(WorldInterface))]
 internal class Patch_RimWorld_WorldInterface
 {
-    private static int _tileId = -1;
+    internal static int TileId = -1;
+
     private static bool _activeSinceEnteringMap;
     private static bool _openedPreviewSinceEnteringMap;
 
@@ -20,7 +21,7 @@ internal class Patch_RimWorld_WorldInterface
 
     [HarmonyPostfix]
     [HarmonyPatch("WorldInterfaceUpdate")]
-    private static void WorldInterfaceUpdate(WorldInterface __instance)
+    private static void WorldInterfaceUpdate(WorldSelector ___selector)
     {
         if (!WorldRendererUtility.WorldRenderedNow)
         {
@@ -36,31 +37,37 @@ internal class Patch_RimWorld_WorldInterface
                 }
 
                 _activeSinceEnteringMap = false;
-                _tileId = -1;
+                TileId = -1;
             }
 
             return;
         }
 
-        if (_tileId != __instance.SelectedTile)
+        var selectedTileNow = ___selector.selectedTile;
+        if (selectedTileNow < 0 && ___selector.NumSelectedObjects == 1) selectedTileNow = ___selector.SelectedObjects[0].Tile;
+
+        if (TileId != selectedTileNow)
         {
-            var wasAutoSelect = Current.ProgramState == ProgramState.Playing && _tileId == -1 && !_openedPreviewSinceEnteringMap;
+            var wasAutoSelect = Current.ProgramState == ProgramState.Playing && TileId == -1 && !_activeSinceEnteringMap;
 
-            _tileId = __instance.SelectedTile;
+            TileId = selectedTileNow;
 
-            if (_tileId >= 0)
+            if (TileId >= 0)
             {
-                var tile = Find.World.grid[_tileId];
+                var world = Find.World;
+                var worldTile = world.grid[TileId];
+                var mapParent = world.worldObjects.MapParentAt(TileId);
+                
                 _activeSinceEnteringMap = true;
 
                 if (MapPreviewMod.Settings.EnableToolbar)
                 {
                     var toolbar = MapPreviewToolbar.Instance;
                     if (toolbar == null) Find.WindowStack.Add(toolbar = new MapPreviewToolbar());
-                    toolbar.OnWorldTileSelected(Find.World, _tileId);
+                    toolbar.OnWorldTileSelected(world, TileId, mapParent);
                 }
 
-                if (ShouldPreviewForTile(tile, _tileId) && (!wasAutoSelect || MapPreviewMod.Settings.AutoOpenPreviewOnWorldMap))
+                if (ShouldPreviewForTile(worldTile, TileId, mapParent) && (!wasAutoSelect || MapPreviewMod.Settings.AutoOpenPreviewOnWorldMap))
                 {
                     if (MapPreviewMod.Settings.EnableMapPreview && MapPreviewAPI.IsReady)
                     {
@@ -72,7 +79,7 @@ internal class Patch_RimWorld_WorldInterface
 
                         var window = MapPreviewWindow.Instance;
                         if (window == null) Find.WindowStack.Add(window = new MapPreviewWindow());
-                        window.OnWorldTileSelected(Find.World, _tileId);
+                        window.OnWorldTileSelected(world, TileId, mapParent);
                     }
 
                     return;
@@ -83,16 +90,27 @@ internal class Patch_RimWorld_WorldInterface
         }
     }
 
-    public static bool ShouldPreviewForTile(Tile tile, int tileId)
+    public static bool ShouldPreviewForTile(Tile tile, int tileId, MapParent mapParent)
     {
-        return !tile.biome.impassable && (tile.hilliness != Hilliness.Impassable || TileFinder.IsValidTileForNewSettlement(tileId));
+        if (tile.biome.impassable || tile.hilliness == Hilliness.Impassable)
+        {
+            if (!TileFinder.IsValidTileForNewSettlement(tileId)) return false;
+        }
+
+        if (mapParent != null)
+        {
+            var genDef = mapParent.MapGeneratorDef;
+            if (genDef?.genSteps == null || !genDef.genSteps.Any(MapPreviewRequest.DefaultGenStepFilter)) return false;
+        }
+
+        return true;
     }
 
     public static void Refresh() => Refresh(false);
 
     public static void Refresh(bool autoOpen)
     {
-        _tileId = autoOpen ? -2 : -1;
+        TileId = autoOpen ? -2 : -1;
         if (!MapPreviewMod.Settings.EnableMapPreview)
         {
             MapPreviewWindow.Instance?.Close();
