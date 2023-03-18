@@ -22,6 +22,7 @@ public class MapPreviewSettings : LunarModSettings
     public readonly Entry<bool> EnableMapDesignerIntegration = MakeEntry(true);
     public readonly Entry<bool> EnablePrepareLandingIntegration = MakeEntry(true);
     public readonly Entry<bool> EnableWorldEditIntegration = MakeEntry(true);
+    public readonly Entry<bool> EnableLandformSettingsIntegration = MakeEntry(false);
     public readonly Entry<float> PreviewWindowSize = MakeEntry(250f);
     public readonly Entry<Vector2> PreviewWindowPos = MakeEntry(new Vector2(-1, -1));
     public readonly Entry<Vector2> ToolbarWindowPos = MakeEntry(new Vector2(-1, -1));
@@ -118,6 +119,11 @@ public class MapPreviewSettings : LunarModSettings
         layout.PushEnabled(EnableToolbar);
 
         LunarGUI.Checkbox(layout, ref EnableWorldSeedRerollFeature.Value, Label("EnableWorldSeedRerollFeature"));
+
+        if (ModCompat_GeologicalLandforms.IsPresent)
+        {
+            LunarGUI.Checkbox(layout, ref EnableLandformSettingsIntegration.Value, "MapPreview.Integration.LandformSettings.Enabled".Translate());
+        }
 
         if (ModCompat_MapDesigner.IsPresent)
         {

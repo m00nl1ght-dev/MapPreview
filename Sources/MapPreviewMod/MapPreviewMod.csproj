@@ -66,6 +66,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Compatibility\ModCompat_GeologicalLandforms.cs" />
         <Compile Include="Compatibility\ModCompat_MapDesigner.cs" />
         <Compile Include="Compatibility\ModCompat_PrepareLanding.cs" />
         <Compile Include="Compatibility\ModCompat_WorldEdit.cs" />
