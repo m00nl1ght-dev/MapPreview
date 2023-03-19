@@ -11,6 +11,7 @@ internal class Patch_RimWorld_Page_SelectStartingSite
 {
     [HarmonyPrefix]
     [HarmonyPatch("CanDoNext")]
+    [HarmonyPriority(Priority.First)]
     private static bool CanDoNext(ref bool __result)
     {
         if (MapPreviewAPI.IsGeneratingPreview)

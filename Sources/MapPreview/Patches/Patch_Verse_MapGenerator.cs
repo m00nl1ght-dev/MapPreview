@@ -11,17 +11,25 @@ internal static class Patch_Verse_MapGenerator
 {
     [HarmonyPrefix]
     [HarmonyPatch("GenerateMap")]
-    private static bool GenerateMap()
+    [HarmonyPriority(Priority.First)]
+    private static void GenerateMap()
     {
-        if (!MapPreviewAPI.IsGeneratingPreview) return true;
-        throw new Exception("Attempted to use MapGenerator while a map preview is being generated!");
+        if (MapPreviewAPI.IsGeneratingPreview)
+        {
+            MapPreviewAPI.Logger.Warn("Something attempted to use the MapGenerator while a preview is being generated, waiting for it to complete!");
+
+            if (!MapPreviewGenerator.Instance.WaitUntilIdle(60))
+            {
+                throw new Exception("Timeout reached while waiting for a map preview to finish generating!");
+            }
+        }
     }
 
     [HarmonyPrefix]
     [HarmonyPatch("GenerateContentsIntoMap")]
     private static void GenerateContentsIntoMap(Map map, ref int seed)
     {
-        if (MapPreviewAPI.IsGeneratingPreview) return;
+        if (MapPreviewAPI.IsGeneratingPreview && MapPreviewGenerator.IsGeneratingOnCurrentThread) return;
         if (SeedRerollData.IsMapSeedRerolled(Find.World, map.Tile, out var savedSeed))
         {
             seed = savedSeed;

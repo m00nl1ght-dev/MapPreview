@@ -27,7 +27,7 @@ SOFTWARE.
  */
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -59,10 +59,12 @@ public class MapPreviewGenerator : IDisposable
 
     public static MapPreviewGenerator Instance { get; private set; }
 
-    private readonly Queue<MapPreviewRequest> _queuedRequests = new();
+    private readonly ConcurrentQueue<MapPreviewRequest> _queuedRequests = new();
     private readonly Thread _workerThread;
+    
     private EventWaitHandle _workHandle = new AutoResetEvent(false);
-    private EventWaitHandle _disposeHandle = new AutoResetEvent(false);
+    private EventWaitHandle _disposeHandle = new ManualResetEvent(false);
+    private EventWaitHandle _idleHandle = new ManualResetEvent(true);
 
     private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(MapPreviewGenerator));
 
@@ -100,6 +102,8 @@ public class MapPreviewGenerator : IDisposable
         MapPreviewAPI.SubscribeGenPatches(PatchGroupSubscriber);
 
         _queuedRequests.Enqueue(request);
+
+        _idleHandle.Reset();
         _workHandle.Set();
 
         return request.Promise;
@@ -116,9 +120,9 @@ public class MapPreviewGenerator : IDisposable
             while (_queuedRequests.Count > 0 || WaitHandle.WaitAny(waitHandles) == 0)
             {
                 Exception rejectException = null;
-                if (_queuedRequests.Count > 0)
+                if (_queuedRequests.TryDequeue(out request))
                 {
-                    request = CurrentRequest = _queuedRequests.Dequeue();
+                    CurrentRequest = request;
 
                     MapPreviewResult result = null;
                     try
@@ -163,6 +167,11 @@ public class MapPreviewGenerator : IDisposable
                             MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
                         }
                     });
+
+                    if (_queuedRequests.Count == 0)
+                    {
+                        _idleHandle.Set();
+                    }
                 }
             }
         }
@@ -176,9 +185,16 @@ public class MapPreviewGenerator : IDisposable
         }
         finally
         {
-            _workHandle.Close();
-            _disposeHandle.Close();
-            _disposeHandle = _workHandle = null;
+            var idleHandle = _idleHandle;
+            var workHandle = _workHandle;
+            var disposeHandle = _disposeHandle;
+
+            _idleHandle = _disposeHandle = _workHandle = null;
+
+            idleHandle.Set();
+            idleHandle.Close();
+            workHandle.Close();
+            disposeHandle.Close();
         }
     }
 
@@ -203,20 +219,30 @@ public class MapPreviewGenerator : IDisposable
         if (Instance == this)
         {
             Instance = null;
-            _queuedRequests.Clear();
+            ClearQueue();
             _disposeHandle.Set();
         }
     }
 
     public void ClearQueue()
     {
-        _queuedRequests.Clear();
+        while (_queuedRequests.Count > 0)
+        {
+            if (!_queuedRequests.TryDequeue(out _)) break;
+        }
     }
 
-    public void WaitForDisposal()
+    public void WaitForDisposal(int timeout = 5)
     {
         if (Instance == this || _workerThread is not { IsAlive: true } || _workerThread.ThreadState == ThreadState.WaitSleepJoin) return;
-        _workerThread.Join(5 * 1000);
+        _workerThread.Join(timeout * 1000);
+    }
+
+    public bool WaitUntilIdle(int timeout = 30)
+    {
+        var idleHandle = _idleHandle;
+        if (idleHandle == null || _workerThread is not { IsAlive: true } || _workerThread.ThreadState == ThreadState.WaitSleepJoin) return true;
+        return idleHandle.WaitOne(timeout * 1000);
     }
 
     private static void GeneratePreview(MapPreviewRequest request, MapPreviewResult result)
