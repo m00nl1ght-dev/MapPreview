@@ -27,6 +27,7 @@ internal static class Patch_Verse_MapGenerator
 
     [HarmonyPrefix]
     [HarmonyPatch("GenerateContentsIntoMap")]
+    [HarmonyPriority(Priority.VeryHigh)]
     private static void GenerateContentsIntoMap(Map map, ref int seed)
     {
         if (MapPreviewAPI.IsGeneratingPreview && MapPreviewGenerator.IsGeneratingOnCurrentThread) return;

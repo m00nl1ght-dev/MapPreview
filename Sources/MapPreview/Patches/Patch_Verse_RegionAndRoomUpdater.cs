@@ -10,6 +10,7 @@ internal static class Patch_Verse_RegionAndRoomUpdater
 {
     [HarmonyPrefix]
     [HarmonyPatch("RegenerateNewRegionsFromDirtyCells")]
+    [HarmonyPriority(Priority.VeryHigh)]
     private static bool RegenerateNewRegionsFromDirtyCells()
     {
         return !MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
