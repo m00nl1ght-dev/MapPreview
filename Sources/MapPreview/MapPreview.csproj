@@ -72,6 +72,7 @@
         <Compile Include="Compatibility\ModCompat_SaveOurShip.cs" />
         <Compile Include="Compatibility\ModCompat_StartupImpact.cs" />
         <Compile Include="Compatibility\ModCompat_TerraProjectCore.cs" />
+        <Compile Include="Compatibility\ModCompat_VE_KCSG.cs" />
         <Compile Include="MapPreviewAPI.cs" />
         <Compile Include="MapPreviewGenerator.cs" />
         <Compile Include="Compatibility\ModCompat_PerformanceOptimizer.cs" />

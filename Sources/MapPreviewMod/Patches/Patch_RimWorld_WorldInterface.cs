@@ -100,7 +100,8 @@ internal class Patch_RimWorld_WorldInterface
         if (mapParent != null)
         {
             var genDef = mapParent.MapGeneratorDef;
-            if (genDef?.genSteps == null || !genDef.genSteps.Any(MapPreviewRequest.DefaultGenStepFilter)) return false;
+            if (genDef?.genSteps == null) return false;
+            if (genDef.genSteps.Count(MapPreviewRequest.DefaultGenStepFilter) < 2) return false;
         }
 
         return true;
