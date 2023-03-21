@@ -17,6 +17,9 @@ internal static class Patch_Verse_Map
         typeof(RoadInfo).FullName,
         typeof(WaterInfo).FullName,
 
+        // Geological Landforms
+        "GeologicalLandforms.BiomeGrid",
+
         // Water Freezes
         "ActiveTerrain.SpecialTerrainList",
 

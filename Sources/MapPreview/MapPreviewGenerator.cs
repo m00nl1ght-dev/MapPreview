@@ -297,7 +297,11 @@ public class MapPreviewGenerator : IDisposable
         try
         {
             MapGenerator.mapBeingGenerated = map;
-            if (startTick == 0) tickManager.gameStartAbsTick = GenTicks.ConfiguredTicksAbsAtGameStart;
+
+            if (startTick == 0 && Current.ProgramState == ProgramState.Entry)
+            {
+                tickManager.gameStartAbsTick = GenTicks.ConfiguredTicksAbsAtGameStart;
+            }
 
             var mapParent = new MapParent { Tile = request.MapTile, def = WorldObjectDefOf.Settlement };
             mapParent.SetFaction(Faction.OfPlayer);
@@ -326,7 +330,12 @@ public class MapPreviewGenerator : IDisposable
         {
             Rand.PopState();
             MapGenerator.mapBeingGenerated = null;
-            if (startTick == 0) tickManager.gameStartAbsTick = 0;
+
+            if (startTick == 0 && Current.ProgramState == ProgramState.Entry)
+            {
+                tickManager.gameStartAbsTick = 0;
+            }
+            
             GeneratingPreviewMap.Value = null;
             MapGenerator.data.Clear();
         }

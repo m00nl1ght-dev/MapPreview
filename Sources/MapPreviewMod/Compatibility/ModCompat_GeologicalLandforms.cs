@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using HarmonyLib;
 using LunarFramework.Patching;
 using RimWorld;
@@ -7,7 +8,6 @@ using Verse;
 
 namespace MapPreview.Compatibility;
 
-[HarmonyPatch]
 internal class ModCompat_GeologicalLandforms : ModCompat
 {
     public static bool IsPresent { get; private set; }
@@ -20,6 +20,9 @@ internal class ModCompat_GeologicalLandforms : ModCompat
 
     protected override bool OnApply()
     {
+        var patchGroup = MapPreviewMod.CompatPatchGroup.NewSubGroup(TargetAssemblyName);
+        patchGroup.AddPatch(typeof(LandformGraphEditor_Init));
+        
         _modType = FindType("GeologicalLandforms.GeologicalLandformsMod");
         _mod = Require(LoadedModManager.GetMod(_modType));
 
@@ -29,12 +32,21 @@ internal class ModCompat_GeologicalLandforms : ModCompat
         return true;
     }
 
-    [HarmonyPrefix]
-    [HarmonyPatch("GeologicalLandforms.GraphEditor.LandformGraphEditor", "Init")]
-    private static void LandformGraphEditor_Init_Prefix()
+    [HarmonyPatch]
+    private static class LandformGraphEditor_Init
     {
-        MapPreviewWindow.Instance?.Close();
-        MapPreviewToolbar.Instance?.Close();
+        [HarmonyTargetMethod]
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.Method("GeologicalLandforms.GraphEditor.LandformGraphEditor:Init");
+        }
+
+        [HarmonyPrefix]
+        private static void Prefix()
+        {
+            MapPreviewWindow.Instance?.Close();
+            MapPreviewToolbar.Instance?.Close();
+        }
     }
 
     private class ButtonOpenGeologicalLandforms : MapPreviewToolbar.Button
