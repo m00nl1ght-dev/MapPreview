@@ -85,6 +85,7 @@
         <Compile Include="Patches\Patch_Verse_District.cs" />
         <Compile Include="Patches\Patch_Verse_GenSpawn.cs" />
         <Compile Include="Patches\Patch_Verse_MapGenerator.cs" />
+        <Compile Include="Patches\Patch_RimWorld_GenStep_Caves.cs" />
         <Compile Include="Patches\Patch_Verse_Region.cs" />
         <Compile Include="Patches\Patch_Verse_RegionAndRoomUpdater.cs" />
         <Compile Include="Patches\Patch_Verse_TerrainGrid.cs" />
