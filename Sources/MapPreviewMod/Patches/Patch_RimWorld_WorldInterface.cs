@@ -44,7 +44,14 @@ internal class Patch_RimWorld_WorldInterface
         }
 
         var selectedTileNow = ___selector.selectedTile;
-        if (selectedTileNow < 0 && ___selector.NumSelectedObjects == 1) selectedTileNow = ___selector.SelectedObjects[0].Tile;
+        if (selectedTileNow < 0 && ___selector.NumSelectedObjects == 1)
+        {
+            var selectedObject = ___selector.SelectedObjects[0];
+            if (selectedObject is MapParent)
+            {
+                selectedTileNow = selectedObject.Tile;
+            }
+        }
 
         if (TileId != selectedTileNow)
         {
