@@ -116,7 +116,7 @@ public class MapPreviewWindow : Window
             return new IntVec2(fromSite.x, fromSite.z);
         }
 
-        if (Current.Game.Maps.Any())
+        if (Current.ProgramState != ProgramState.Entry)
         {
             var fromWorld = world.info.initialMapSize;
             return new IntVec2(fromWorld.x, fromWorld.z);
