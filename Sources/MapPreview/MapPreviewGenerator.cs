@@ -328,16 +328,21 @@ public class MapPreviewGenerator : IDisposable
         }
         finally
         {
-            Rand.PopState();
-            MapGenerator.mapBeingGenerated = null;
-
             if (startTick == 0 && Current.ProgramState == ProgramState.Entry)
             {
                 tickManager.gameStartAbsTick = 0;
             }
-            
-            GeneratingPreviewMap.Value = null;
-            MapGenerator.data.Clear();
+
+            try
+            {
+                Rand.PopState();
+            }
+            finally
+            {
+                MapGenerator.mapBeingGenerated = null;
+                GeneratingPreviewMap.Value = null;
+                MapGenerator.data.Clear();
+            }
         }
     }
 
