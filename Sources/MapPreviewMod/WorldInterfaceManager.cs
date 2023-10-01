@@ -97,7 +97,7 @@ public static class WorldInterfaceManager
 
     public static bool ShouldPreviewForTile(Tile tile, int tileId, MapParent mapParent)
     {
-        if (tile.biome.impassable || tile.hilliness == Hilliness.Impassable)
+        if (tile.biome.impassable || Find.World.Impassable(tileId))
         {
             if (!TileFinder.IsValidTileForNewSettlement(tileId)) return false;
         }
