@@ -90,7 +90,7 @@ public class MapPreviewSettings : LunarModSettings
         layout.PopEnabled();
         layout.Abs(10f);
 
-        if (Prefs.DevMode && LunarGUI.Button(layout, "[DEV] Clear cache and recalculate all terrain colors"))
+        if (LunarGUI.Button(layout, Label("RefreshTerrainColors")))
         {
             TrueTerrainColors.CalculateTrueTerrainColors(true);
             Patch_RimWorld_WorldInterface.Refresh();
