@@ -16,6 +16,7 @@ public class MapPreviewSettings : LunarModSettings
     public readonly Entry<bool> EnableToolbarInPlay = MakeEntry(true);
     public readonly Entry<bool> LockWindowPositions = MakeEntry(false);
     public readonly Entry<bool> AutoOpenPreviewOnWorldMap = MakeEntry(false);
+    public readonly Entry<bool> TriggerPreviewOnWorldObjects = MakeEntry(true);
     public readonly Entry<bool> EnableSeedRerollFeature = MakeEntry(false);
     public readonly Entry<bool> EnableSeedRerollWindow = MakeEntry(true);
     public readonly Entry<bool> EnableWorldSeedRerollFeature = MakeEntry(true);
@@ -85,6 +86,7 @@ public class MapPreviewSettings : LunarModSettings
 
         layout.PushChanged();
 
+        LunarGUI.Checkbox(layout, ref TriggerPreviewOnWorldObjects.Value, Label("TriggerPreviewOnWorldObjects"));
         LunarGUI.Checkbox(layout, ref LockWindowPositions.Value, Label("LockWindowPositions"));
 
         if (layout.PopChanged())

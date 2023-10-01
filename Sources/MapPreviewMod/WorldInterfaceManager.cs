@@ -41,10 +41,13 @@ public static class WorldInterfaceManager
         var selectedTileNow = selector.selectedTile;
         if (selectedTileNow < 0 && selector.NumSelectedObjects == 1)
         {
-            var selectedObject = selector.SelectedObjects[0];
-            if (selectedObject is MapParent)
+            if (MapPreviewMod.Settings.TriggerPreviewOnWorldObjects)
             {
-                selectedTileNow = selectedObject.Tile;
+                var selectedObject = selector.SelectedObjects[0];
+                if (selectedObject is MapParent)
+                {
+                    selectedTileNow = selectedObject.Tile;
+                }
             }
         }
 

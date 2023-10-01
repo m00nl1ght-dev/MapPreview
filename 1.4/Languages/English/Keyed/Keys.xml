@@ -13,6 +13,7 @@
   <MapPreview.Settings.EnableToolbarInPlay>... while playing (on the world map screen)</MapPreview.Settings.EnableToolbarInPlay>
   <MapPreview.Settings.LockWindowPositions>Lock window positions</MapPreview.Settings.LockWindowPositions>
   <MapPreview.Settings.AutoOpenPreviewOnWorldMap>Automatically open preview window when switching to the world map</MapPreview.Settings.AutoOpenPreviewOnWorldMap>
+  <MapPreview.Settings.TriggerPreviewOnWorldObjects>Show map preview when a settlement or quest site is selected</MapPreview.Settings.TriggerPreviewOnWorldObjects>
   <MapPreview.Settings.EnableSeedRerollFeature>Show map seed reroll button</MapPreview.Settings.EnableSeedRerollFeature>
   <MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>Show map seed reroll button (not available because Map Reroll mod is installed)</MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>
   <MapPreview.Settings.EnableSeedRerollWindow>Use reroll helper window (hold shift when clicking reroll button to invert)</MapPreview.Settings.EnableSeedRerollWindow>
