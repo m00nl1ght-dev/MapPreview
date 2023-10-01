@@ -18,6 +18,7 @@ public static class MapPreviewAPI
 
     internal static PatchGroup MainPatchGroup;
     internal static PatchGroup CompatPatchGroup;
+    internal static PatchGroup GenLowPatchGroup;
     internal static PatchGroup GenPatchGroup;
 
     private static void Init()
@@ -28,6 +29,9 @@ public static class MapPreviewAPI
 
         CompatPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Compat");
         CompatPatchGroup.Subscribe();
+        
+        GenLowPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("GenLow");
+        GenLowPatchGroup.AddPatches(typeof(MapPreviewAPI).Assembly);
 
         GenPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Gen");
         GenPatchGroup.AddPatches(typeof(MapPreviewAPI).Assembly);
@@ -35,6 +39,7 @@ public static class MapPreviewAPI
         ModCompat.ApplyAll(LunarAPI, CompatPatchGroup);
 
         MainPatchGroup.CheckForConflicts(Logger);
+        GenLowPatchGroup.CheckForConflicts(Logger);
 
         if (Logger is IngameLogContext ingameLogger)
         {
@@ -46,13 +51,14 @@ public static class MapPreviewAPI
     {
         MainPatchGroup?.UnsubscribeAll();
         CompatPatchGroup?.UnsubscribeAll();
+        GenLowPatchGroup?.UnsubscribeAll();
         GenPatchGroup?.UnsubscribeAll();
     }
 
     // ### Public API ###
 
-    public static bool IsReady => MainPatchGroup is { Active: true } && GenPatchGroup != null;
-    public static bool IsReadyForPreviewGen => IsReady && GenPatchGroup.Active;
+    public static bool IsReady => MainPatchGroup is { Applied: true } && GenLowPatchGroup != null && GenPatchGroup != null;
+    public static bool IsReadyForPreviewGen => IsReady && GenLowPatchGroup.Applied && GenPatchGroup.Applied;
     public static bool IsGeneratingPreview { get; internal set; }
 
     private static readonly List<Predicate<Map>> StableSeedConditions = new();
@@ -73,10 +79,17 @@ public static class MapPreviewAPI
 
     public static void SubscribeGenPatches(PatchGroupSubscriber subscriber)
     {
+        GenLowPatchGroup?.Subscribe(subscriber);
         GenPatchGroup?.Subscribe(subscriber);
     }
 
     public static void UnsubscribeGenPatches(PatchGroupSubscriber subscriber)
+    {
+        GenLowPatchGroup?.Unsubscribe(subscriber);
+        GenPatchGroup?.Unsubscribe(subscriber);
+    }
+    
+    public static void UnsubscribeGenPatchesFast(PatchGroupSubscriber subscriber)
     {
         GenPatchGroup?.Unsubscribe(subscriber);
     }

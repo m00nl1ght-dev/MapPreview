@@ -5,7 +5,7 @@ using Verse;
 
 namespace MapPreview.Patches;
 
-[PatchGroup("Main")]
+[PatchGroup("Active")]
 [HarmonyPatch(typeof(PlaySettings))]
 internal class Patch_RimWorld_PlaySettings
 {
@@ -15,9 +15,28 @@ internal class Patch_RimWorld_PlaySettings
     {
         if (worldView)
         {
-            bool prev = MapPreviewMod.Settings.EnableMapPreview;
-            row.ToggleableIcon(ref MapPreviewMod.Settings.EnableMapPreview.Value, TexButton.TogglePauseOnError, "MapPreview.World.ShowHidePreview".Translate(), SoundDefOf.Mouseover_ButtonToggle);
-            if (prev != MapPreviewMod.Settings.EnableMapPreview) Patch_RimWorld_WorldInterface.Refresh(true);
+            bool current = MapPreviewMod.Settings.PreviewEnabledNow, prev = current;
+            
+            row.ToggleableIcon(ref current, TexButton.TogglePauseOnError, "MapPreview.World.ShowHidePreview".Translate(), SoundDefOf.Mouseover_ButtonToggle);
+            
+            if (prev != current)
+            {
+                if (Current.ProgramState == ProgramState.Entry)
+                {
+                    MapPreviewMod.Settings.EnableMapPreview.Value = current;
+                }
+                else
+                {
+                    MapPreviewMod.Settings.EnableMapPreviewInPlay.Value = current;
+                }
+                
+                WorldInterfaceManager.Refresh(true);
+                
+                if (!MapPreviewMod.Settings.PreviewEnabledNow)
+                {
+                    MapPreviewWindow.Instance?.Close();
+                }
+            }
         }
     }
 }

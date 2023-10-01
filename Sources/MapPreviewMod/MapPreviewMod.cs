@@ -14,6 +14,7 @@ public class MapPreviewMod : Mod
     internal static LogContext Logger => LunarAPI.LogContext;
 
     internal static PatchGroup MainPatchGroup;
+    internal static PatchGroup ActivePatchGroup;
     internal static PatchGroup CompatPatchGroup;
 
     internal static MapPreviewSettings Settings;
@@ -23,6 +24,9 @@ public class MapPreviewMod : Mod
         MainPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Main");
         MainPatchGroup.AddPatches(typeof(MapPreviewMod).Assembly);
         MainPatchGroup.Subscribe();
+        
+        ActivePatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Active");
+        ActivePatchGroup.AddPatches(typeof(MapPreviewMod).Assembly);
 
         CompatPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Compat");
         CompatPatchGroup.Subscribe();
@@ -30,6 +34,7 @@ public class MapPreviewMod : Mod
         ModCompat.ApplyAll(LunarAPI, CompatPatchGroup);
 
         MainPatchGroup.CheckForConflicts(Logger);
+        ActivePatchGroup.CheckForConflicts(Logger);
 
         MapPreviewAPI.AddStableSeedCondition(map => Settings.SkipRiverFlowCalc && map.TileInfo.Rivers?.Count > 0);
     }
@@ -37,6 +42,7 @@ public class MapPreviewMod : Mod
     private static void Cleanup()
     {
         MainPatchGroup?.UnsubscribeAll();
+        ActivePatchGroup?.UnsubscribeAll();
         CompatPatchGroup?.UnsubscribeAll();
     }
 

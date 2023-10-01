@@ -6,7 +6,7 @@ using Verse;
 
 namespace MapPreview.Patches;
 
-[PatchGroup("Main")]
+[PatchGroup("Active")]
 [HarmonyPatch(typeof(Dialog_AdvancedGameConfig))]
 internal class Patch_RimWorld_Dialog_AdvancedGameConfig
 {
@@ -23,7 +23,7 @@ internal class Patch_RimWorld_Dialog_AdvancedGameConfig
             var newMapSize = MapPreviewWindow.DetermineMapSize(world, currentPreviewMap.Tile);
             if (currentPreviewMap.Size != new IntVec3(newMapSize.x, currentPreviewMap.Size.y, newMapSize.z))
             {
-                Patch_RimWorld_WorldInterface.Refresh();
+                WorldInterfaceManager.Refresh();
             }
         }
     }

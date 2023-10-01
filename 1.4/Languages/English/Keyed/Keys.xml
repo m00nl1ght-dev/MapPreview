@@ -5,8 +5,12 @@
   
   <MapPreview.Settings.Tab.Preview>Preview</MapPreview.Settings.Tab.Preview>
   <MapPreview.Settings.Tab.Toolbar>Toolbar</MapPreview.Settings.Tab.Toolbar>
-  <MapPreview.Settings.EnableMapPreview>Map preview enabled</MapPreview.Settings.EnableMapPreview>
-  <MapPreview.Settings.EnableToolbar>World map toolbar enabled</MapPreview.Settings.EnableToolbar>
+  <MapPreview.Settings.EnableMapPreviewHeader>Show map previews ...</MapPreview.Settings.EnableMapPreviewHeader>
+  <MapPreview.Settings.EnableMapPreviewInEntry>... while starting a new game (choosing the tile to settle on)</MapPreview.Settings.EnableMapPreviewInEntry>
+  <MapPreview.Settings.EnableMapPreviewInPlay>... while playing (on the world map screen)</MapPreview.Settings.EnableMapPreviewInPlay>
+  <MapPreview.Settings.EnableToolbarHeader>Show world map toolbar ...</MapPreview.Settings.EnableToolbarHeader>
+  <MapPreview.Settings.EnableToolbarInEntry>... while starting a new game (choosing the tile to settle on)</MapPreview.Settings.EnableToolbarInEntry>
+  <MapPreview.Settings.EnableToolbarInPlay>... while playing (on the world map screen)</MapPreview.Settings.EnableToolbarInPlay>
   <MapPreview.Settings.LockWindowPositions>Lock window positions</MapPreview.Settings.LockWindowPositions>
   <MapPreview.Settings.AutoOpenPreviewOnWorldMap>Automatically open preview window when switching to the world map</MapPreview.Settings.AutoOpenPreviewOnWorldMap>
   <MapPreview.Settings.EnableSeedRerollFeature>Show map seed reroll button</MapPreview.Settings.EnableSeedRerollFeature>

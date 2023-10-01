@@ -4,7 +4,7 @@ using LunarFramework.Patching;
 namespace MapPreview.Compatibility;
 
 /// <summary>
-/// Patch to disable WorldGrid:LongLatOf chache optimization.
+/// Patch to disable WorldGrid:LongLatOf cache optimization.
 /// That feature otherwise causes the game to freeze and all sorts of other problems during preview generation.
 /// </summary>
 [HarmonyPatch]

@@ -9,7 +9,7 @@ using Verse;
 
 namespace MapPreview.Patches;
 
-[PatchGroup("Main")]
+[PatchGroup("GenLow")]
 [HarmonyPatch(typeof(World))]
 internal static class Patch_RimWorld_World
 {

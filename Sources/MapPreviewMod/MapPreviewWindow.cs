@@ -1,5 +1,4 @@
 using System;
-using MapPreview.Patches;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
@@ -18,7 +17,7 @@ public class MapPreviewWindow : Window
 
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
 
-    public static int CurrentTile => Patch_RimWorld_WorldInterface.TileId;
+    public static int CurrentTile => WorldInterfaceManager.TileId;
 
     public Vector2 DefaultPos => new(UI.screenWidth - InitialSize.x - 50f, 105f);
     public override Vector2 InitialSize => new(MapPreviewMod.Settings.PreviewWindowSize, MapPreviewMod.Settings.PreviewWindowSize);

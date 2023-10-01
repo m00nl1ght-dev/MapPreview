@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using LunarFramework.GUI;
-using MapPreview.Patches;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
@@ -55,7 +54,7 @@ public class MapPreviewToolbar : Window
 
     public void OnWorldTileSelected(World world, int tileId, MapParent mapParent)
     {
-        if (tileId >= 0 && Patch_RimWorld_WorldInterface.ShouldPreviewForTile(world.grid[tileId], tileId, mapParent))
+        if (tileId >= 0 && WorldInterfaceManager.ShouldPreviewForTile(world.grid[tileId], tileId, mapParent))
         {
             var rerollData = world.GetComponent<SeedRerollData>();
             if (rerollData == null)

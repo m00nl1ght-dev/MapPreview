@@ -8,7 +8,7 @@ using RimWorld.Planet;
 
 namespace MapPreview.Patches;
 
-[PatchGroup("Main")]
+[PatchGroup("GenLow")]
 [HarmonyPatch(typeof(WorldGrid))]
 internal static class Patch_RimWorld_WorldGrid
 {

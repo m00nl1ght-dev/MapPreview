@@ -1,7 +1,6 @@
 using LunarFramework.GUI;
 using LunarFramework.Utility;
 using MapPreview.Compatibility;
-using MapPreview.Patches;
 using UnityEngine;
 using Verse;
 
@@ -12,7 +11,9 @@ public class MapPreviewSettings : LunarModSettings
     public readonly Entry<bool> IncludeCaves = MakeEntry(true);
     public readonly Entry<bool> EnableTrueTerrainColors = MakeEntry(true);
     public readonly Entry<bool> EnableMapPreview = MakeEntry(true);
+    public readonly Entry<bool> EnableMapPreviewInPlay = MakeEntry(true);
     public readonly Entry<bool> EnableToolbar = MakeEntry(true);
+    public readonly Entry<bool> EnableToolbarInPlay = MakeEntry(true);
     public readonly Entry<bool> LockWindowPositions = MakeEntry(false);
     public readonly Entry<bool> AutoOpenPreviewOnWorldMap = MakeEntry(false);
     public readonly Entry<bool> EnableSeedRerollFeature = MakeEntry(false);
@@ -26,8 +27,16 @@ public class MapPreviewSettings : LunarModSettings
     public readonly Entry<float> PreviewWindowSize = MakeEntry(250f);
     public readonly Entry<Vector2> PreviewWindowPos = MakeEntry(new Vector2(-1, -1));
     public readonly Entry<Vector2> ToolbarWindowPos = MakeEntry(new Vector2(-1, -1));
+    
+    public bool PreviewEnabledNow => InEntry ? EnableMapPreview : EnableMapPreviewInPlay;
+    public bool ToolbarEnabledNow => InEntry ? EnableToolbar : EnableToolbarInPlay;
+
+    public bool PreviewEnabledEver => EnableMapPreview || EnableMapPreviewInPlay;
+    public bool ToolbarEnabledEver => EnableToolbar || EnableToolbarInPlay;
 
     protected override string TranslationKeyPrefix => "MapPreview.Settings";
+
+    private bool InEntry => Current.ProgramState == ProgramState.Entry;
 
     public MapPreviewSettings() : base(MapPreviewMod.LunarAPI)
     {
@@ -38,27 +47,41 @@ public class MapPreviewSettings : LunarModSettings
     public void DoPreviewSettingsTab(LayoutRect layout)
     {
         layout.PushChanged();
-
-        LunarGUI.Checkbox(layout, ref EnableMapPreview.Value, Label("EnableMapPreview"));
-
+        
+        LunarGUI.Label(layout, Label("EnableMapPreviewHeader"));
+        
+        LunarGUI.Checkbox(layout, ref EnableMapPreview.Value, "    " + Label("EnableMapPreviewInEntry"));
+        LunarGUI.Checkbox(layout, ref EnableMapPreviewInPlay.Value, "    " + Label("EnableMapPreviewInPlay"));
+        
         layout.Abs(10f);
-        layout.PushEnabled(EnableMapPreview);
 
+        layout.PushEnabled(PreviewEnabledNow || (Current.Game == null && PreviewEnabledEver));
+        
         LunarGUI.Checkbox(layout, ref IncludeCaves.Value, Label("IncludeCaves"));
         LunarGUI.Checkbox(layout, ref SkipRiverFlowCalc.Value, Label("SkipRiverFlowCalc"));
         LunarGUI.Checkbox(layout, ref EnableTrueTerrainColors.Value, Label("EnableTrueTerrainColors"));
 
         if (layout.PopChanged())
         {
-            Patch_RimWorld_WorldInterface.Refresh(true);
+            WorldInterfaceManager.RefreshActive();
+            WorldInterfaceManager.Refresh(true);
+            
+            if (!PreviewEnabledNow)
+            {
+                MapPreviewWindow.Instance?.Close();
+            }
         }
 
         layout.Abs(10f);
         layout.PushChanged();
+        
+        layout.PushEnabled(EnableMapPreviewInPlay);
 
         LunarGUI.Checkbox(layout, ref AutoOpenPreviewOnWorldMap.Value, Label("AutoOpenPreviewOnWorldMap"));
 
-        if (layout.PopChanged() && AutoOpenPreviewOnWorldMap) Patch_RimWorld_WorldInterface.Refresh(true);
+        layout.PopEnabled();
+
+        if (layout.PopChanged() && AutoOpenPreviewOnWorldMap) WorldInterfaceManager.Refresh(true);
 
         layout.PushChanged();
 
@@ -93,30 +116,39 @@ public class MapPreviewSettings : LunarModSettings
         if (LunarGUI.Button(layout, Label("RefreshTerrainColors")))
         {
             TrueTerrainColors.CalculateTrueTerrainColors(true);
-            Patch_RimWorld_WorldInterface.Refresh();
+            WorldInterfaceManager.Refresh();
         }
     }
 
     public void DoToolbarSettingsTab(LayoutRect layout)
     {
         layout.PushChanged();
+        
+        LunarGUI.Label(layout, Label("EnableToolbarHeader"));
 
-        LunarGUI.Checkbox(layout, ref EnableToolbar.Value, Label("EnableToolbar"));
-
+        LunarGUI.Checkbox(layout, ref EnableToolbar.Value, "    " + Label("EnableToolbarInEntry"));
+        LunarGUI.Checkbox(layout, ref EnableToolbarInPlay.Value, "    " + Label("EnableToolbarInPlay"));
+        
         if (layout.PopChanged())
         {
-            Patch_RimWorld_WorldInterface.Refresh();
+            WorldInterfaceManager.RefreshActive();
+            WorldInterfaceManager.Refresh();
+            
+            if (!ToolbarEnabledNow)
+            {
+                MapPreviewToolbar.Instance?.Close();
+            }
         }
 
         layout.Abs(10f);
 
-        layout.PushEnabled(EnableToolbar && !ModCompat_MapReroll.IsPresent);
+        layout.PushEnabled(!ModCompat_MapReroll.IsPresent && (ToolbarEnabledNow || (Current.Game == null && ToolbarEnabledEver)));
 
         var trEntry = ModCompat_MapReroll.IsPresent ? "EnableSeedRerollFeature.MapRerollConflict" : "EnableSeedRerollFeature";
         LunarGUI.Checkbox(layout, ref EnableSeedRerollFeature.Value, Label(trEntry));
 
         layout.PopEnabled();
-        layout.PushEnabled(EnableToolbar);
+        layout.PushEnabled(ToolbarEnabledNow || (Current.Game == null && ToolbarEnabledEver));
 
         LunarGUI.Checkbox(layout, ref EnableWorldSeedRerollFeature.Value, Label("EnableWorldSeedRerollFeature"));
 

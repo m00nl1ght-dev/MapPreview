@@ -4,7 +4,7 @@ using Verse;
 
 namespace MapPreview.Patches;
 
-[PatchGroup("Main")]
+[PatchGroup("GenLow")]
 [HarmonyPatch(typeof(GenSpawn))]
 internal static class Patch_Verse_GenSpawn
 {
