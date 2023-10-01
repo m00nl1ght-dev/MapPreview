@@ -96,7 +96,17 @@ public class MapSeedRerollWindow : Window
     {
         base.PreClose();
 
-        _data?.Commit(_tileId, _actSeed);
+        if (_data != null)
+        {
+            if (_actSeed != SeedRerollData.GetOriginalMapSeed(_data.world, _tileId))
+            {
+                _data.Commit(_tileId, _actSeed);
+            }
+            else
+            {
+                _data.Reset(_tileId);
+            }
+        }
 
         MapPreviewGenerator.Instance.ClearQueue();
         foreach (var element in _elements) element.Dispose();
