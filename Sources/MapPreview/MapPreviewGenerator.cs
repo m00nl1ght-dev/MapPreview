@@ -247,7 +247,7 @@ public class MapPreviewGenerator : IDisposable
 
     private static void GeneratePreview(MapPreviewRequest request, MapPreviewResult result)
     {
-        var tickManager = Find.TickManager;
+        var tickManager = Current.ProgramState != ProgramState.Entry ? Find.TickManager : null;
         var speedWas = tickManager?.CurTimeSpeed ?? TimeSpeed.Paused;
 
         try
