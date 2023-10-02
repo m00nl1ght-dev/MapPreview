@@ -29,8 +29,6 @@
   </modDependenciesByVersion>
   <loadAfter>
     <li>brrainz.harmony</li>
-    <li>UnlimitedHugs.HugsLib</li>
-    <li>UnlimitedHugs.MapReroll</li>
   </loadAfter>
   <incompatibleWith>
   </incompatibleWith>
