@@ -38,6 +38,7 @@ using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
+using Verse.AI.Group;
 
 namespace MapPreview;
 
@@ -146,20 +147,19 @@ public class MapPreviewGenerator : IDisposable
                         CurrentRequest = null;
                     }
 
-                    var promise = request.Promise;
-                    var mapTile = request.MapTile;
+                    var completedRequest = request;
 
                     MapPreviewAPI.LunarAPI.LifecycleHooks.DoOnce(() =>
                     {
                         if (rejectException == null)
                         {
-                            promise.Resolve(result);
+                            completedRequest.Promise.Resolve(result);
                         }
                         else
                         {
                             MapPreviewAPI.Logger.Error("Failed to generate map preview!", rejectException);
-                            MapPreviewAPI.Logger.Log("Map Info: \n" + PrintMapTileInfo(mapTile));
-                            promise.Reject(rejectException);
+                            MapPreviewAPI.Logger.Log("Map Info: \n" + PrintDebugInfo(completedRequest));
+                            completedRequest.Promise.Reject(rejectException);
                         }
 
                         if (_queuedRequests.Count == 0 && !MapPreviewAPI.IsGeneratingPreview)
@@ -308,7 +308,15 @@ public class MapPreviewGenerator : IDisposable
 
             map.info.Size = new IntVec3(request.MapSize.x, 1, request.MapSize.z);
             map.info.parent = mapParent;
-            map.ConstructComponents();
+
+            if (request.UseMinimalMapComponents)
+            {
+                ConstructMinimalMapComponents(map);
+            }
+            else
+            {
+                map.ConstructComponents();
+            }
 
             result.Map = map;
 
@@ -321,10 +329,8 @@ public class MapPreviewGenerator : IDisposable
 
             MapGenerator.GenerateContentsIntoMap(genStepWithParamses, map, request.Seed);
 
-            map.weatherManager.EndAllSustainers();
             Find.SoundRoot.sustainerManager.EndAllInMap(map);
             Find.TickManager.RemoveAllFromMap(map);
-            Find.Archive.Notify_MapRemoved(map);
         }
         finally
         {
@@ -346,12 +352,12 @@ public class MapPreviewGenerator : IDisposable
         }
     }
 
-    private static string PrintMapTileInfo(int tileId)
+    private static string PrintDebugInfo(MapPreviewRequest request)
     {
         var worldGrid = Find.WorldGrid;
         if (worldGrid == null) return "No WorldGrid";
 
-        var tile = worldGrid[tileId];
+        var tile = worldGrid[request.MapTile];
         if (tile == null) return "No Tile";
 
         var tickManager = Find.TickManager;
@@ -359,14 +365,22 @@ public class MapPreviewGenerator : IDisposable
         var str = new StringBuilder();
 
         str.AppendLine("World Seed Hash: " + Find.World?.info?.Seed);
-        str.AppendLine("World Tile: " + tileId);
-        str.AppendLine("Tick Speed: " + tickManager?.CurTimeSpeed);
+        str.AppendLine("World Tile: " + request.MapTile);
+        
         str.AppendLine("Biome: " + tile.biome?.defName);
         str.AppendLine("Biome TPMs: " + tile.biome?.terrainPatchMakers?.Count);
         str.AppendLine("Biome TTresh: " + tile.biome?.terrainsByFertility?.Count);
         str.AppendLine("Biome MCP: " + tile.biome?.modContentPack?.Name);
+        
         if (tile.Rivers != null) str.AppendLine("River: " + tile.Rivers.Count);
         if (tile.Roads != null) str.AppendLine("Road: " + tile.Roads.Count);
+        
+        str.AppendLine("Tick Speed: " + tickManager?.CurTimeSpeed);
+        
+        str.AppendLine("Map Seed: " + request.Seed);
+        str.AppendLine("Map Size: " + request.MapSize.x + "x" + request.MapSize.z);
+        str.AppendLine("Map Comps: " + (request.UseMinimalMapComponents ? "Minimal" : "Full"));
+        str.AppendLine("Color Palette: " + (request.UseTrueTerrainColors ? "Dynamic" : "Fixed"));
 
         return str.ToString();
     }
@@ -439,5 +453,137 @@ public class MapPreviewGenerator : IDisposable
                 }
             }
         }
+    }
+    
+    private static void ConstructMinimalMapComponents(Map map)
+    {
+        // ##### Essential #####
+        
+        map.cellIndices = new CellIndices(map);                                                             // req
+        map.cellsInRandomOrder = new MapCellsInRandomOrder(map);                                            // req
+        map.floodFiller = new FloodFiller(map);                                                             // req
+        
+        // ##### Main grids #####
+        
+        map.terrainGrid = new TerrainGrid(map);                                                             // req
+        map.fertilityGrid = new FertilityGrid(map);                                                         // req
+        map.pollutionGrid = new PollutionGrid(map);                                                         // req
+        map.edificeGrid = new EdificeGrid(map);                                                             // req
+        map.roofGrid = new RoofGrid(map);                                                                   // req
+        
+        // ##### Special grids #####
+        
+        map.fogGrid = new FogGrid(map);                                                                     // light
+        // map.glowGrid = new GlowGrid(map);                                                                // trial
+        // map.glowFlooder = new GlowFlooder(map);                                                          // safe
+        // map.deepResourceGrid = new DeepResourceGrid(map);                                                // trial
+        // map.snowGrid = new SnowGrid(map);                                                                // trial
+        // map.gasGrid = new GasGrid(map);                                                                  // trial
+        
+        // ##### Regions and rooms #####
+        
+        map.regionGrid = new RegionGrid(map);                                                               // likely
+        map.regionAndRoomUpdater = new RegionAndRoomUpdater(map);                                           // likely
+        // map.regionMaker = new RegionMaker(map);                                                          // safe
+        // map.regionLinkDatabase = new RegionLinkDatabase();                                               // safe
+        // map.autoBuildRoofAreaSetter = new AutoBuildRoofAreaSetter(map);                                  // safe
+        map.regionDirtyer = new RegionDirtyer(map);                                                         // likely
+        map.roofCollapseBuffer = new RoofCollapseBuffer();                                                  // light
+        map.roofCollapseBufferResolver = new RoofCollapseBufferResolver(map);                               // light
+        
+        // ##### Things #####
+        
+        map.thingGrid = new ThingGrid(map);                                                                 // likely
+        // map.coverGrid = new CoverGrid(map);                                                              // trial
+        // map.linkGrid = new LinkGrid(map);                                                                // trial
+        // map.blueprintGrid = new BlueprintGrid(map);                                                      // trial
+        map.spawnedThings = new ThingOwner<Thing>(map);                                                     // likely
+        map.listerThings = new ListerThings(ListerThingsUse.Global);                                        // likely
+        map.listerBuildings = new ListerBuildings();                                                        // likely
+        // map.haulDestinationManager = new HaulDestinationManager(map);                                    // trial
+        // map.gatherSpotLister = new GatherSpotLister();                                                   // trial
+        // map.listerBuildingsRepairable = new ListerBuildingsRepairable();                                 // trial
+        // map.listerHaulables = new ListerHaulables(map);                                                  // trial
+        // map.listerMergeables = new ListerMergeables(map);                                                // trial
+        // map.listerFilthInHomeArea = new ListerFilthInHomeArea(map);                                      // trial
+        // map.listerArtificialBuildingsForMeditation = new ListerArtificialBuildingsForMeditation(map);    // trial
+        // map.listerBuldingOfDefInProximity = new ListerBuldingOfDefInProximity(map);                      // trial
+        // map.listerBuildingWithTagInProximity = new ListerBuildingWithTagInProximity(map);                // trial
+        map.damageWatcher = new DamageWatcher();                                                            // light
+        map.wealthWatcher = new WealthWatcher(map);                                                         // light
+        // map.resourceCounter = new ResourceCounter(map);                                                  // trial
+        // map.treeDestructionTracker = new TreeDestructionTracker(map);                                    // trial
+        // map.animalPenManager = new AnimalPenManager(map);                                                // trial
+        // map.plantGrowthRateCalculator = new MapPlantGrowthRateCalculator();                              // trial
+        // map.powerNetGrid = new PowerNetGrid(map);                                                        // trial
+        // map.powerNetManager = new PowerNetManager(map);                                                  // trial
+        map.moteCounter = new MoteCounter();                                                                // light
+        
+        // ##### Pawns #####
+        
+        map.mapPawns = new MapPawns(map);                                                                   // likely
+        map.lordManager = new LordManager(map);                                                             // light
+        // map.attackTargetsCache = new AttackTargetsCache(map);                                            // trial
+        // map.attackTargetReservationManager = new AttackTargetReservationManager(map);                    // safe
+        // map.pawnDestinationReservationManager = new PawnDestinationReservationManager();                 // safe
+        // map.reservationManager = new ReservationManager(map);                                            // trial
+        // map.physicalInteractionReservationManager = new PhysicalInteractionReservationManager();         // safe
+        // map.lordsStarter = new VoluntarilyJoinableLordsStarter(map);                                     // safe
+        // map.pawnPathPool = new PawnPathPool(map);                                                        // safe
+        // map.itemAvailability = new ItemAvailability(map);                                                // trial
+        // map.strengthWatcher = new StrengthWatcher(map);                                                  // safe
+        // map.mineStrikeManager = new MineStrikeManager();                                                 // safe
+        // map.autoSlaughterManager = new AutoSlaughterManager(map);                                        // safe
+        
+        // ##### Environment #####
+        
+        map.storyState = new StoryState(map);                                                               // light
+        map.dangerWatcher = new DangerWatcher(map);                                                         // light
+        map.retainedCaravanData = new RetainedCaravanData(map);                                             // light
+        map.gameConditionManager = new GameConditionManager(map);                                           // light
+        map.weatherManager = new WeatherManager(map);                                                       // light
+        map.mapTemperature = new MapTemperature(map);                                                       // light
+        // map.temperatureCache = new TemperatureCache(map);                                                // safe
+        map.windManager = new WindManager(map);                                                             // light
+        map.steadyEnvironmentEffects = new SteadyEnvironmentEffects(map);                                   // light
+        map.skyManager = new SkyManager(map);                                                               // light
+        map.weatherDecider = new WeatherDecider(map);                                                       // light
+        map.fireWatcher = new FireWatcher(map);                                                             // light
+        map.passingShipManager = new PassingShipManager(map);                                               // light
+        map.wildAnimalSpawner = new WildAnimalSpawner(map);                                                 // light
+        map.wildPlantSpawner = new WildPlantSpawner(map);                                                   // light
+        
+        // ##### Rendering and UI #####
+        
+        map.mapDrawer = new MapDrawer(map);                                                                 // light
+        // map.dynamicDrawManager = new DynamicDrawManager(map);                                            // safe
+        // map.tooltipGiverList = new TooltipGiverList();                                                   // safe
+        map.debugDrawer = new DebugCellDrawer();                                                            // light
+        // map.overlayDrawer = new OverlayDrawer();                                                         // safe
+        // map.rememberedCameraPos = new RememberedCameraPos(map);                                          // safe
+        // map.temporaryThingDrawer = new TemporaryThingDrawer();                                           // safe
+        // map.postTickVisuals = new PostTickVisuals(map);                                                  // safe
+        // map.effecterMaintainer = new EffecterMaintainer(map);                                            // trial
+        // map.flecks = new FleckManager(map);                                                              // trial
+        
+        // ##### Pathing #####
+        
+        // map.pathing = new Pathing(map);                                                                  // trial
+        map.exitMapGrid = new ExitMapGrid(map);                                                             // light
+        // map.avoidGrid = new AvoidGrid(map);                                                              // trial
+        // map.pathFinder = new PathFinder(map);                                                            // trial
+        // map.reachability = new Reachability(map);                                                        // trial
+        
+        // ##### Player Designations #####
+        
+        // map.designationManager = new DesignationManager(map);                                            // trial
+        // map.zoneManager = new ZoneManager(map);                                                          // trial
+        map.areaManager = new AreaManager(map);                                                             // light
+        map.storageGroups = new StorageGroupManager(map);                                                   // light
+        
+        // ##### Custom Components #####
+        
+        map.components.Clear();
+        map.FillComponents();
     }
 }

@@ -28,6 +28,9 @@ SOFTWARE.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using HarmonyLib;
 using MapPreview.Interpolation;
 using MapPreview.Promises;
 using UnityEngine;
@@ -36,6 +39,7 @@ using Object = UnityEngine.Object;
 
 namespace MapPreview;
 
+[StaticConstructorOnStartup]
 public abstract class MapPreviewWidget : IDisposable
 {
     protected static readonly Color DefaultOutlineColor = GenColor.FromHex("616C7A");
@@ -78,6 +82,9 @@ public abstract class MapPreviewWidget : IDisposable
         SpawnInterpolator.finished = true;
         SpawnInterpolator.value = 0f;
         AwaitingMapTile = mapTile;
+        
+        DisposeMap(PreviewMap);
+        PreviewMap = null;
 
         promise.Done(OnPromiseResolved, OnPromiseRejected);
     }
@@ -85,6 +92,7 @@ public abstract class MapPreviewWidget : IDisposable
     public void Dispose()
     {
         Object.Destroy(Texture);
+        DisposeMap(PreviewMap);
         AwaitingMapTile = -1;
         AwaitingRequest = null;
         PreviewMap = null;
@@ -183,6 +191,7 @@ public abstract class MapPreviewWidget : IDisposable
     {
         if (Texture == null) return;
 
+        DisposeMap(PreviewMap);
         PreviewMap = null;
 
         foreach (var overlay in Overlays)
@@ -220,5 +229,21 @@ public abstract class MapPreviewWidget : IDisposable
         GUI.color = new Color(baseColor.r, baseColor.g, baseColor.b, texAlpha);
         GUI.DrawTexture(rect, tex);
         GUI.color = prevColor;
+    }
+    
+    private static readonly AccessTools.FieldRef<Map, object>[] _mapComponentFieldRefs = typeof(Map)
+        .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+        .Where(f => f.FieldType.IsClass && !f.IsInitOnly)
+        .Select(AccessTools.FieldRefAccess<Map, object>)
+        .ToArray();
+    
+    protected static void DisposeMap(Map map)
+    {
+        if (map == null) return;
+        
+        foreach (var fieldRef in _mapComponentFieldRefs)
+        {
+            fieldRef(map) = null;
+        }
     }
 }

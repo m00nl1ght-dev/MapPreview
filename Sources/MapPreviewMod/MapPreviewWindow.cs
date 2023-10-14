@@ -83,6 +83,7 @@ public class MapPreviewWindow : Window
             GeneratorDef = mapParent?.MapGeneratorDef ?? MapGeneratorDefOf.Base_Player,
             UseTrueTerrainColors = MapPreviewMod.Settings.EnableTrueTerrainColors,
             SkipRiverFlowCalc = MapPreviewMod.Settings.SkipRiverFlowCalc,
+            UseMinimalMapComponents = MapPreviewMod.Settings.ExperimentalOptimizations,
             ExistingBuffer = _previewWidget.Buffer
         };
 

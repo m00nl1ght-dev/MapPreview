@@ -49,6 +49,7 @@ public class MapPreviewRequest
 
     public bool UseTrueTerrainColors { get; set; }
     public bool SkipRiverFlowCalc { get; set; } = true;
+    public bool UseMinimalMapComponents { get; set; }
 
     public MapGeneratorDef GeneratorDef { get; set; } = MapGeneratorDefOf.Base_Player;
     public Predicate<GenStepDef> GenStepFilter { get; set; } = DefaultGenStepFilter;
