@@ -78,6 +78,7 @@
         <Compile Include="MapPreviewMod.cs" />
         <Compile Include="MapSeedRerollWindow.cs" />
         <Compile Include="Patches\Patch_RimWorld_Dialog_AdvancedGameConfig.cs" />
+        <Compile Include="Patches\Patch_RimWorld_LearningReadout.cs" />
         <Compile Include="Patches\Patch_RimWorld_Page_SelectStartingSite.cs" />
         <Compile Include="Patches\Patch_RimWorld_PlaySettings.cs" />
         <Compile Include="Patches\Patch_RimWorld_WorldInterface.cs" />
