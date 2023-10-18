@@ -34,12 +34,14 @@
   
   <MapPreview.World.RerollWindow.Title>Reroll Map Seed</MapPreview.World.RerollWindow.Title>
   <MapPreview.World.RerollWindow.Close>Close</MapPreview.World.RerollWindow.Close>
-  <MapPreview.World.RerollWindow.RefreshSeeds>Refresh seeds</MapPreview.World.RerollWindow.RefreshSeeds>
+  <MapPreview.World.RerollWindow.RefreshSeeds>Refresh seeds (hold shift to jump)</MapPreview.World.RerollWindow.RefreshSeeds>
   <MapPreview.World.RerollWindow.ZoomOut>Zoom out</MapPreview.World.RerollWindow.ZoomOut>
   <MapPreview.World.RerollWindow.ZoomIn>Zoom in</MapPreview.World.RerollWindow.ZoomIn>
   <MapPreview.World.RerollWindow.Apply>Apply this seed</MapPreview.World.RerollWindow.Apply>
   <MapPreview.World.RerollWindow.Pin>Pin this seed</MapPreview.World.RerollWindow.Pin>
   <MapPreview.World.RerollWindow.Unpin>Unpin this seed</MapPreview.World.RerollWindow.Unpin>
+  <MapPreview.World.RerollWindow.GoTo.Label>Enter number of rerolls:</MapPreview.World.RerollWindow.GoTo.Label>
+  <MapPreview.World.RerollWindow.GoTo.Invalid>Invalid number, only digits and + are allowed.</MapPreview.World.RerollWindow.GoTo.Invalid>
   
   <MapPreview.PreviewGenerationFailed>A conflict with one of your mods has caused the map preview generator to fail. Please report this on the Map Preview workshop page so that a compatibility patch can be created. After closing this message, please upload your log file and include that link in your bug report.</MapPreview.PreviewGenerationFailed>
   

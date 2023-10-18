@@ -13,6 +13,8 @@ namespace MapPreview;
 public class MapSeedRerollWindow : Window
 {
     public static MapSeedRerollWindow Instance => Find.WindowStack?.WindowOfType<MapSeedRerollWindow>();
+    
+    public new static bool IsOpen { get; private set; }
 
     private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(MapSeedRerollWindow));
 
@@ -25,6 +27,7 @@ public class MapSeedRerollWindow : Window
     private readonly List<Element> _elements = new();
 
     private int _tileId;
+    private int _orgSeed;
     private int _actSeed;
     private int _lastSeed;
     private IntVec2 _mapSize;
@@ -69,6 +72,8 @@ public class MapSeedRerollWindow : Window
 
         if (Instance != this) Instance?.Close();
 
+        IsOpen = true;
+
         var world = Find.World;
 
         _tileId = MapPreviewWindow.CurrentTile;
@@ -83,10 +88,10 @@ public class MapSeedRerollWindow : Window
         MapPreviewGenerator.Instance.ClearQueue();
 
         _mapSize = MapPreviewWindow.DetermineMapSize(world, _tileId);
-        _actSeed = _data.TryGet(_tileId, out var savedSeed) ? savedSeed : SeedRerollData.GetOriginalMapSeed(world, _tileId);
+        _orgSeed = SeedRerollData.GetOriginalMapSeed(world, _tileId);
+        _actSeed = _data.TryGet(_tileId, out var savedSeed) ? savedSeed : _orgSeed;
 
         _lastSeed = _actSeed;
-        unchecked { _lastSeed += 1; }
 
         if (DesiredCount <= 0) UpdateElementSize(6);
         else TryAddElement();
@@ -95,10 +100,14 @@ public class MapSeedRerollWindow : Window
     public override void PreClose()
     {
         base.PreClose();
+        
+        Find.WindowStack.WindowOfType<GoToWindow>()?.Close();
+
+        IsOpen = false;
 
         if (_data != null)
         {
-            if (_actSeed != SeedRerollData.GetOriginalMapSeed(_data.world, _tileId))
+            if (_actSeed != _orgSeed)
             {
                 _data.Commit(_tileId, _actSeed);
             }
@@ -120,6 +129,8 @@ public class MapSeedRerollWindow : Window
 
         var element = new Element(_mapSize, _lastSeed);
         _elements.Add(element);
+
+        if (element.Seed == _actSeed) element.Pinned = true;
 
         var request = new MapPreviewRequest(_lastSeed, _tileId, _mapSize)
         {
@@ -201,7 +212,24 @@ public class MapSeedRerollWindow : Window
 
         if (DoButton(_refreshSeedsIcon, "MapPreview.World.RerollWindow.RefreshSeeds".Translate(), gridFull))
         {
-            RefreshSeeds();
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                Find.WindowStack.Add(new GoToWindow(_orgSeed, _lastSeed, i =>
+                {
+                    _lastSeed = i;
+
+                    while (_elements.Any(e => e.Seed == _lastSeed && e.Pinned))
+                    {
+                        unchecked { _lastSeed += 1; }
+                    }
+                    
+                    RefreshSeeds();
+                }));
+            }
+            else
+            {
+                RefreshSeeds();
+            }
         }
 
         if (DoButton(TexButton.Minus, "MapPreview.World.RerollWindow.ZoomOut".Translate(), _gridSize.x < 10))
@@ -265,6 +293,14 @@ public class MapSeedRerollWindow : Window
                 }
 
                 _layout.End();
+                _layout.BeginRel(-1f, new LayoutParams { Margin = new(10, 15), Spacing = 10, Reversed = true });
+
+                if (hovered)
+                {
+                    LunarGUI.Label(_layout, element.Seed == _orgSeed ? "Original" : "#" + element.OffsetNum(_orgSeed));
+                }
+
+                _layout.End();
                 _layout.End();
 
                 idx++;
@@ -283,11 +319,91 @@ public class MapSeedRerollWindow : Window
 
         public bool Pinned;
 
+        public long OffsetNum(long baseSeed) => Seed >= baseSeed ? Seed - baseSeed : Seed - baseSeed + int.MaxValue * 2L;
+
         public Element(IntVec2 maxMapSize, int seed) : base(maxMapSize)
         {
             Seed = seed;
         }
 
         protected override void DrawOutline(Rect rect) { }
+    }
+
+    private class GoToWindow : Window
+    {
+        public override Vector2 InitialSize => new(300f, 100f);
+        
+        private readonly LayoutRect _layout = new(MapPreviewMod.LunarAPI);
+        
+        private readonly Action<int> _applyAction;
+        
+        private readonly int _baseValue;
+        private readonly int _currentValue;
+        
+        private string _inputBuffer;
+        
+        public GoToWindow(int baseValue, int currentValue, Action<int> applyAction)
+        {
+            _applyAction = applyAction;
+            _baseValue = baseValue;
+            _currentValue = currentValue;
+            layer = WindowLayer.Super;
+            absorbInputAroundWindow = true;
+            forcePause = true;
+            resizeable = false;
+            draggable = false;
+        }
+
+        public override void DoWindowContents(Rect inRect)
+        {
+            _layout.BeginRoot(inRect, new LayoutParams { Margin = new(5) });
+            
+            LunarGUI.Label(_layout, "MapPreview.World.RerollWindow.GoTo.Label".Translate());
+            LunarGUI.TextField(_layout, ref _inputBuffer);
+
+            _layout.Abs(10f);
+            
+            if (LunarGUI.Button(_layout, "OK".Translate()))
+            {
+                Apply();
+            }
+            
+            _layout.End();
+        }
+        
+        public override void OnAcceptKeyPressed()
+        {
+            Event.current.Use();
+            Apply();
+        }
+
+        private void Apply()
+        {
+            if (_inputBuffer.NullOrEmpty()) return;
+
+            char? prefix = char.IsDigit(_inputBuffer[0]) ? null : _inputBuffer[0];
+            string str = prefix == null ? _inputBuffer : _inputBuffer.Substring(1);
+            
+            if (int.TryParse(str, out var num))
+            {
+                if (prefix == null)
+                {
+                    unchecked { num = _baseValue + num; }
+                    _applyAction(num);
+                    Close();
+                    return;
+                }
+
+                if (prefix == '+')
+                {
+                    unchecked { num = _currentValue + num; }
+                    _applyAction(num);
+                    Close();
+                    return;
+                }
+            }
+
+            Messages.Message("MapPreview.World.RerollWindow.GoTo.Invalid".Translate(), MessageTypeDefOf.RejectInput, false);
+        }
     }
 }
