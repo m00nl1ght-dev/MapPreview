@@ -11,33 +11,6 @@ namespace MapPreview.Patches;
 [HarmonyPatch(typeof(Map))]
 internal static class Patch_Verse_Map
 {
-    private static readonly HashSet<string> IncludedMapComponents = new()
-    {
-        // Vanilla
-        typeof(RoadInfo).FullName,
-        typeof(WaterInfo).FullName,
-
-        // Geological Landforms
-        "GeologicalLandforms.BiomeGrid",
-
-        // Water Freezes
-        "ActiveTerrain.SpecialTerrainList",
-
-        // VFE Core
-        "VFECore.SpecialTerrainList",
-
-        // Alpha Biomes
-        "AlphaBiomes.MapComponentExtender",
-
-        // Dubs Bad Hygiene
-        "DubsBadHygiene.MapComponent_Hygiene",
-
-        // Dubs Paint Shop
-        "DubRoss.MapComponent_PaintShop"
-    };
-
-    internal static readonly Type Self = typeof(Patch_Verse_Map);
-
     [HarmonyPrefix]
     [HarmonyPatch("FillComponents")]
     private static bool FillComponents_Prefix(Map __instance)
@@ -61,7 +34,7 @@ internal static class Patch_Verse_Map
                 .MatchLdloc().StoreOperandIn(ldlocType).Keep()
                 .MatchCall(typeof(Map), nameof(Map.GetComponent), new[] { typeof(Type) }).Keep()
                 .Match(OpCodes.Brtrue_S).StoreOperandIn(brfalseSkip).Keep()
-                .Insert(CodeInstruction.LoadField(Self, nameof(IncludedMapComponents)))
+                .Insert(CodeInstruction.LoadField(typeof(MapPreviewGenerator), nameof(MapPreviewGenerator.IncludedMapComponentsFull)))
                 .Insert(ldlocType)
                 .Insert(CodeInstruction.Call(typeof(Type), "get_FullName"))
                 .Insert(CodeInstruction.Call(typeof(HashSet<string>), "Contains", new[] { typeof(string) }))

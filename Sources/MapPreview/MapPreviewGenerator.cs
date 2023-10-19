@@ -28,6 +28,7 @@ SOFTWARE.
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -455,6 +456,25 @@ public class MapPreviewGenerator : IDisposable
         }
     }
     
+    internal static readonly IReadOnlyCollection<string> IncludedMapComponentsMinimal = new HashSet<string>
+    {
+        // Vanilla
+        typeof(RoadInfo).FullName,
+        typeof(WaterInfo).FullName,
+
+        // Geological Landforms
+        "GeologicalLandforms.BiomeGrid",
+        
+        // Advanced Biomes and other old mods
+        "ActiveTerrain.SpecialTerrainList",
+    };
+    
+    internal static readonly IReadOnlyCollection<string> IncludedMapComponentsFull = new HashSet<string>(IncludedMapComponentsMinimal)
+    {
+        // Dubs Bad Hygiene
+        "DubsBadHygiene.MapComponent_Hygiene"
+    };
+    
     private static void ConstructMinimalMapComponents(Map map)
     {
         // ##### Essential #####
@@ -584,6 +604,23 @@ public class MapPreviewGenerator : IDisposable
         // ##### Custom Components #####
         
         map.components.Clear();
-        map.FillComponents();
+        
+        foreach (var type in typeof(MapComponent).AllSubclassesNonAbstract())
+        {
+            if (IncludedMapComponentsMinimal.Contains(type.FullName))
+            {
+                try
+                {
+                    map.components.Add((MapComponent) Activator.CreateInstance(type, map));
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Could not instantiate a MapComponent of type " + type + ": " + ex);
+                }
+            }
+        }
+        
+        map.roadInfo = map.GetComponent<RoadInfo>();
+        map.waterInfo = map.GetComponent<WaterInfo>();
     }
 }
