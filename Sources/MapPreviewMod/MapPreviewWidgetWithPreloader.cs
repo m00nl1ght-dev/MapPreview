@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using LunarFramework.Logging;
 using UnityEngine;
@@ -22,6 +23,20 @@ public class MapPreviewWidgetWithPreloader : MapPreviewWidget
     protected override void HandleError(Exception ex)
     {
         if (ex is ThreadAbortException) return;
+
+        if (ex is ArgumentNullException)
+        {
+            if (DefDatabase<FleckDef>.AllDefs.Any(d => d.fleckSystemClass == null))
+            {
+                Find.WindowStack.Add(new Dialog_MessageBox(
+                    "Map preview generation failed because one of your mods is broken. " +
+                    "Please validate your mod files and make sure that your load order is correct. " +
+                    "Most importantly, do not put any mods above 'Core' unless they specifically say so in their description!"
+                ));
+                
+                return;
+            }
+        }
 
         Find.WindowStack.Add(new Dialog_MessageBox(
             "MapPreview.PreviewGenerationFailed".Translate(),
