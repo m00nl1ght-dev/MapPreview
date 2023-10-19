@@ -1,4 +1,13 @@
 
+v1.12.8
+
+- Added new experimental performance optimizations (disabled by default)
+- Added labels to the reroll helper window (the seeds are now numbered)
+- Added option to jump to any seed by number (hold shift when clicking refresh)
+- The original map seed will now be included and automatically pinned
+- Fixed an uncommon compatibility issue with the "Configurable Maps" mod
+- Fixed the learning helper obscuring part of the reroll window
+
 v1.12.7
 
 - Added option to enable map preview only during new game setup (starting tile selection)
