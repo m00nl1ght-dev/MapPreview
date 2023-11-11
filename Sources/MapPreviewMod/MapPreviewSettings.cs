@@ -121,8 +121,12 @@ public class MapPreviewSettings : LunarModSettings
 
         LunarGUI.Checkbox(layout, ref EnableToolbar.Value, "    " + Label("EnableToolbarInEntry"));
         LunarGUI.Checkbox(layout, ref EnableToolbarInPlay.Value, "    " + Label("EnableToolbarInPlay"));
-        
-        if (layout.PopChanged()) WorldInterfaceManager.RefreshInterface();
+
+        if (layout.PopChanged())
+        {
+            WorldInterfaceManager.RefreshInterface();
+            WorldInterfaceManager.UpdateToolbar();
+        }
 
         layout.Abs(10f);
 

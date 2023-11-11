@@ -8,6 +8,8 @@ public static class WorldInterfaceManager
 {
     internal static int TileId = -1;
 
+    private static int _framesActive;
+
     private static bool _activeSinceEnteringMap;
     private static bool _openedPreviewSinceEnteringMap;
 
@@ -84,64 +86,56 @@ public static class WorldInterfaceManager
             }
         }
 
-        if (TileId != selectedTileNow && MapPreviewMod.ActivePatchGroup.Active)
+        if (!_activeSinceEnteringMap && MapPreviewMod.ActivePatchGroup.Active && !LongEventHandler.ShouldWaitForEvent)
         {
-            var wasAutoSelect = TileId == -1 && !_activeSinceEnteringMap;
+            _activeSinceEnteringMap = true;
+            _framesActive = 0;
+            UpdateToolbar();
+        }
 
-            TileId = selectedTileNow;
-
-            if (TileId >= 0)
+        if (_activeSinceEnteringMap)
+        {
+            _framesActive++;
+            
+            if (TileId != selectedTileNow)
             {
-                var world = Find.World;
-                var worldTile = world.grid[TileId];
-                var mapParent = world.worldObjects.MapParentAt(TileId);
+                var wasAutoSelect = TileId == -1 && _framesActive <= 5;
 
-                if (ToolbarEnabledNow)
+                TileId = selectedTileNow;
+
+                if (TileId >= 0)
                 {
+                    var world = Find.World;
+                    var worldTile = world.grid[TileId];
+                    var mapParent = world.worldObjects.MapParentAt(TileId);
+
                     var toolbar = MapPreviewToolbar.Instance;
-                    if (toolbar == null) Find.WindowStack.Add(toolbar = new MapPreviewToolbar());
-                    toolbar.OnWorldTileSelected(world, TileId, mapParent);
-                }
+                    if (toolbar == null && ToolbarEnabledNow) Find.WindowStack.Add(toolbar = new MapPreviewToolbar());
+                    toolbar?.OnWorldTileSelected(world, TileId, mapParent);
 
-                if (ShouldPreviewForTile(worldTile, TileId, mapParent) && (!wasAutoSelect || PreviewAutoOpen))
-                {
-                    if (PreviewEnabledNow && MapPreviewAPI.IsReady)
+                    if (ShouldPreviewForTile(worldTile, TileId, mapParent) && (!wasAutoSelect || PreviewAutoOpen))
                     {
-                        if (!_openedPreviewSinceEnteringMap)
+                        if (PreviewEnabledNow && MapPreviewAPI.IsReady)
                         {
-                            MapPreviewAPI.SubscribeGenPatches(PatchGroupSubscriber);
-                            _openedPreviewSinceEnteringMap = true;
-                        }
+                            if (!_openedPreviewSinceEnteringMap)
+                            {
+                                MapPreviewAPI.SubscribeGenPatches(PatchGroupSubscriber);
+                                _openedPreviewSinceEnteringMap = true;
+                            }
 
-                        var window = MapPreviewWindow.Instance;
-                        if (window == null) Find.WindowStack.Add(window = new MapPreviewWindow());
-                        window.OnWorldTileSelected(world, TileId, mapParent);
+                            var window = MapPreviewWindow.Instance;
+                            if (window == null) Find.WindowStack.Add(window = new MapPreviewWindow());
+                            window.OnWorldTileSelected(world, TileId, mapParent);
+                        }
+                    }
+                    else
+                    {
+                        MapPreviewWindow.Instance?.Close();
                     }
                 }
                 else
                 {
                     MapPreviewWindow.Instance?.Close();
-                }
-            }
-            else
-            {
-                MapPreviewWindow.Instance?.Close();
-            }
-        }
-
-        if (!_activeSinceEnteringMap && MapPreviewMod.ActivePatchGroup.Active && !LongEventHandler.ShouldWaitForEvent)
-        {
-            _activeSinceEnteringMap = true;
-            
-            if (MapPreviewMod.Settings.ToolbarEnabledNow && MapPreviewToolbar.Instance == null)
-            {
-                var toolbar = new MapPreviewToolbar();
-                Find.WindowStack.Add(toolbar);
-
-                if (selectedTileNow >= 0)
-                {
-                    var mapParent = Find.WorldObjects.MapParentAt(TileId);
-                    toolbar.OnWorldTileSelected(Find.World, selectedTileNow, mapParent);
                 }
             }
         }
@@ -163,6 +157,22 @@ public static class WorldInterfaceManager
             }
 
             TileId = -1;
+        }
+    }
+    
+    internal static void UpdateToolbar()
+    {
+        var toolbar = MapPreviewToolbar.Instance;
+        
+        if (ToolbarEnabledNow && toolbar == null)
+        {
+            Find.WindowStack.Add(toolbar = new MapPreviewToolbar());
+        }
+        
+        if (toolbar != null)
+        {
+            var mapParent = TileId >= 0 ? Find.WorldObjects.MapParentAt(TileId) : null;
+            toolbar.OnWorldTileSelected(Find.World, TileId, mapParent);
         }
     }
 }
