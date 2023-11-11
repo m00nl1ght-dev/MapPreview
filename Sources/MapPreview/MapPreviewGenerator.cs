@@ -44,7 +44,7 @@ using Verse.AI.Group;
 namespace MapPreview;
 
 /// <summary>
-/// Modified version of MapReroll.MapPreviewGenerator that uses full Map Generator mechanics for better mod compat.
+/// Modified version of MapReroll.MapPreviewGenerator that uses full MapGenerator mechanics for better mod compatibility.
 /// </summary>
 public class MapPreviewGenerator : IDisposable
 {

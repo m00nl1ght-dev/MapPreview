@@ -138,7 +138,7 @@ public class MapSeedRerollWindow : Window
             GeneratorDef = _mapParent?.MapGeneratorDef ?? MapGeneratorDefOf.Base_Player,
             UseTrueTerrainColors = MapPreviewMod.Settings.EnableTrueTerrainColors,
             SkipRiverFlowCalc = MapPreviewMod.Settings.SkipRiverFlowCalc,
-            UseMinimalMapComponents = MapPreviewMod.Settings.ExperimentalOptimizations,
+            UseMinimalMapComponents = !MapPreviewMod.Settings.CompatibilityMode,
             ExistingBuffer = element.Buffer
         };
 

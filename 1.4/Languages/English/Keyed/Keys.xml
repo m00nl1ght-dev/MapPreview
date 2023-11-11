@@ -22,7 +22,7 @@
   <MapPreview.Settings.IncludeCaves>Include caves in preview (disable to make preview generation faster)</MapPreview.Settings.IncludeCaves>
   <MapPreview.Settings.EnableTrueTerrainColors>Use true terrain colors (enables support for terrain added by mods, also applies to Map Reroll)</MapPreview.Settings.EnableTrueTerrainColors>
   <MapPreview.Settings.SkipRiverFlowCalc>Use river generator optimization (faster, but slightly different from vanilla)</MapPreview.Settings.SkipRiverFlowCalc>
-  <MapPreview.Settings.ExperimentalOptimizations>Use experimental performance optimizations (faster and reduces memory usage)</MapPreview.Settings.ExperimentalOptimizations>
+  <MapPreview.Settings.CompatibilityMode>Compatibility mode (increases memory usage, but can help if you have mod compatibility issues)</MapPreview.Settings.CompatibilityMode>
   <MapPreview.Settings.RefreshTerrainColors>Refresh terrain colors</MapPreview.Settings.RefreshTerrainColors>
   
   <MapPreview.World.WaitForPreview>There is a map preview currently generating, please wait before continuing...</MapPreview.World.WaitForPreview>

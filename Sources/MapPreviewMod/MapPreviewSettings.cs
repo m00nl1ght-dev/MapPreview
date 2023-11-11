@@ -21,7 +21,7 @@ public class MapPreviewSettings : LunarModSettings
     public readonly Entry<bool> EnableSeedRerollWindow = MakeEntry(true);
     public readonly Entry<bool> EnableWorldSeedRerollFeature = MakeEntry(true);
     public readonly Entry<bool> SkipRiverFlowCalc = MakeEntry(true);
-    public readonly Entry<bool> ExperimentalOptimizations = MakeEntry(false);
+    public readonly Entry<bool> CompatibilityMode = MakeEntry(false);
     public readonly Entry<bool> EnableMapDesignerIntegration = MakeEntry(true);
     public readonly Entry<bool> EnablePrepareLandingIntegration = MakeEntry(true);
     public readonly Entry<bool> EnableWorldEditIntegration = MakeEntry(true);
@@ -62,7 +62,7 @@ public class MapPreviewSettings : LunarModSettings
         LunarGUI.Checkbox(layout, ref IncludeCaves.Value, Label("IncludeCaves"));
         LunarGUI.Checkbox(layout, ref SkipRiverFlowCalc.Value, Label("SkipRiverFlowCalc"));
         LunarGUI.Checkbox(layout, ref EnableTrueTerrainColors.Value, Label("EnableTrueTerrainColors"));
-        LunarGUI.Checkbox(layout, ref ExperimentalOptimizations.Value, Label("ExperimentalOptimizations"));
+        LunarGUI.Checkbox(layout, ref CompatibilityMode.Value, Label("CompatibilityMode"));
 
         layout.Abs(10f);
         
