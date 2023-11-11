@@ -64,19 +64,7 @@ public class MapPreviewSettings : LunarModSettings
         LunarGUI.Checkbox(layout, ref EnableTrueTerrainColors.Value, Label("EnableTrueTerrainColors"));
         LunarGUI.Checkbox(layout, ref ExperimentalOptimizations.Value, Label("ExperimentalOptimizations"));
 
-        if (layout.PopChanged())
-        {
-            WorldInterfaceManager.RefreshActive();
-            WorldInterfaceManager.Refresh(true);
-            
-            if (!PreviewEnabledNow)
-            {
-                MapPreviewWindow.Instance?.Close();
-            }
-        }
-
         layout.Abs(10f);
-        layout.PushChanged();
         
         layout.PushEnabled(EnableMapPreviewInPlay);
 
@@ -84,11 +72,12 @@ public class MapPreviewSettings : LunarModSettings
 
         layout.PopEnabled();
 
-        if (layout.PopChanged() && AutoOpenPreviewOnWorldMap) WorldInterfaceManager.Refresh(true);
+        if (layout.PopChanged()) WorldInterfaceManager.RefreshInterface();
+
+        LunarGUI.Checkbox(layout, ref TriggerPreviewOnWorldObjects.Value, Label("TriggerPreviewOnWorldObjects"));
 
         layout.PushChanged();
 
-        LunarGUI.Checkbox(layout, ref TriggerPreviewOnWorldObjects.Value, Label("TriggerPreviewOnWorldObjects"));
         LunarGUI.Checkbox(layout, ref LockWindowPositions.Value, Label("LockWindowPositions"));
 
         if (layout.PopChanged())
@@ -120,7 +109,7 @@ public class MapPreviewSettings : LunarModSettings
         if (LunarGUI.Button(layout, Label("RefreshTerrainColors")))
         {
             TrueTerrainColors.CalculateTrueTerrainColors(true);
-            WorldInterfaceManager.Refresh();
+            WorldInterfaceManager.RefreshPreview();
         }
     }
 
@@ -133,16 +122,7 @@ public class MapPreviewSettings : LunarModSettings
         LunarGUI.Checkbox(layout, ref EnableToolbar.Value, "    " + Label("EnableToolbarInEntry"));
         LunarGUI.Checkbox(layout, ref EnableToolbarInPlay.Value, "    " + Label("EnableToolbarInPlay"));
         
-        if (layout.PopChanged())
-        {
-            WorldInterfaceManager.RefreshActive();
-            WorldInterfaceManager.Refresh();
-            
-            if (!ToolbarEnabledNow)
-            {
-                MapPreviewToolbar.Instance?.Close();
-            }
-        }
+        if (layout.PopChanged()) WorldInterfaceManager.RefreshInterface();
 
         layout.Abs(10f);
 

@@ -23,7 +23,7 @@ internal class Patch_RimWorld_Dialog_AdvancedGameConfig
             var newMapSize = MapPreviewWindow.DetermineMapSize(world, currentPreviewMap.Tile);
             if (currentPreviewMap.Size != new IntVec3(newMapSize.x, currentPreviewMap.Size.y, newMapSize.z))
             {
-                WorldInterfaceManager.Refresh();
+                WorldInterfaceManager.RefreshPreview();
             }
         }
     }

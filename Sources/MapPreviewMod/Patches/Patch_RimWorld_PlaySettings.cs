@@ -29,8 +29,8 @@ internal class Patch_RimWorld_PlaySettings
                 {
                     MapPreviewMod.Settings.EnableMapPreviewInPlay.Value = current;
                 }
-                
-                WorldInterfaceManager.Refresh(true);
+
+                WorldInterfaceManager.RefreshPreview();
                 
                 if (!MapPreviewMod.Settings.PreviewEnabledNow)
                 {

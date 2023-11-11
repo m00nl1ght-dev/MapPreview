@@ -86,6 +86,9 @@ public class MapPreviewToolbar : Window
 
         if (Instance != this) Instance?.Close();
 
+        CurrentTileCanBeRerolled = false;
+        CurrentTileIsRerolled = false;
+
         Vector2 pos = MapPreviewMod.Settings.ToolbarWindowPos;
 
         windowRect.x = pos.x >= 0 ? pos.x : DefaultPos.x;
@@ -228,6 +231,10 @@ public class MapPreviewToolbar : Window
                 page.Close();
 
                 windowStack.WindowOfType<WorldInspectPane>()?.Close();
+
+                MapPreviewWindow.Instance?.Close();
+                WorldInterfaceManager.RefreshPreview();
+                Instance?.OnWorldTileSelected(null, -1, null);
 
                 paramsPage.seedString = GenText.RandomSeedString();
                 paramsPage.CanDoNext();

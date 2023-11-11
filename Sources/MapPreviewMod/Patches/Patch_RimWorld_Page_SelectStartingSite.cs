@@ -10,5 +10,5 @@ internal class Patch_RimWorld_Page_SelectStartingSite
 {
     [HarmonyPostfix]
     [HarmonyPatch("PreOpen")]
-    private static void PreOpen_Postfix() => WorldInterfaceManager.RefreshActive();
+    private static void PreOpen_Postfix() => WorldInterfaceManager.RefreshInterface();
 }

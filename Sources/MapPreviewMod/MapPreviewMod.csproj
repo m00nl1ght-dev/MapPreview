@@ -83,6 +83,7 @@
         <Compile Include="Patches\Patch_RimWorld_PlaySettings.cs" />
         <Compile Include="Patches\Patch_RimWorld_WorldInterface.cs" />
         <Compile Include="Patches\Patch_Verse_Game.cs" />
+        <Compile Include="Patches\Patch_Verse_MemoryUtility.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="MapPreviewSettings.cs" />
         <Compile Include="WorldInterfaceManager.cs" />
