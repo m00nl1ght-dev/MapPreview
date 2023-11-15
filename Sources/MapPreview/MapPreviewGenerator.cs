@@ -152,6 +152,11 @@ public class MapPreviewGenerator : IDisposable
 
                     MapPreviewAPI.LunarAPI.LifecycleHooks.DoOnce(() =>
                     {
+                        if (_queuedRequests.Count == 0 && CurrentRequest == null)
+                        {
+                            MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
+                        }
+                        
                         if (rejectException == null)
                         {
                             completedRequest.Promise.Resolve(result);
@@ -161,11 +166,6 @@ public class MapPreviewGenerator : IDisposable
                             MapPreviewAPI.Logger.Error("Failed to generate map preview!", rejectException);
                             MapPreviewAPI.Logger.Log("Map Info: \n" + PrintDebugInfo(completedRequest));
                             completedRequest.Promise.Reject(rejectException);
-                        }
-
-                        if (_queuedRequests.Count == 0 && !MapPreviewAPI.IsGeneratingPreview)
-                        {
-                            MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
                         }
                     });
 

@@ -1,6 +1,7 @@
 using LunarFramework.GUI;
 using LunarFramework.Utility;
 using MapPreview.Compatibility;
+using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 
@@ -125,7 +126,11 @@ public class MapPreviewSettings : LunarModSettings
         if (layout.PopChanged())
         {
             WorldInterfaceManager.RefreshInterface();
-            WorldInterfaceManager.UpdateToolbar();
+            
+            if (WorldRendererUtility.WorldRenderedNow)
+            {
+                WorldInterfaceManager.UpdateToolbar();
+            }
         }
 
         layout.Abs(10f);

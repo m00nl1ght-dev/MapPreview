@@ -166,8 +166,13 @@ public abstract class MapPreviewWidget : IDisposable
 
     private void OnPromiseResolved(MapPreviewResult result)
     {
-        if (Texture == null || result == null || AwaitingMapTile != result.MapTile) return;
-        if (AwaitingRequest != null && AwaitingRequest != result.Request) return;
+        if (result == null) return;
+
+        if (Texture == null || AwaitingMapTile != result.MapTile || (AwaitingRequest != null && AwaitingRequest != result.Request))
+        {
+            DisposeMap(result.Map);
+            return;
+        }
 
         PreviewMap = result.Map;
         TexCoords = result.TexCoords;
