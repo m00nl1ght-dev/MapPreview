@@ -1,4 +1,11 @@
 
+v1.12.9
+
+- The performance optimizations added in v1.12.8 are now enabled by default
+- Added 'Compatibility mode' option that can help with potential issues
+- Adjusted visibility of the world map toolbar to be more consistent
+- Fixed an error that could occur when closing reroll window while it is generating
+
 v1.12.8
 
 - Added new experimental performance optimizations (disabled by default)
