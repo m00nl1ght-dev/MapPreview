@@ -1,4 +1,8 @@
 
+v1.12.10
+
+- Added Turkish translation (thanks to @penu1881 for submitting)
+
 v1.12.9
 
 - The performance optimizations added in v1.12.8 are now enabled by default
