@@ -1,4 +1,8 @@
 
+v1.12.11
+
+- Support for RimWorld 1.5 (unstable)
+
 v1.12.10
 
 - Added Turkish translation (thanks to @penu1881 for submitting)
