@@ -1,5 +1,5 @@
 ﻿/*
- 
+
 Modified version of: https://github.com/UnlimitedHugs/RimworldMapReroll/blob/master/Source/MapPreviewGenerator.cs
 
 MIT License
@@ -63,7 +63,7 @@ public class MapPreviewGenerator : IDisposable
 
     private readonly ConcurrentQueue<MapPreviewRequest> _queuedRequests = new();
     private readonly Thread _workerThread;
-    
+
     private EventWaitHandle _workHandle = new AutoResetEvent(false);
     private EventWaitHandle _disposeHandle = new ManualResetEvent(false);
     private EventWaitHandle _idleHandle = new ManualResetEvent(true);
@@ -156,7 +156,7 @@ public class MapPreviewGenerator : IDisposable
                         {
                             MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
                         }
-                        
+
                         if (rejectException == null)
                         {
                             completedRequest.Promise.Resolve(result);
@@ -284,7 +284,7 @@ public class MapPreviewGenerator : IDisposable
     {
         if (MapGenerator.mapBeingGenerated != null)
             throw new Exception("Attempted to generate map preview while another map is generating!");
-        
+
         MapGenerator.data.Clear();
 
         var tickManager = Current.Game.tickManager;
@@ -367,17 +367,17 @@ public class MapPreviewGenerator : IDisposable
 
         str.AppendLine("World Seed Hash: " + Find.World?.info?.Seed);
         str.AppendLine("World Tile: " + request.MapTile);
-        
+
         str.AppendLine("Biome: " + tile.biome?.defName);
         str.AppendLine("Biome TPMs: " + tile.biome?.terrainPatchMakers?.Count);
         str.AppendLine("Biome TTresh: " + tile.biome?.terrainsByFertility?.Count);
         str.AppendLine("Biome MCP: " + tile.biome?.modContentPack?.Name);
-        
+
         if (tile.Rivers != null) str.AppendLine("River: " + tile.Rivers.Count);
         if (tile.Roads != null) str.AppendLine("Road: " + tile.Roads.Count);
-        
+
         str.AppendLine("Tick Speed: " + tickManager?.CurTimeSpeed);
-        
+
         str.AppendLine("Map Seed: " + request.Seed);
         str.AppendLine("Map Size: " + request.MapSize.x + "x" + request.MapSize.z);
         str.AppendLine("Map Comps: " + (request.UseMinimalMapComponents ? "Minimal" : "Full"));
@@ -455,7 +455,7 @@ public class MapPreviewGenerator : IDisposable
             }
         }
     }
-    
+
     internal static readonly IReadOnlyCollection<string> IncludedMapComponentsMinimal = new HashSet<string>
     {
         // Vanilla
@@ -464,44 +464,44 @@ public class MapPreviewGenerator : IDisposable
 
         // Geological Landforms
         "GeologicalLandforms.BiomeGrid",
-        
+
         // Advanced Biomes and other old mods
         "ActiveTerrain.SpecialTerrainList",
     };
-    
+
     internal static readonly IReadOnlyCollection<string> IncludedMapComponentsFull = new HashSet<string>(IncludedMapComponentsMinimal)
     {
         // Dubs Bad Hygiene
         "DubsBadHygiene.MapComponent_Hygiene"
     };
-    
+
     private static void ConstructMinimalMapComponents(Map map)
     {
         // ##### Essential #####
-        
+
         map.cellIndices = new CellIndices(map);                                                             // req
         map.cellsInRandomOrder = new MapCellsInRandomOrder(map);                                            // req
         map.floodFiller = new FloodFiller(map);                                                             // req
-        
+
         // ##### Main grids #####
-        
+
         map.terrainGrid = new TerrainGrid(map);                                                             // req
         map.fertilityGrid = new FertilityGrid(map);                                                         // req
         map.pollutionGrid = new PollutionGrid(map);                                                         // req
         map.edificeGrid = new EdificeGrid(map);                                                             // req
         map.roofGrid = new RoofGrid(map);                                                                   // req
-        
+
         // ##### Special grids #####
-        
+
         map.fogGrid = new FogGrid(map);                                                                     // light
         // map.glowGrid = new GlowGrid(map);                                                                // trial
         // map.glowFlooder = new GlowFlooder(map);                                                          // safe
         // map.deepResourceGrid = new DeepResourceGrid(map);                                                // trial
         // map.snowGrid = new SnowGrid(map);                                                                // trial
         // map.gasGrid = new GasGrid(map);                                                                  // trial
-        
+
         // ##### Regions and rooms #####
-        
+
         map.regionGrid = new RegionGrid(map);                                                               // likely
         map.regionAndRoomUpdater = new RegionAndRoomUpdater(map);                                           // likely
         // map.regionMaker = new RegionMaker(map);                                                          // safe
@@ -510,9 +510,9 @@ public class MapPreviewGenerator : IDisposable
         map.regionDirtyer = new RegionDirtyer(map);                                                         // likely
         map.roofCollapseBuffer = new RoofCollapseBuffer();                                                  // light
         map.roofCollapseBufferResolver = new RoofCollapseBufferResolver(map);                               // light
-        
+
         // ##### Things #####
-        
+
         map.thingGrid = new ThingGrid(map);                                                                 // likely
         // map.coverGrid = new CoverGrid(map);                                                              // trial
         // map.linkGrid = new LinkGrid(map);                                                                // trial
@@ -538,9 +538,9 @@ public class MapPreviewGenerator : IDisposable
         // map.powerNetGrid = new PowerNetGrid(map);                                                        // trial
         // map.powerNetManager = new PowerNetManager(map);                                                  // trial
         map.moteCounter = new MoteCounter();                                                                // light
-        
+
         // ##### Pawns #####
-        
+
         map.mapPawns = new MapPawns(map);                                                                   // likely
         map.lordManager = new LordManager(map);                                                             // light
         // map.attackTargetsCache = new AttackTargetsCache(map);                                            // trial
@@ -554,9 +554,9 @@ public class MapPreviewGenerator : IDisposable
         // map.strengthWatcher = new StrengthWatcher(map);                                                  // safe
         // map.mineStrikeManager = new MineStrikeManager();                                                 // safe
         // map.autoSlaughterManager = new AutoSlaughterManager(map);                                        // safe
-        
+
         // ##### Environment #####
-        
+
         map.storyState = new StoryState(map);                                                               // light
         map.dangerWatcher = new DangerWatcher(map);                                                         // light
         map.retainedCaravanData = new RetainedCaravanData(map);                                             // light
@@ -572,9 +572,9 @@ public class MapPreviewGenerator : IDisposable
         map.passingShipManager = new PassingShipManager(map);                                               // light
         map.wildAnimalSpawner = new WildAnimalSpawner(map);                                                 // light
         map.wildPlantSpawner = new WildPlantSpawner(map);                                                   // light
-        
+
         // ##### Rendering and UI #####
-        
+
         map.mapDrawer = new MapDrawer(map);                                                                 // light
         // map.dynamicDrawManager = new DynamicDrawManager(map);                                            // safe
         // map.tooltipGiverList = new TooltipGiverList();                                                   // safe
@@ -585,26 +585,26 @@ public class MapPreviewGenerator : IDisposable
         // map.postTickVisuals = new PostTickVisuals(map);                                                  // safe
         // map.effecterMaintainer = new EffecterMaintainer(map);                                            // trial
         // map.flecks = new FleckManager(map);                                                              // trial
-        
+
         // ##### Pathing #####
-        
+
         // map.pathing = new Pathing(map);                                                                  // trial
         map.exitMapGrid = new ExitMapGrid(map);                                                             // light
         // map.avoidGrid = new AvoidGrid(map);                                                              // trial
         // map.pathFinder = new PathFinder(map);                                                            // trial
         // map.reachability = new Reachability(map);                                                        // trial
-        
+
         // ##### Player Designations #####
-        
+
         // map.designationManager = new DesignationManager(map);                                            // trial
         // map.zoneManager = new ZoneManager(map);                                                          // trial
         map.areaManager = new AreaManager(map);                                                             // light
         map.storageGroups = new StorageGroupManager(map);                                                   // light
-        
+
         // ##### Custom Components #####
-        
+
         map.components.Clear();
-        
+
         foreach (var type in typeof(MapComponent).AllSubclassesNonAbstract())
         {
             if (IncludedMapComponentsMinimal.Contains(type.FullName))
@@ -619,7 +619,7 @@ public class MapPreviewGenerator : IDisposable
                 }
             }
         }
-        
+
         map.roadInfo = map.GetComponent<RoadInfo>();
         map.waterInfo = map.GetComponent<WaterInfo>();
     }

@@ -16,9 +16,9 @@ internal class Patch_RimWorld_PlaySettings
         if (worldView)
         {
             bool current = MapPreviewMod.Settings.PreviewEnabledNow, prev = current;
-            
-            row.ToggleableIcon(ref current, TexButton.TogglePauseOnError, "MapPreview.World.ShowHidePreview".Translate(), SoundDefOf.Mouseover_ButtonToggle);
-            
+
+            row.ToggleableIcon(ref current, TexButton.Info, "MapPreview.World.ShowHidePreview".Translate(), SoundDefOf.Mouseover_ButtonToggle);
+
             if (prev != current)
             {
                 if (Current.ProgramState == ProgramState.Entry)
@@ -31,7 +31,7 @@ internal class Patch_RimWorld_PlaySettings
                 }
 
                 WorldInterfaceManager.RefreshPreview();
-                
+
                 if (!MapPreviewMod.Settings.PreviewEnabledNow)
                 {
                     MapPreviewWindow.Instance?.Close();

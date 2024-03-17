@@ -67,7 +67,7 @@ internal class ModCompat_MapDesigner : ModCompat
         public override bool IsInteractable => !MapPreviewAPI.IsGeneratingPreview;
 
         public override string Tooltip => "MapPreview.Integration.MapDesigner.OpenSettings".Translate();
-        public override Texture Icon => TexButton.InspectModeToggle;
+        public override Texture Icon => TexButton.OpenStatsReport;
 
         public override void OnAction()
         {

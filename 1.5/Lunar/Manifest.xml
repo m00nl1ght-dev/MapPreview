@@ -3,7 +3,7 @@
   <Name>Map Preview</Name>
   <PackageId>m00nl1ght.MapPreview</PackageId>
   <Authors>m00nl1ght</Authors>
-  <MinGameVersion>1.4</MinGameVersion>
+  <MinGameVersion>1.5</MinGameVersion>
   <Components>
     <Component>
       <AssemblyName>HugsLogPublisher</AssemblyName>

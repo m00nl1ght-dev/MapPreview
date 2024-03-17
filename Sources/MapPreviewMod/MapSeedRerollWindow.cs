@@ -13,7 +13,7 @@ namespace MapPreview;
 public class MapSeedRerollWindow : Window
 {
     public static MapSeedRerollWindow Instance => Find.WindowStack?.WindowOfType<MapSeedRerollWindow>();
-    
+
     public new static bool IsOpen { get; private set; }
 
     private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(MapSeedRerollWindow));
@@ -100,7 +100,7 @@ public class MapSeedRerollWindow : Window
     public override void PreClose()
     {
         base.PreClose();
-        
+
         Find.WindowStack.WindowOfType<GoToWindow>()?.Close();
 
         IsOpen = false;
@@ -168,7 +168,7 @@ public class MapSeedRerollWindow : Window
             e.Dispose();
             return true;
         });
-        
+
         TryAddElement();
     }
 
@@ -205,7 +205,7 @@ public class MapSeedRerollWindow : Window
 
         var gridFull = _elements.Count >= DesiredCount && !MapPreviewAPI.IsGeneratingPreview;
 
-        if (DoButton(TexButton.DeleteX, "MapPreview.World.RerollWindow.Close".Translate()))
+        if (DoButton(TexButton.CloseXSmall, "MapPreview.World.RerollWindow.Close".Translate()))
         {
             Close();
         }
@@ -222,7 +222,7 @@ public class MapSeedRerollWindow : Window
                     {
                         unchecked { _lastSeed += 1; }
                     }
-                    
+
                     RefreshSeeds();
                 }));
             }
@@ -332,16 +332,16 @@ public class MapSeedRerollWindow : Window
     private class GoToWindow : Window
     {
         public override Vector2 InitialSize => new(300f, 100f);
-        
+
         private readonly LayoutRect _layout = new(MapPreviewMod.LunarAPI);
-        
+
         private readonly Action<int> _applyAction;
-        
+
         private readonly int _baseValue;
         private readonly int _currentValue;
-        
+
         private string _inputBuffer;
-        
+
         public GoToWindow(int baseValue, int currentValue, Action<int> applyAction)
         {
             _applyAction = applyAction;
@@ -357,20 +357,20 @@ public class MapSeedRerollWindow : Window
         public override void DoWindowContents(Rect inRect)
         {
             _layout.BeginRoot(inRect, new LayoutParams { Margin = new(5) });
-            
+
             LunarGUI.Label(_layout, "MapPreview.World.RerollWindow.GoTo.Label".Translate());
             LunarGUI.TextField(_layout, ref _inputBuffer);
 
             _layout.Abs(10f);
-            
+
             if (LunarGUI.Button(_layout, "OK".Translate()))
             {
                 Apply();
             }
-            
+
             _layout.End();
         }
-        
+
         public override void OnAcceptKeyPressed()
         {
             Event.current.Use();
@@ -383,7 +383,7 @@ public class MapSeedRerollWindow : Window
 
             char? prefix = char.IsDigit(_inputBuffer[0]) ? null : _inputBuffer[0];
             string str = prefix == null ? _inputBuffer : _inputBuffer.Substring(1);
-            
+
             if (int.TryParse(str, out var num))
             {
                 if (prefix == null)

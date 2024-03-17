@@ -22,7 +22,7 @@ internal class ModCompat_GeologicalLandforms : ModCompat
     {
         var patchGroup = MapPreviewMod.CompatPatchGroup.NewSubGroup(TargetAssemblyName);
         patchGroup.AddPatch(typeof(LandformGraphEditor_Init));
-        
+
         _modType = FindType("GeologicalLandforms.GeologicalLandformsMod");
         _mod = Require(LoadedModManager.GetMod(_modType));
 
