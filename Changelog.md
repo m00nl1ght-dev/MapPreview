@@ -1,4 +1,8 @@
 
+v1.12.12
+
+- Fix compatibility with the recently updated BetterLoading mod
+
 v1.12.11
 
 - Support for RimWorld 1.5 (unstable)
