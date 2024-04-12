@@ -1,4 +1,9 @@
 
+v1.12.13
+
+- Fix compatibility issues with pocket maps (Anomaly content)
+- Fix an issue with BetterLoading that occured when other mods throw startup errors
+
 v1.12.12
 
 - Fix compatibility with the recently updated BetterLoading mod
