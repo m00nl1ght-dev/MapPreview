@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -15,6 +16,8 @@ namespace MapPreview.Patches;
 [HarmonyPatch(typeof(GenStep_Caves))]
 internal static class Patch_RimWorld_GenStep_Caves
 {
+    private static readonly Type Self = typeof(Patch_RimWorld_GenStep_Caves);
+
     [HarmonyTranspiler]
     [HarmonyPatch("Dig")]
     [PatchExcludedFromConflictCheck]
@@ -47,9 +50,12 @@ internal static class Patch_RimWorld_GenStep_Caves
 
     [HarmonyPostfix]
     [HarmonyPatch("RemoveSmallDisconnectedSubGroups")]
-    private static void RemoveSmallDisconnectedSubGroups_Postfix(out HashSet<IntVec3> ___tmpGroupSet, HashSet<IntVec3> ___groupSet)
+    private static void RemoveSmallDisconnectedSubGroups_Postfix(ref HashSet<IntVec3> ___tmpGroupSet, HashSet<IntVec3> ___groupSet)
     {
-        ___tmpGroupSet = ___groupSet;
+        if (MapPreviewAPI.IsGeneratingPreview && MapPreviewGenerator.IsGeneratingOnCurrentThread)
+        {
+            ___tmpGroupSet = ___groupSet;
+        }
     }
 
     private static IEnumerable<CodeInstruction> RemoveRedundantRehash(IEnumerable<CodeInstruction> instructions, ILGenerator generator, string fieldName)
@@ -61,10 +67,8 @@ internal static class Patch_RimWorld_GenStep_Caves
         var pattern = TranspilerPattern.Build("RemoveRedundantRehash")
             .MatchLoad(typeof(GenStep_Caves), fieldName).Nop() // to preserve labels
             .Insert(ldfldStatic)
-            .Insert(CodeInstruction.Call(typeof(HashSet<IntVec3>), "get_Count"))
             .Insert(ldargGroup)
-            .Insert(CodeInstruction.Call(typeof(List<IntVec3>), "get_Count"))
-            .Insert(OpCodes.Ceq)
+            .Insert(CodeInstruction.Call(Self, nameof(ShouldSkipRehash)))
             .Insert(new CodeInstruction(OpCodes.Brtrue_S, labelAfter))
             .Insert(CodeInstruction.LoadField(typeof(GenStep_Caves), fieldName))
             .MatchCall(typeof(HashSet<IntVec3>), "Clear").Keep()
@@ -76,4 +80,7 @@ internal static class Patch_RimWorld_GenStep_Caves
 
         return TranspilerPattern.Apply(instructions, pattern);
     }
+
+    private static bool ShouldSkipRehash(HashSet<IntVec3> groupSet, List<IntVec3> group) =>
+        MapPreviewAPI.IsGeneratingPreview && MapPreviewGenerator.IsGeneratingOnCurrentThread && groupSet.Count == group.Count;
 }
