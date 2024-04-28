@@ -1,4 +1,9 @@
 
+v1.12.14
+
+- Adjust logging for compatibility with the new Harmony enhanced stacktraces
+- Refactor the optimization patch for the cave generation code
+
 v1.12.13
 
 - Fix compatibility issues with pocket maps (Anomaly content)
