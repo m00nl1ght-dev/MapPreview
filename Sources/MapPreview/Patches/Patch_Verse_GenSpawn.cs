@@ -9,7 +9,11 @@ namespace MapPreview.Patches;
 internal static class Patch_Verse_GenSpawn
 {
     [HarmonyPrefix]
+    #if RW_1_5_OR_GREATER
+    [HarmonyPatch("Spawn", typeof(Thing), typeof(IntVec3), typeof(Map), typeof(Rot4), typeof(WipeMode), typeof(bool), typeof(bool))]
+    #else
     [HarmonyPatch("Spawn", typeof(Thing), typeof(IntVec3), typeof(Map), typeof(Rot4), typeof(WipeMode), typeof(bool))]
+    #endif
     [PatchExcludedFromConflictCheck]
     private static bool Spawn(Thing newThing, Map map, ref Thing __result)
     {

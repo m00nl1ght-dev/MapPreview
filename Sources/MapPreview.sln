@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBD}") = "MapPreview", "MapPreview.csproj", "{3D0DE44D-4410-4F16-8E49-85FE38D12052}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBD}") = "MapPreview", "MapPreview\MapPreview.csproj", "{3D0DE44D-4410-4F16-8E49-85FE38D12052}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapPreviewMod", "..\MapPreviewMod\MapPreviewMod.csproj", "{5A7D2E7E-BEA7-4D10-A6AC-907DA1ABCF47}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapPreviewMod", "MapPreviewMod\MapPreviewMod.csproj", "{5A7D2E7E-BEA7-4D10-A6AC-907DA1ABCF47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

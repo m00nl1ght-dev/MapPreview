@@ -307,6 +307,10 @@ public class MapPreviewGenerator : IDisposable
             var mapParent = new MapParent { Tile = request.MapTile, def = WorldObjectDefOf.Settlement };
             mapParent.SetFaction(Faction.OfPlayer);
 
+            #if RW_1_5_OR_GREATER
+                map.generatorDef = request.GeneratorDef;
+            #endif
+
             map.info.Size = new IntVec3(request.MapSize.x, 1, request.MapSize.z);
             map.info.parent = mapParent;
 
@@ -547,6 +551,7 @@ public class MapPreviewGenerator : IDisposable
         // map.attackTargetReservationManager = new AttackTargetReservationManager(map);                    // safe
         // map.pawnDestinationReservationManager = new PawnDestinationReservationManager();                 // safe
         // map.reservationManager = new ReservationManager(map);                                            // trial
+        // map.enrouteManager = new EnrouteManager(map);                                                    // safe
         // map.physicalInteractionReservationManager = new PhysicalInteractionReservationManager();         // safe
         // map.lordsStarter = new VoluntarilyJoinableLordsStarter(map);                                     // safe
         // map.pawnPathPool = new PawnPathPool(map);                                                        // safe
@@ -554,6 +559,7 @@ public class MapPreviewGenerator : IDisposable
         // map.strengthWatcher = new StrengthWatcher(map);                                                  // safe
         // map.mineStrikeManager = new MineStrikeManager();                                                 // safe
         // map.autoSlaughterManager = new AutoSlaughterManager(map);                                        // safe
+        // map.deferredSpawner = new DeferredSpawner(map);                                                  // safe
 
         // ##### Environment #####
 
