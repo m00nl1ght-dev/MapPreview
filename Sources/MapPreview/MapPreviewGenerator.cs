@@ -308,7 +308,7 @@ public class MapPreviewGenerator : IDisposable
             mapParent.SetFaction(Faction.OfPlayer);
 
             #if RW_1_5_OR_GREATER
-                map.generatorDef = request.GeneratorDef;
+            map.generatorDef = request.GeneratorDef;
             #endif
 
             map.info.Size = new IntVec3(request.MapSize.x, 1, request.MapSize.z);
