@@ -11,7 +11,14 @@ namespace MapPreview.Compatibility;
 internal class ModCompat_SmashTools : ModCompat
 {
     public override string TargetAssemblyName => "SmashTools";
-    public override string DisplayName => "SmashTools from The Vehicle Framework";
+    public override string DisplayName => "SmashTools from Vehicle Framework";
+
+    protected override bool OnApply()
+    {
+        // The target method has been removed in VF 1.5.1659
+        // This patch is conditional now and only applies to old versions of VF
+        return AccessTools.Method("SmashTools.ComponentCache:MapGenerated") != null;
+    }
 
     [HarmonyPrefix]
     [HarmonyPatch("SmashTools.ComponentCache", "MapGenerated")]
