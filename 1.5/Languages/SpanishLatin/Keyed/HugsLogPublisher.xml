@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HugsLogPublisher.copy>Copiar</HugsLogPublisher.copy>
+  <HugsLogPublisher.shareBtn>Compartir registros</HugsLogPublisher.shareBtn>
+  <HugsLogPublisher.shareConfirmTitle>Confirmar</HugsLogPublisher.shareConfirmTitle>
+  <HugsLogPublisher.shareConfirmMessage>¿Subir registros del juego ahora?\n\nEsto publicará tus registros del juego en un servidor público y te dará el enlace para compartir con otros. Esto es útil si necesitas ayuda para solucionar un problema o si deseas informar un problema a un autor de mod.\n\nNo se compartirá información privada.</HugsLogPublisher.shareConfirmMessage>
+  <HugsLogPublisher.publisherTitle>Publicador de registros</HugsLogPublisher.publisherTitle>
+  <HugsLogPublisher.uploading>Subiendo{0}</HugsLogPublisher.uploading>
+  <HugsLogPublisher.shortening>Obteniendo enlace{0}</HugsLogPublisher.shortening>
+  <HugsLogPublisher.uploaded>¡Subida completa!</HugsLogPublisher.uploaded>
+  <HugsLogPublisher.uploadError>Error al subir: {0}</HugsLogPublisher.uploadError>
+  <HugsLogPublisher.copiedToClipboard>Copiado al portapapeles.</HugsLogPublisher.copiedToClipboard>
+  <HugsLogPublisher.abortBtn>Abortar</HugsLogPublisher.abortBtn>
+  <HugsLogPublisher.retryBtn>Reintentar</HugsLogPublisher.retryBtn>
+  <HugsLogPublisher.browseBtn>Abrir en el navegador</HugsLogPublisher.browseBtn>
+  <HugsLogPublisher.useRecommendedSettings>Usar configuración recomendada</HugsLogPublisher.useRecommendedSettings>
+  <HugsLogPublisher.shortUrls>Usar acortador de URL</HugsLogPublisher.shortUrls>
+  <HugsLogPublisher.shortUrls_tip>Produce un enlace más corto al subir. No recomendado en Steam, los enlaces cortos se eliminan automáticamente.</HugsLogPublisher.shortUrls_tip>
+  <HugsLogPublisher.platformInfo>Incluir información de la plataforma</HugsLogPublisher.platformInfo>
+  <HugsLogPublisher.platformInfo_tip>Incluye información sobre tu CPU, memoria y tarjeta de video en el registro.</HugsLogPublisher.platformInfo_tip>
+  <HugsLogPublisher.unlimitedLogSize>Permitir tamaño de registro ilimitado</HugsLogPublisher.unlimitedLogSize>
+  <HugsLogPublisher.unlimitedLogSize_tip>Cuando está desactivado, el tamaño del registro está limitado a 10K líneas para evitar que los registros muy largos causen problemas.</HugsLogPublisher.unlimitedLogSize_tip>
+  <HugsLogPublisher.toClipboardBtn>Al portapapeles</HugsLogPublisher.toClipboardBtn>
+  <HugsLogPublisher.uploadBtn>Subir</HugsLogPublisher.uploadBtn>
+  <HugsLogPublisher.filesBtn>Archivos</HugsLogPublisher.filesBtn>
+  <HugsLogPublisher.openLogFile>Abrir archivo de registro</HugsLogPublisher.openLogFile>
+  <HugsLogPublisher.openSaveDir>Abrir carpeta de guardado</HugsLogPublisher.openSaveDir>
+  <HugsLogPublisher.openModsDir>Abrir carpeta de mods</HugsLogPublisher.openModsDir>
+</LanguageData>
