@@ -15,6 +15,13 @@ public class MapPreviewWidgetWithPreloader : MapPreviewWidget
 
     public MapPreviewWidgetWithPreloader(IntVec2 maxMapSize) : base(maxMapSize) { }
 
+    protected override void DrawGenerated(Rect inRect)
+    {
+        var animate = MapPreviewMod.Settings.EnablePreviewAnimations.Value;
+        var texRect = animate ? inRect.ScaledBy(SpawnInterpolator.value) : inRect;
+        GUI.DrawTextureWithTexCoords(texRect.ContractedBy(1f), Texture, TexCoords);
+    }
+
     protected override void DrawGenerating(Rect inRect)
     {
         DrawPreloader(UIPreviewLoading, inRect.center);
@@ -33,7 +40,7 @@ public class MapPreviewWidgetWithPreloader : MapPreviewWidget
                     "Please validate your mod files and make sure that your load order is correct. " +
                     "Most importantly, do not put any mods above 'Core' unless they specifically say so in their description!"
                 ));
-                
+
                 return;
             }
         }

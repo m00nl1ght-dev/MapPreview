@@ -15,6 +15,7 @@ public class MapPreviewSettings : LunarModSettings
     public readonly Entry<bool> EnableMapPreviewInPlay = MakeEntry(true);
     public readonly Entry<bool> EnableToolbar = MakeEntry(true);
     public readonly Entry<bool> EnableToolbarInPlay = MakeEntry(true);
+    public readonly Entry<bool> EnablePreviewAnimations = MakeEntry(true);
     public readonly Entry<bool> LockWindowPositions = MakeEntry(false);
     public readonly Entry<bool> AutoOpenPreviewOnWorldMap = MakeEntry(false);
     public readonly Entry<bool> TriggerPreviewOnWorldObjects = MakeEntry(true);
@@ -30,7 +31,7 @@ public class MapPreviewSettings : LunarModSettings
     public readonly Entry<float> PreviewWindowSize = MakeEntry(250f);
     public readonly Entry<Vector2> PreviewWindowPos = MakeEntry(new Vector2(-1, -1));
     public readonly Entry<Vector2> ToolbarWindowPos = MakeEntry(new Vector2(-1, -1));
-    
+
     public bool PreviewEnabledNow => InEntry ? EnableMapPreview : EnableMapPreviewInPlay;
     public bool ToolbarEnabledNow => InEntry ? EnableToolbar : EnableToolbarInPlay;
 
@@ -50,23 +51,23 @@ public class MapPreviewSettings : LunarModSettings
     public void DoPreviewSettingsTab(LayoutRect layout)
     {
         layout.PushChanged();
-        
+
         LunarGUI.Label(layout, Label("EnableMapPreviewHeader"));
-        
+
         LunarGUI.Checkbox(layout, ref EnableMapPreview.Value, "    " + Label("EnableMapPreviewInEntry"));
         LunarGUI.Checkbox(layout, ref EnableMapPreviewInPlay.Value, "    " + Label("EnableMapPreviewInPlay"));
-        
+
         layout.Abs(10f);
 
         layout.PushEnabled(PreviewEnabledNow || (Current.Game == null && PreviewEnabledEver));
-        
+
         LunarGUI.Checkbox(layout, ref IncludeCaves.Value, Label("IncludeCaves"));
         LunarGUI.Checkbox(layout, ref SkipRiverFlowCalc.Value, Label("SkipRiverFlowCalc"));
         LunarGUI.Checkbox(layout, ref EnableTrueTerrainColors.Value, Label("EnableTrueTerrainColors"));
         LunarGUI.Checkbox(layout, ref CompatibilityMode.Value, Label("CompatibilityMode"));
 
         layout.Abs(10f);
-        
+
         layout.PushEnabled(EnableMapPreviewInPlay);
 
         LunarGUI.Checkbox(layout, ref AutoOpenPreviewOnWorldMap.Value, Label("AutoOpenPreviewOnWorldMap"));
@@ -76,18 +77,7 @@ public class MapPreviewSettings : LunarModSettings
         if (layout.PopChanged()) WorldInterfaceManager.RefreshInterface();
 
         LunarGUI.Checkbox(layout, ref TriggerPreviewOnWorldObjects.Value, Label("TriggerPreviewOnWorldObjects"));
-
-        layout.PushChanged();
-
-        LunarGUI.Checkbox(layout, ref LockWindowPositions.Value, Label("LockWindowPositions"));
-
-        if (layout.PopChanged())
-        {
-            var previewWindow = MapPreviewWindow.Instance;
-            if (previewWindow != null) previewWindow.draggable = !LockWindowPositions;
-            var toolbarWindow = MapPreviewToolbar.Instance;
-            if (toolbarWindow != null) toolbarWindow.draggable = !LockWindowPositions;
-        }
+        LunarGUI.Checkbox(layout, ref EnablePreviewAnimations.Value, Label("EnablePreviewAnimations"));
 
         layout.Abs(10f);
         layout.PushChanged();
@@ -117,7 +107,7 @@ public class MapPreviewSettings : LunarModSettings
     public void DoToolbarSettingsTab(LayoutRect layout)
     {
         layout.PushChanged();
-        
+
         LunarGUI.Label(layout, Label("EnableToolbarHeader"));
 
         LunarGUI.Checkbox(layout, ref EnableToolbar.Value, "    " + Label("EnableToolbarInEntry"));
@@ -126,7 +116,7 @@ public class MapPreviewSettings : LunarModSettings
         if (layout.PopChanged())
         {
             WorldInterfaceManager.RefreshInterface();
-            
+
             if (WorldRendererUtility.WorldRenderedNow)
             {
                 WorldInterfaceManager.UpdateToolbar();
@@ -173,5 +163,19 @@ public class MapPreviewSettings : LunarModSettings
         }
 
         layout.PopEnabled();
+
+        layout.Abs(10f);
+
+        layout.PushChanged();
+
+        LunarGUI.Checkbox(layout, ref LockWindowPositions.Value, Label("LockWindowPositions"));
+
+        if (layout.PopChanged())
+        {
+            var previewWindow = MapPreviewWindow.Instance;
+            if (previewWindow != null) previewWindow.draggable = !LockWindowPositions;
+            var toolbarWindow = MapPreviewToolbar.Instance;
+            if (toolbarWindow != null) toolbarWindow.draggable = !LockWindowPositions;
+        }
     }
 }

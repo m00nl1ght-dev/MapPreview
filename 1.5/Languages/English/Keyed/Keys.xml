@@ -12,6 +12,7 @@
   <MapPreview.Settings.EnableToolbarInEntry>... while starting a new game (choosing the tile to settle on)</MapPreview.Settings.EnableToolbarInEntry>
   <MapPreview.Settings.EnableToolbarInPlay>... while playing (on the world map screen)</MapPreview.Settings.EnableToolbarInPlay>
   <MapPreview.Settings.LockWindowPositions>Lock window positions</MapPreview.Settings.LockWindowPositions>
+  <MapPreview.Settings.EnablePreviewAnimations>Enable animation on preview completion</MapPreview.Settings.EnablePreviewAnimations>
   <MapPreview.Settings.AutoOpenPreviewOnWorldMap>Automatically open preview window when switching to the world map</MapPreview.Settings.AutoOpenPreviewOnWorldMap>
   <MapPreview.Settings.TriggerPreviewOnWorldObjects>Show map preview when a settlement or quest site is selected</MapPreview.Settings.TriggerPreviewOnWorldObjects>
   <MapPreview.Settings.EnableSeedRerollFeature>Show map seed reroll button</MapPreview.Settings.EnableSeedRerollFeature>
