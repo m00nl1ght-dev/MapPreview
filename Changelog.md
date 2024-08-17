@@ -1,4 +1,9 @@
 
+v1.12.16
+
+- Added option to disable preview completion animation
+- Added Spanish translation (thanks to @Ferchu for submitting)
+
 v1.12.15
 
 - Fixed compatibility patch for recently updated mod Vehicle Framework
