@@ -9,6 +9,7 @@ using Verse;
 
 namespace MapPreview;
 
+[StaticConstructorOnStartup]
 public class MapPreviewToolbar : Window
 {
     public static MapPreviewToolbar Instance => Find.WindowStack?.WindowOfType<MapPreviewToolbar>();
@@ -63,7 +64,7 @@ public class MapPreviewToolbar : Window
                 rerollData = new SeedRerollData(world);
                 world.components.Add(rerollData);
             }
-            
+
             CurrentTileIsRerolled = rerollData.TryGet(tileId, out _);
             CurrentTileCanBeRerolled = mapParent is not { HasMap: true };
         }
