@@ -1,4 +1,8 @@
 
+v1.12.17
+
+- Fixed texture loading error during startup that occured in some cases
+
 v1.12.16
 
 - Added option to disable preview completion animation
