@@ -23,7 +23,7 @@ internal static class Patch_RimWorld_TerrainPatchMaker
     [HarmonyPriority(750)]
     private static bool Init_Prefix(TerrainPatchMaker __instance, Map map)
     {
-        if (map.Tile < 0 || !MapPreviewAPI.ShouldUseStableSeed(map)) return true;
+        if (map.Tile < 0 || !MapPreviewAPI.ShouldUseStableSeed.Apply(map)) return true;
         Init_WithStableSeed(__instance, map);
         return false;
     }

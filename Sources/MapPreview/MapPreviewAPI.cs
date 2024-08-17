@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
 using LunarFramework;
 using LunarFramework.Logging;
 using LunarFramework.Patching;
+using LunarFramework.Utility;
 using Verse;
 
 namespace MapPreview;
@@ -29,7 +29,7 @@ public static class MapPreviewAPI
 
         CompatPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Compat");
         CompatPatchGroup.Subscribe();
-        
+
         GenLowPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("GenLow");
         GenLowPatchGroup.AddPatches(typeof(MapPreviewAPI).Assembly);
 
@@ -61,13 +61,11 @@ public static class MapPreviewAPI
     public static bool IsReadyForPreviewGen => IsReady && GenLowPatchGroup.Applied && GenPatchGroup.Applied;
     public static bool IsGeneratingPreview { get; internal set; }
 
-    private static readonly List<Predicate<Map>> StableSeedConditions = new();
-
-    public static bool ShouldUseStableSeed(Map map) => StableSeedConditions.Any(c => c.Invoke(map));
+    public static readonly ExtensionPoint<Map, bool> ShouldUseStableSeed = new(false);
 
     public static void AddStableSeedCondition(Predicate<Map> condition)
     {
-        StableSeedConditions.Add(condition);
+        ShouldUseStableSeed.AddModifier(1, (map, val) => val || condition(map));
     }
 
     public static event Action OnWorldChanged;
@@ -88,7 +86,7 @@ public static class MapPreviewAPI
         GenLowPatchGroup?.Unsubscribe(subscriber);
         GenPatchGroup?.Unsubscribe(subscriber);
     }
-    
+
     public static void UnsubscribeGenPatchesFast(PatchGroupSubscriber subscriber)
     {
         GenPatchGroup?.Unsubscribe(subscriber);
