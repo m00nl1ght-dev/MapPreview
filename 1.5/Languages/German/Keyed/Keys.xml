@@ -13,13 +13,13 @@
   <MapPreview.Settings.EnableToolbarInPlay>... während des Spiels (auf der Weltkarte)</MapPreview.Settings.EnableToolbarInPlay>
   <MapPreview.Settings.LockWindowPositions>Fensterpositionen sperren</MapPreview.Settings.LockWindowPositions>
   <MapPreview.Settings.EnablePreviewAnimations>Animation bei abgeschlossener Vorschau aktivieren</MapPreview.Settings.EnablePreviewAnimations>
-  <MapPreview.Settings.AutoOpenPreviewOnWorldMap>Vorschaifenster automatisch öffnen beim Wechsel zur Weltkarte</MapPreview.Settings.AutoOpenPreviewOnWorldMap>
+  <MapPreview.Settings.AutoOpenPreviewOnWorldMap>Vorschaufenster automatisch öffnen beim Wechsel zur Weltkarte</MapPreview.Settings.AutoOpenPreviewOnWorldMap>
   <MapPreview.Settings.TriggerPreviewOnWorldObjects>Kartenvorschau anzeigen, wenn eine Siedlung oder ein Quest-Ort ausgewählt wird</MapPreview.Settings.TriggerPreviewOnWorldObjects>
   <MapPreview.Settings.EnableSeedRerollFeature>Schaltfläche zum Neue-Weltkarte-Seed anzeigen</MapPreview.Settings.EnableSeedRerollFeature>
   <MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>Schaltfläche zum Neue-Weltkarte-Seed anzeigen (nicht verfügbar, da Mod "Map Reroll" installiert ist)</MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>
   <MapPreview.Settings.EnableSeedRerollWindow>Reroll-Hilfsfenster verwenden (Shift gedrückt halten beim Klicken, um umzukehren)</MapPreview.Settings.EnableSeedRerollWindow>
   <MapPreview.Settings.EnableWorldSeedRerollFeature>Schaltfläche zum Neue-Welt-Seed anzeigen</MapPreview.Settings.EnableWorldSeedRerollFeature>
-  <MapPreview.Settings.PreviewWindowSize>Größe des Vorschaifensters</MapPreview.Settings.PreviewWindowSize>
+  <MapPreview.Settings.PreviewWindowSize>Größe des Vorschaufensters</MapPreview.Settings.PreviewWindowSize>
   <MapPreview.Settings.IncludeCaves>Höhlen in Vorschau einbeziehen (deaktivieren für schnellere Vorschau)</MapPreview.Settings.IncludeCaves>
   <MapPreview.Settings.EnableTrueTerrainColors>Echte Gelände-Farben verwenden (unterstützt modifiziertes Gelände, gilt auch für Map Reroll)</MapPreview.Settings.EnableTrueTerrainColors>
   <MapPreview.Settings.SkipRiverFlowCalc>Optimierung für Flussgenerierung verwenden (schneller, aber leicht anders als im Originalspiel)</MapPreview.Settings.SkipRiverFlowCalc>
