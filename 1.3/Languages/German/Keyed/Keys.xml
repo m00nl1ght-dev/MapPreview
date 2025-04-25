@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <MapPreview.Title>Kartenvorschau</MapPreview.Title>
+
+  <MapPreview.Settings.PreviewWindowSize>Größe des Vorschaufensters</MapPreview.Settings.PreviewWindowSize>
+  <MapPreview.Settings.EnableTrueTerrainColors>Echte Terrainfarben verwenden (ermöglicht Unterstützung für durch Mods hinzugefügte Gelände, gilt auch für Map Reroll)</MapPreview.Settings.EnableTrueTerrainColors>
+  <MapPreview.Settings.EnableExactPreviewGenerator>Exakten Vorschaugenerator verwenden (etwas langsamer, aber genauer und unterstützt Kartenelemente, die durch Mods hinzugefügt wurden)</MapPreview.Settings.EnableExactPreviewGenerator>
+  <MapPreview.Settings.EnableMapPreview>Kartenvorschau aktiviert</MapPreview.Settings.EnableMapPreview>
+  <MapPreview.Settings.EnableMapReroll>Map Reroll aktiviert</MapPreview.Settings.EnableMapReroll>
+  
+  <MapPreview.World.WaitForPreview>Eine Kartenvorschau wird gerade generiert, bitte warten Sie, bevor Sie fortfahren...</MapPreview.World.WaitForPreview>
+  <MapPreview.World.ShowHidePreview>Kartenvorschau ein-/ausblenden.</MapPreview.World.ShowHidePreview>
+
+  <MapPreview.PreviewGenerationFailed>Ein Konflikt mit einem deiner Mods hat dazu geführt, dass der Kartenvorschaugenerator fehlgeschlagen ist. Bitte melde dies auf der Workshop-Seite der Kartenvorschau, damit ein Kompatibilitätspatch erstellt werden kann. Nachdem du diese Nachricht geschlossen hast, lade bitte deine Log-Datei hoch und füge den Link deinem Bugreport bei.</MapPreview.PreviewGenerationFailed>
+
+</LanguageData>
