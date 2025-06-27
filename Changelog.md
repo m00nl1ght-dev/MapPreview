@@ -1,4 +1,8 @@
 
+v1.12.18
+
+- Support for RimWorld 1.6
+
 v1.12.17
 
 - Fixed texture loading error during startup that occured in some cases
