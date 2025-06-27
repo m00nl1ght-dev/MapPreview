@@ -54,7 +54,11 @@
 
     <ItemGroup>
         <Publicize Include="Assembly-CSharp:Verse.MapGenerator.data" />
+        <Publicize Include="Assembly-CSharp:Verse.MapGenerator.ClearWorkingData" />
         <Publicize Include="Assembly-CSharp:RimWorld.Page_CreateWorldParams.CanDoNext" />
         <Publicize Include="Assembly-CSharp:RimWorld.Page_CreateWorldParams.seedString" />
+        <Publicize Include="Assembly-CSharp:RimWorld.Planet.WorldSelector.selectedTile" />
+        <Publicize Include="Assembly-CSharp:RimWorld.Planet.Tile.biome" />
+        <Publicize Include="Assembly-CSharp:Verse.Rand.iterations" />
     </ItemGroup>
 </Project>

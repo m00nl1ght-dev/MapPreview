@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Manifest>
+  <Name>Map Preview</Name>
+  <PackageId>m00nl1ght.MapPreview</PackageId>
+  <Authors>m00nl1ght</Authors>
+  <MinGameVersion>1.6</MinGameVersion>
+  <Components>
+    <li>
+      <AssemblyName>HugsLogPublisher</AssemblyName>
+    </li>
+    <li>
+      <AssemblyName>MapPreview</AssemblyName>
+    </li>
+    <li>
+      <AssemblyName>MapPreviewMod</AssemblyName>
+      <DependsOn>
+        <li>MapPreview</li>
+      </DependsOn>
+    </li>
+  </Components>
+  <Compatibility>
+    <Lunar>
+      <li>
+        <PackageId>m00nl1ght.GeologicalLandforms</PackageId>
+        <MinVersion>1.6.2</MinVersion>
+      </li>
+    </Lunar>
+    <Refuse>
+    </Refuse>
+  </Compatibility>
+</Manifest>

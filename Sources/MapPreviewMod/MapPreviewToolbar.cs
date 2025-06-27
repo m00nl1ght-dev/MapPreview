@@ -53,20 +53,16 @@ public class MapPreviewToolbar : Window
         draggable = !MapPreviewMod.Settings.LockWindowPositions;
     }
 
+    #if RW_1_6_OR_GREATER
+    public void OnWorldTileSelected(World world, PlanetTile tileId, MapParent mapParent)
+    #else
     public void OnWorldTileSelected(World world, int tileId, MapParent mapParent)
+    #endif
     {
         if (tileId >= 0 && WorldInterfaceManager.ShouldPreviewForTile(world.grid[tileId], tileId, mapParent))
         {
-            var rerollData = world.GetComponent<SeedRerollData>();
-            if (rerollData == null)
-            {
-                MapPreviewMod.Logger.Warn("This world is missing the SeedRerollData component, adding it.");
-                rerollData = new SeedRerollData(world);
-                world.components.Add(rerollData);
-            }
-
-            CurrentTileIsRerolled = rerollData.TryGet(tileId, out _);
-            CurrentTileCanBeRerolled = mapParent is not { HasMap: true };
+            CurrentTileIsRerolled = SeedRerollData.IsMapSeedRerolled(world, tileId, out _);
+            CurrentTileCanBeRerolled = SeedRerollData.SupportsTile(tileId) && mapParent is not { HasMap: true };
         }
         else
         {
@@ -183,12 +179,11 @@ public class MapPreviewToolbar : Window
             if (MapPreviewMod.Settings.EnableSeedRerollWindow == Input.GetKey(KeyCode.LeftShift))
             {
                 var tile = MapPreviewWindow.CurrentTile;
-                var rerollData = Find.World.GetComponent<SeedRerollData>();
-                var seed = rerollData.TryGet(tile, out var savedSeed) ? savedSeed : SeedRerollData.GetOriginalMapSeed(Find.World, tile);
+                var seed = SeedRerollData.GetMapSeed(Find.World, tile);
 
                 unchecked { seed += 1; }
 
-                rerollData.Commit(tile, seed);
+                SeedRerollData.GetFor(Find.World).Commit(tile, seed);
             }
             else
             {
@@ -284,7 +279,11 @@ public class MapPreviewToolbar : Window
             if (tileId < 0) return;
 
             var tile = Find.WorldGrid[tileId];
+            #if RW_1_6_OR_GREATER
+            var dict = DefDatabase<BiomeDef>.AllDefs.ToDictionary(b => b, b => b.Worker.GetScore(b, tile, tileId));
+            #else
             var dict = DefDatabase<BiomeDef>.AllDefs.ToDictionary(b => b, b => b.Worker.GetScore(tile, tileId));
+            #endif
 
             foreach (var pair in dict.OrderByDescending(p => p.Value))
             {

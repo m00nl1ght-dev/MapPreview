@@ -33,13 +33,17 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using LunarFramework.Patching;
-using MapPreview.Patches;
 using MapPreview.Promises;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 using Verse.AI.Group;
+
+#if !RW_1_6_OR_GREATER
+using MapPreview.Patches;
+#endif
 
 namespace MapPreview;
 
@@ -255,7 +259,9 @@ public class MapPreviewGenerator : IDisposable
         {
             MapPreviewAPI.IsGeneratingPreview = true;
 
+            #if !RW_1_6_OR_GREATER
             Patch_RimWorld_GenStep_Terrain.SkipRiverFlowCalc = request.SkipRiverFlowCalc;
+            #endif
 
             tickManager?.Pause();
 
@@ -271,7 +277,9 @@ public class MapPreviewGenerator : IDisposable
         {
             MapPreviewAPI.IsGeneratingPreview = false;
 
+            #if !RW_1_6_OR_GREATER
             Patch_RimWorld_GenStep_Terrain.SkipRiverFlowCalc = false;
+            #endif
 
             if (tickManager is { CurTimeSpeed: TimeSpeed.Paused })
             {
@@ -285,13 +293,20 @@ public class MapPreviewGenerator : IDisposable
         if (MapGenerator.mapBeingGenerated != null)
             throw new Exception("Attempted to generate map preview while another map is generating!");
 
+        #if RW_1_6_OR_GREATER
+        MapGenerator.ClearWorkingData();
+        #else
         MapGenerator.data.Clear();
+        #endif
 
         var tickManager = Current.Game.tickManager;
         int startTick = tickManager.gameStartAbsTick;
 
         var map = new Map { generationTick = GenTicks.TicksGame };
         GeneratingPreviewMap.Value = map;
+
+        var previewGenStep = new PreviewTextureGenStep(result, request.UseTrueTerrainColors);
+        var previewGenStepDef = new GenStepDef { genStep = previewGenStep, order = 9999 };
 
         Rand.PushState(request.Seed);
 
@@ -311,12 +326,17 @@ public class MapPreviewGenerator : IDisposable
             map.generatorDef = request.GeneratorDef;
             #endif
 
+            #if RW_1_6_OR_GREATER
+            map.events = new MapEvents(map);
+            #endif
+
             map.info.Size = new IntVec3(request.MapSize.x, 1, request.MapSize.z);
             map.info.parent = mapParent;
 
             if (request.UseMinimalMapComponents)
             {
                 ConstructMinimalMapComponents(map);
+                Rand.Range(0, 1); // compensate for GasGrid ctor
             }
             else
             {
@@ -325,17 +345,28 @@ public class MapPreviewGenerator : IDisposable
 
             result.Map = map;
 
-            var previewGenStep = new PreviewTextureGenStep(result, request.UseTrueTerrainColors);
-            var previewGenStepDef = new GenStepDef { genStep = previewGenStep, order = 9999 };
-            var genStepWithParamses = request.GeneratorDef.genSteps
-                .Where(s => request.GenStepFilter(s))
-                .Select(x => new GenStepWithParams(x, new GenStepParams()))
-                .Append(new GenStepWithParams(previewGenStepDef, new GenStepParams()));
+            #if RW_1_6_OR_GREATER
+
+            foreach (var mutator in map.TileInfo.Mutators)
+                mutator.Worker?.Init(map);
+
+            #endif
+
+            var genStepWithParamses = CollectGenStepsForTile(request.GeneratorDef, map.TileInfo)
+                .Where(g => request.GenStepFilter(g)).Append(previewGenStepDef)
+                .Select(g => new GenStepWithParams(g, new GenStepParams()));
 
             MapGenerator.GenerateContentsIntoMap(genStepWithParamses, map, request.Seed);
 
             Find.SoundRoot.sustainerManager.EndAllInMap(map);
             Find.TickManager.RemoveAllFromMap(map);
+
+            #if RW_1_5_OR_GREATER
+
+            map.mapDrawer = null;
+            map.Dispose();
+
+            #endif
         }
         finally
         {
@@ -352,9 +383,29 @@ public class MapPreviewGenerator : IDisposable
             {
                 MapGenerator.mapBeingGenerated = null;
                 GeneratingPreviewMap.Value = null;
+
+                #if RW_1_6_OR_GREATER
+                MapGenerator.ClearWorkingData();
+                #else
                 MapGenerator.data.Clear();
+                #endif
             }
         }
+    }
+
+    private static IEnumerable<GenStepDef> CollectGenStepsForTile(MapGeneratorDef mapGenerator, Tile tileInfo) =>
+        mapGenerator.genSteps.Where(IsAllowedByScenario)
+            #if RW_1_6_OR_GREATER
+            .Concat(tileInfo.Mutators.SelectMany(m => m.extraGenSteps))
+            .Concat(tileInfo.PrimaryBiome.extraGenSteps.Where(IsAllowedByScenario))
+            .Except(tileInfo.Mutators.SelectMany(m => m.preventGenSteps))
+            .Except(tileInfo.PrimaryBiome.preventGenSteps)
+            #endif
+            .Distinct();
+
+    private static bool IsAllowedByScenario(GenStepDef g)
+    {
+        return !Find.Scenario.AllParts.Any(p => typeof (ScenPart_DisableMapGen).IsAssignableFrom(p.def.scenPartClass) && p.def.genStep == g);
     }
 
     private static string PrintDebugInfo(MapPreviewRequest request)
@@ -376,9 +427,6 @@ public class MapPreviewGenerator : IDisposable
         str.AppendLine("Biome TPMs: " + tile.biome?.terrainPatchMakers?.Count);
         str.AppendLine("Biome TTresh: " + tile.biome?.terrainsByFertility?.Count);
         str.AppendLine("Biome MCP: " + tile.biome?.modContentPack?.Name);
-
-        if (tile.Rivers != null) str.AppendLine("River: " + tile.Rivers.Count);
-        if (tile.Roads != null) str.AppendLine("Road: " + tile.Roads.Count);
 
         str.AppendLine("Tick Speed: " + tickManager?.CurTimeSpeed);
 
@@ -460,11 +508,15 @@ public class MapPreviewGenerator : IDisposable
         }
     }
 
-    internal static readonly IReadOnlyCollection<string> IncludedMapComponentsMinimal = new HashSet<string>
+    internal static readonly HashSet<string> IncludedMapComponentsMinimal = new()
     {
         // Vanilla
         typeof(RoadInfo).FullName,
         typeof(WaterInfo).FullName,
+
+        #if RW_1_6_OR_GREATER
+        typeof(MixedBiomeMapComponent).FullName,
+        #endif
 
         // Geological Landforms
         "GeologicalLandforms.BiomeGrid",
@@ -473,7 +525,7 @@ public class MapPreviewGenerator : IDisposable
         "ActiveTerrain.SpecialTerrainList",
     };
 
-    internal static readonly IReadOnlyCollection<string> IncludedMapComponentsFull = new HashSet<string>(IncludedMapComponentsMinimal)
+    internal static readonly HashSet<string> IncludedMapComponentsFull = new(IncludedMapComponentsMinimal)
     {
         // Dubs Bad Hygiene
         "DubsBadHygiene.MapComponent_Hygiene"
@@ -498,7 +550,7 @@ public class MapPreviewGenerator : IDisposable
         // ##### Special grids #####
 
         map.fogGrid = new FogGrid(map);                                                                     // light
-        // map.glowGrid = new GlowGrid(map);                                                                // trial
+        map.glowGrid = new GlowGrid(map);                                                                   // trial
         // map.glowFlooder = new GlowFlooder(map);                                                          // safe
         // map.deepResourceGrid = new DeepResourceGrid(map);                                                // trial
         // map.snowGrid = new SnowGrid(map);                                                                // trial
@@ -594,7 +646,7 @@ public class MapPreviewGenerator : IDisposable
 
         // ##### Pathing #####
 
-        // map.pathing = new Pathing(map);                                                                  // trial
+        map.pathing = new Pathing(map);                                                                     // req
         map.exitMapGrid = new ExitMapGrid(map);                                                             // light
         // map.avoidGrid = new AvoidGrid(map);                                                              // trial
         // map.pathFinder = new PathFinder(map);                                                            // trial

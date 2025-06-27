@@ -111,6 +111,12 @@ public class TrueTerrainColors
 
         foreach (var def in missingDefs)
         {
+            if (def.graphic?.path?.EndsWith("BadTexture") == true)
+            {
+                _trueColors.Add(def.defName, Color.black);
+                continue;
+            }
+
             try
             {
                 var texture = def.graphic?.MatSingle?.mainTexture;

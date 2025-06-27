@@ -28,7 +28,21 @@ internal static class Patch_RimWorld_World
     [HarmonyPatch(nameof(World.CoastDirectionAt))]
     [HarmonyPriority(Priority.VeryLow)]
     [PatchExcludedFromConflictCheck]
-    private static IEnumerable<CodeInstruction> CoastDirectionAt_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+    private static IEnumerable<CodeInstruction> CoastDirectionAt_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator) =>
+        InjectThreadStatics(instructions, generator);
+
+    #if RW_1_6_OR_GREATER
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(World.LakeDirectionAt))]
+    [HarmonyPriority(Priority.VeryLow)]
+    [PatchExcludedFromConflictCheck]
+    private static IEnumerable<CodeInstruction> LakeDirectionAt_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator) =>
+        InjectThreadStatics(instructions, generator);
+
+    #endif
+
+    private static IEnumerable<CodeInstruction> InjectThreadStatics(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
         var begin = generator.DefineLabel();
 
@@ -51,7 +65,11 @@ internal static class Patch_RimWorld_World
             .Greedy(0);
 
         var tsOceanDirs = TranspilerPattern.Build("ThreadStaticOceanDirs")
+            #if RW_1_6_OR_GREATER
+            .MatchLoad(typeof(World), "tTpOceanDirs")
+            #else
             .MatchLoad(typeof(World), "tmpOceanDirs")
+            #endif
             .ReplaceOperandWithField(Self, nameof(tmpOceanDirs))
             .Greedy(0);
 

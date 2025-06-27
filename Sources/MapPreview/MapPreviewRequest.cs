@@ -1,5 +1,5 @@
 /*
- 
+
 Modified part of: https://github.com/UnlimitedHugs/RimworldMapReroll/blob/master/Source/MapPreviewGenerator.cs
 
 MIT License
@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using MapPreview.Promises;
 using RimWorld;
+using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 
@@ -41,15 +42,24 @@ public class MapPreviewRequest
     public Promise<MapPreviewResult> Promise { get; }
 
     public int Seed { get; }
+
+    #if RW_1_6_OR_GREATER
+    public PlanetTile MapTile { get; }
+    #else
     public int MapTile { get; }
+    #endif
+
     public IntVec2 MapSize { get; }
 
     public IntVec2 TextureSize { get; set; }
     public Color[] ExistingBuffer { get; set; }
 
     public bool UseTrueTerrainColors { get; set; }
-    public bool SkipRiverFlowCalc { get; set; } = true;
     public bool UseMinimalMapComponents { get; set; }
+
+    #if !RW_1_6_OR_GREATER
+    public bool SkipRiverFlowCalc { get; set; } = true;
+    #endif
 
     public MapGeneratorDef GeneratorDef { get; set; } = MapGeneratorDefOf.Base_Player;
     public Predicate<GenStepDef> GenStepFilter { get; set; } = DefaultGenStepFilter;
@@ -61,7 +71,11 @@ public class MapPreviewRequest
     public MapPreviewRequest(string worldSeed, int mapTile, IntVec2 mapSize) :
         this(SeedFromWorldSeed(worldSeed, mapTile), mapTile, mapSize) { }
 
+    #if RW_1_6_OR_GREATER
+    public MapPreviewRequest(int seed, PlanetTile mapTile, IntVec2 mapSize)
+    #else
     public MapPreviewRequest(int seed, int mapTile, IntVec2 mapSize)
+    #endif
     {
         Promise = new Promise<MapPreviewResult>();
         Seed = seed;
@@ -75,9 +89,7 @@ public class MapPreviewRequest
         var world = Find.World;
 
         if (world != null && world.info.seedString == worldSeed)
-        {
-            if (SeedRerollData.IsMapSeedRerolled(world, mapTile, out var seed)) return seed;
-        }
+            return SeedRerollData.GetMapSeed(world, mapTile);
 
         return Gen.HashCombineInt(GenText.StableStringHash(worldSeed), mapTile);
     }
@@ -93,6 +105,11 @@ public class MapPreviewRequest
 
     private static readonly List<string> DefaultGenSteps = new()
     {
-        "ElevationFertility", "Terrain"
+        "ElevationFertility",
+        "Terrain",
+        "MutatorPostElevationFertility",
+        "MutatorPostTerrain",
+        "Space",
+        "AsteroidBasic",
     };
 }

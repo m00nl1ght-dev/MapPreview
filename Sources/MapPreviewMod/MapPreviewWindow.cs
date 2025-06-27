@@ -17,7 +17,11 @@ public class MapPreviewWindow : Window
 
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
 
+    #if RW_1_6_OR_GREATER
+    public static PlanetTile CurrentTile => WorldInterfaceManager.TileId;
+    #else
     public static int CurrentTile => WorldInterfaceManager.TileId;
+    #endif
 
     public Vector2 DefaultPos => new(UI.screenWidth - InitialSize.x - 50f, 105f);
     public override Vector2 InitialSize => new(MapPreviewMod.Settings.PreviewWindowSize, MapPreviewMod.Settings.PreviewWindowSize);
@@ -41,7 +45,11 @@ public class MapPreviewWindow : Window
         draggable = !MapPreviewMod.Settings.LockWindowPositions;
     }
 
+    #if RW_1_6_OR_GREATER
+    public void OnWorldTileSelected(World world, PlanetTile tileId, MapParent mapParent)
+    #else
     public void OnWorldTileSelected(World world, int tileId, MapParent mapParent)
+    #endif
     {
         MapPreviewGenerator.Instance.ClearQueue();
 
@@ -66,7 +74,7 @@ public class MapPreviewWindow : Window
         }
 
         int seed = SeedRerollData.GetMapSeed(world, tileId);
-        var mapSize = DetermineMapSize(world, tileId, mapParent);
+        var mapSize = DetermineMapSize(world, mapParent);
 
         mapSize = new IntVec2(Mathf.Clamp(mapSize.x, MinMapSize.x, MaxMapSize.x), Mathf.Clamp(mapSize.z, MinMapSize.z, MaxMapSize.z));
 
@@ -82,15 +90,12 @@ public class MapPreviewWindow : Window
             TextureSize = new IntVec2(_previewWidget.Texture.width, _previewWidget.Texture.height),
             GeneratorDef = mapParent?.MapGeneratorDef ?? MapGeneratorDefOf.Base_Player,
             UseTrueTerrainColors = MapPreviewMod.Settings.EnableTrueTerrainColors,
+            #if !RW_1_6_OR_GREATER
             SkipRiverFlowCalc = MapPreviewMod.Settings.SkipRiverFlowCalc,
+            #endif
             UseMinimalMapComponents = !MapPreviewMod.Settings.CompatibilityMode,
             ExistingBuffer = _previewWidget.Buffer
         };
-
-        if (MapPreviewMod.Settings.IncludeCaves)
-        {
-            request.GenStepFilter = s => MapPreviewRequest.DefaultGenStepFilter(s) || s.defName == "Caves";
-        }
 
         MapPreviewGenerator.Instance.QueuePreviewRequest(request);
         _previewWidget.Await(request);
@@ -103,12 +108,7 @@ public class MapPreviewWindow : Window
         }
     }
 
-    public static IntVec2 DetermineMapSize(World world, int tileId)
-    {
-        return DetermineMapSize(world, tileId, world.worldObjects.MapParentAt(tileId));
-    }
-
-    public static IntVec2 DetermineMapSize(World world, int tileId, MapParent mapParent)
+    public static IntVec2 DetermineMapSize(World world, MapParent mapParent)
     {
         if (mapParent is Site site)
         {

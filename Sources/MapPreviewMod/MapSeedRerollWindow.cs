@@ -26,7 +26,12 @@ public class MapSeedRerollWindow : Window
 
     private readonly List<Element> _elements = new();
 
+    #if RW_1_6_OR_GREATER
+    private PlanetTile _tileId;
+    #else
     private int _tileId;
+    #endif
+
     private int _orgSeed;
     private int _actSeed;
     private int _lastSeed;
@@ -87,7 +92,7 @@ public class MapSeedRerollWindow : Window
         MapPreviewGenerator.Init();
         MapPreviewGenerator.Instance.ClearQueue();
 
-        _mapSize = MapPreviewWindow.DetermineMapSize(world, _tileId);
+        _mapSize = MapPreviewWindow.DetermineMapSize(world, _mapParent);
         _orgSeed = SeedRerollData.GetOriginalMapSeed(world, _tileId);
         _actSeed = _data.TryGet(_tileId, out var savedSeed) ? savedSeed : _orgSeed;
 
@@ -137,15 +142,12 @@ public class MapSeedRerollWindow : Window
             TextureSize = new IntVec2(element.Texture.width, element.Texture.height),
             GeneratorDef = _mapParent?.MapGeneratorDef ?? MapGeneratorDefOf.Base_Player,
             UseTrueTerrainColors = MapPreviewMod.Settings.EnableTrueTerrainColors,
+            #if !RW_1_6_OR_GREATER
             SkipRiverFlowCalc = MapPreviewMod.Settings.SkipRiverFlowCalc,
+            #endif
             UseMinimalMapComponents = !MapPreviewMod.Settings.CompatibilityMode,
             ExistingBuffer = element.Buffer
         };
-
-        if (MapPreviewMod.Settings.IncludeCaves)
-        {
-            request.GenStepFilter = s => MapPreviewRequest.DefaultGenStepFilter(s) || s.defName == "Caves";
-        }
 
         _data.Commit(_tileId, _lastSeed, false);
 

@@ -1,5 +1,5 @@
 ﻿/*
- 
+
 Modified version of: https://github.com/UnlimitedHugs/RimworldMapReroll/blob/master/Source/UI/Widget_MapPreview.cs
 
 MIT License
@@ -33,6 +33,7 @@ using System.Reflection;
 using HarmonyLib;
 using MapPreview.Interpolation;
 using MapPreview.Promises;
+using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 using Object = UnityEngine.Object;
@@ -50,7 +51,13 @@ public abstract class MapPreviewWidget : IDisposable
     protected readonly ValueInterpolator SpawnInterpolator;
 
     protected Rect TexCoords;
+
+    #if RW_1_6_OR_GREATER
+    protected PlanetTile AwaitingMapTile = -1;
+    #else
     protected int AwaitingMapTile = -1;
+    #endif
+
     protected MapPreviewRequest AwaitingRequest;
 
     public Color[] Buffer { get; private set; }
@@ -77,12 +84,16 @@ public abstract class MapPreviewWidget : IDisposable
         Await(request.Promise, request.MapTile);
     }
 
+    #if RW_1_6_OR_GREATER
+    public void Await(IPromise<MapPreviewResult> promise, PlanetTile mapTile)
+    #else
     public void Await(IPromise<MapPreviewResult> promise, int mapTile = -1)
+    #endif
     {
         SpawnInterpolator.finished = true;
         SpawnInterpolator.value = 0f;
         AwaitingMapTile = mapTile;
-        
+
         DisposeMap(PreviewMap);
         PreviewMap = null;
 
@@ -235,17 +246,17 @@ public abstract class MapPreviewWidget : IDisposable
         GUI.DrawTexture(rect, tex);
         GUI.color = prevColor;
     }
-    
+
     private static readonly AccessTools.FieldRef<Map, object>[] _mapComponentFieldRefs = typeof(Map)
         .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
         .Where(f => f.FieldType.IsClass && !f.IsInitOnly)
         .Select(AccessTools.FieldRefAccess<Map, object>)
         .ToArray();
-    
+
     protected static void DisposeMap(Map map)
     {
         if (map == null) return;
-        
+
         foreach (var fieldRef in _mapComponentFieldRefs)
         {
             fieldRef(map) = null;

@@ -1,3 +1,6 @@
+
+#if !RW_1_6_OR_GREATER
+
 using HarmonyLib;
 using LunarFramework.Patching;
 using RimWorld;
@@ -19,3 +22,5 @@ internal static class Patch_RimWorld_GenStep_Terrain
         return !SkipRiverFlowCalc;
     }
 }
+
+#endif

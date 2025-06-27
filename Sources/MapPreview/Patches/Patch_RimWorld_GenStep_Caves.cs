@@ -1,3 +1,6 @@
+
+#if !RW_1_6_OR_GREATER
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -84,3 +87,5 @@ internal static class Patch_RimWorld_GenStep_Caves
     private static bool ShouldSkipRehash(HashSet<IntVec3> groupSet, List<IntVec3> group) =>
         MapPreviewAPI.IsGeneratingPreview && MapPreviewGenerator.IsGeneratingOnCurrentThread && groupSet.Count == group.Count;
 }
+
+#endif

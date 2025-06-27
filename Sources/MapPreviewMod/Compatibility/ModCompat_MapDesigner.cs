@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using LunarFramework.Patching;
 using RimWorld;
+using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 
@@ -46,7 +47,11 @@ internal class ModCompat_MapDesigner : ModCompat
         MapPreviewAPI.NotifyWorldChanged();
     }
 
+    #if RW_1_6_OR_GREATER
+    private static bool CanUseOnTile(PlanetTile tile)
+    #else
     private static bool CanUseOnTile(int tile)
+    #endif
     {
         if (tile < 0) return true;
         var mapParent = Find.WorldObjects?.MapParentAt(tile);

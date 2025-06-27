@@ -10,31 +10,69 @@ public class SeedRerollData : WorldComponent
 
     public SeedRerollData(World world) : base(world) { }
 
-    public static bool IsMapSeedRerolled(World world, int tile, out int seed)
+    public static SeedRerollData GetFor(World world)
     {
         var seedRerollData = world.GetComponent<SeedRerollData>();
 
-        if (seedRerollData != null && seedRerollData.TryGet(tile, out var savedSeed))
+        if (seedRerollData == null)
         {
-            seed = savedSeed;
-            return true;
+            MapPreviewAPI.Logger.Warn("This world is missing the SeedRerollData component, adding it.");
+            seedRerollData = new SeedRerollData(world);
+            world.components.Add(seedRerollData);
         }
 
+        return seedRerollData;
+    }
+
+    #if RW_1_6_OR_GREATER
+
+    public static bool IsMapSeedRerolled(World world, PlanetTile tile, out int seed)
+    {
+        if (SupportsTile(tile) && GetFor(world).TryGet(tile, out seed)) return true;
+        seed = GetOriginalMapSeed(world, tile);
+        return false;
+    }
+
+    public static int GetMapSeed(World world, PlanetTile tile)
+    {
+        return SupportsTile(tile) && GetFor(world).TryGet(tile, out var seed) ? seed : GetOriginalMapSeed(world, tile);
+    }
+
+    public static int GetOriginalMapSeed(World world, PlanetTile tile)
+    {
+        return Gen.HashCombineInt(world.info.Seed, tile.GetHashCode());
+    }
+
+    public static bool SupportsTile(PlanetTile tile)
+    {
+        return tile.Layer.LayerID == 0 && tile.tileId >= 0;
+    }
+
+    #else
+
+    public static bool IsMapSeedRerolled(World world, int tile, out int seed)
+    {
+        if (SupportsTile(tile) && GetFor(world).TryGet(tile, out seed)) return true;
         seed = GetOriginalMapSeed(world, tile);
         return false;
     }
 
     public static int GetMapSeed(World world, int tile)
     {
-        var seedRerollData = world.GetComponent<SeedRerollData>();
-        if (seedRerollData != null && seedRerollData.TryGet(tile, out var savedSeed)) return savedSeed;
-        return GetOriginalMapSeed(world, tile);
+        return SupportsTile(tile) && GetFor(world).TryGet(tile, out var seed) ? seed : GetOriginalMapSeed(world, tile);
     }
 
     public static int GetOriginalMapSeed(World world, int tile)
     {
         return Gen.HashCombineInt(world.info.Seed, tile);
     }
+
+    public static bool SupportsTile(int tile)
+    {
+        return tile >= 0;
+    }
+
+    #endif
 
     public bool TryGet(int tileId, out int seed)
     {

@@ -6,7 +6,11 @@ namespace MapPreview;
 
 public static class WorldInterfaceManager
 {
+    #if RW_1_6_OR_GREATER
+    internal static PlanetTile TileId = PlanetTile.Invalid;
+    #else
     internal static int TileId = -1;
+    #endif
 
     private static int _framesActive;
 
@@ -15,14 +19,14 @@ public static class WorldInterfaceManager
 
     private static bool PreviewEnabledNow => MapPreviewMod.Settings.PreviewEnabledNow;
     private static bool ToolbarEnabledNow => MapPreviewMod.Settings.ToolbarEnabledNow;
-    
+
     private static bool PreviewAutoOpen => MapPreviewMod.Settings.AutoOpenPreviewOnWorldMap;
     private static bool PreviewWorldObj => MapPreviewMod.Settings.TriggerPreviewOnWorldObjects;
 
     private static readonly PatchGroupSubscriber PatchGroupSubscriber = new(typeof(WorldInterfaceManager));
 
     static WorldInterfaceManager() => MapPreviewAPI.OnWorldChanged += RefreshPreview;
-    
+
     public static void RefreshPreview() => TileId = -1;
 
     public static void RefreshInterface()
@@ -33,12 +37,12 @@ public static class WorldInterfaceManager
             MapPreviewAPI.UnsubscribeGenPatches(PatchGroupSubscriber);
             _openedPreviewSinceEnteringMap = false;
         }
-        
+
         if (!ToolbarEnabledNow)
         {
             MapPreviewToolbar.Instance?.Close();
         }
-        
+
         if (PreviewEnabledNow || ToolbarEnabledNow)
         {
             MapPreviewMod.ActivePatchGroup.Subscribe();
@@ -48,11 +52,15 @@ public static class WorldInterfaceManager
             MapPreviewMod.ActivePatchGroup.Unsubscribe();
             _activeSinceEnteringMap = false;
         }
-        
+
         TileId = -1;
     }
 
+    #if RW_1_6_OR_GREATER
+    public static bool ShouldPreviewForTile(Tile tile, PlanetTile tileId, MapParent mapParent)
+    #else
     public static bool ShouldPreviewForTile(Tile tile, int tileId, MapParent mapParent)
+    #endif
     {
         if (tile.biome.impassable || Find.World.Impassable(tileId))
         {
@@ -72,13 +80,13 @@ public static class WorldInterfaceManager
     internal static void UpdateWhileWorldShown(WorldSelector selector)
     {
         var selectedTileNow = selector.selectedTile;
-        
+
         if (selectedTileNow < 0 && selector.NumSelectedObjects == 1)
         {
             if (PreviewWorldObj)
             {
                 var selectedObject = selector.SelectedObjects[0];
-                
+
                 if (selectedObject is MapParent)
                 {
                     selectedTileNow = selectedObject.Tile;
@@ -96,7 +104,7 @@ public static class WorldInterfaceManager
         if (_activeSinceEnteringMap)
         {
             _framesActive++;
-            
+
             if (TileId != selectedTileNow)
             {
                 var wasAutoSelect = TileId == -1 && _framesActive <= 5;
@@ -146,7 +154,7 @@ public static class WorldInterfaceManager
         if (_activeSinceEnteringMap)
         {
             _activeSinceEnteringMap = false;
-            
+
             MapPreviewWindow.Instance?.Close();
             MapPreviewToolbar.Instance?.Close();
 
@@ -159,16 +167,16 @@ public static class WorldInterfaceManager
             TileId = -1;
         }
     }
-    
+
     internal static void UpdateToolbar()
     {
         var toolbar = MapPreviewToolbar.Instance;
-        
+
         if (ToolbarEnabledNow && toolbar == null)
         {
             Find.WindowStack.Add(toolbar = new MapPreviewToolbar());
         }
-        
+
         if (toolbar != null)
         {
             var mapParent = TileId >= 0 ? Find.WorldObjects.MapParentAt(TileId) : null;

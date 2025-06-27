@@ -1,5 +1,5 @@
 /*
- 
+
 Modified part of: https://github.com/UnlimitedHugs/RimworldMapReroll/blob/master/Source/MapPreviewGenerator.cs
 
 MIT License
@@ -26,6 +26,7 @@ SOFTWARE.
 
  */
 
+using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 
@@ -39,12 +40,17 @@ public class MapPreviewResult
 
     public IntVec2 TextureSize => Request.TextureSize;
     public IntVec2 MapSize => Request.MapSize;
+
+    #if RW_1_6_OR_GREATER
+    public PlanetTile MapTile => Request.MapTile;
+    #else
     public int MapTile => Request.MapTile;
+    #endif
 
     public Rect TexCoords => new(0, 0, MapSize.x / (float) TextureSize.x, MapSize.z / (float) TextureSize.z);
 
     public int InvalidCells { get; internal set; }
-    
+
     public Map Map;
 
     public MapPreviewResult(MapPreviewRequest request)

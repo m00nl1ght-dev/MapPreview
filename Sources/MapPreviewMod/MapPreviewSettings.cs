@@ -19,9 +19,9 @@ public class MapPreviewSettings : LunarModSettings
     public readonly Entry<bool> LockWindowPositions = MakeEntry(false);
     public readonly Entry<bool> AutoOpenPreviewOnWorldMap = MakeEntry(false);
     public readonly Entry<bool> TriggerPreviewOnWorldObjects = MakeEntry(true);
-    public readonly Entry<bool> EnableSeedRerollFeature = MakeEntry(false);
+    public readonly Entry<bool> EnableSeedRerollFeature = MakeEntry(true);
     public readonly Entry<bool> EnableSeedRerollWindow = MakeEntry(true);
-    public readonly Entry<bool> EnableWorldSeedRerollFeature = MakeEntry(true);
+    public readonly Entry<bool> EnableWorldSeedRerollFeature = MakeEntry(false);
     public readonly Entry<bool> SkipRiverFlowCalc = MakeEntry(true);
     public readonly Entry<bool> CompatibilityMode = MakeEntry(false);
     public readonly Entry<bool> EnableMapDesignerIntegration = MakeEntry(true);
@@ -62,7 +62,11 @@ public class MapPreviewSettings : LunarModSettings
         layout.PushEnabled(PreviewEnabledNow || (Current.Game == null && PreviewEnabledEver));
 
         LunarGUI.Checkbox(layout, ref IncludeCaves.Value, Label("IncludeCaves"));
+
+        #if !RW_1_6_OR_GREATER
         LunarGUI.Checkbox(layout, ref SkipRiverFlowCalc.Value, Label("SkipRiverFlowCalc"));
+        #endif
+
         LunarGUI.Checkbox(layout, ref EnableTrueTerrainColors.Value, Label("EnableTrueTerrainColors"));
         LunarGUI.Checkbox(layout, ref CompatibilityMode.Value, Label("CompatibilityMode"));
 
@@ -117,7 +121,11 @@ public class MapPreviewSettings : LunarModSettings
         {
             WorldInterfaceManager.RefreshInterface();
 
+            #if RW_1_6_OR_GREATER
+            if (WorldRendererUtility.WorldRendered)
+            #else
             if (WorldRendererUtility.WorldRenderedNow)
+            #endif
             {
                 WorldInterfaceManager.UpdateToolbar();
             }

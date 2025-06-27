@@ -24,7 +24,7 @@ public class MapPreviewMod : Mod
         MainPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Main");
         MainPatchGroup.AddPatches(typeof(MapPreviewMod).Assembly);
         MainPatchGroup.Subscribe();
-        
+
         ActivePatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Active");
         ActivePatchGroup.AddPatches(typeof(MapPreviewMod).Assembly);
 
@@ -36,7 +36,11 @@ public class MapPreviewMod : Mod
         MainPatchGroup.CheckForConflicts(Logger);
         ActivePatchGroup.CheckForConflicts(Logger);
 
+        MapPreviewRequest.AddDefaultGenStepPredicate(s => s.defName == "Caves" && Settings.IncludeCaves);
+
+        #if !RW_1_6_OR_GREATER
         MapPreviewAPI.AddStableSeedCondition(map => Settings.SkipRiverFlowCalc && map.TileInfo.Rivers?.Count > 0);
+        #endif
     }
 
     private static void Cleanup()

@@ -14,13 +14,14 @@ internal class Patch_RimWorld_Dialog_AdvancedGameConfig
     [HarmonyPatch("DoWindowContents")]
     private static void DoWindowContents()
     {
-        var world = Find.World;
-        if (!GUI.changed && world != null) return;
+        if (!GUI.changed) return;
 
+        var world = Find.World;
         var currentPreviewMap = MapPreviewWindow.Instance?.CurrentPreviewMap;
-        if (currentPreviewMap != null)
+
+        if (world != null && currentPreviewMap != null)
         {
-            var newMapSize = MapPreviewWindow.DetermineMapSize(world, currentPreviewMap.Tile);
+            var newMapSize = MapPreviewWindow.DetermineMapSize(world, world.worldObjects.MapParentAt(currentPreviewMap.Tile));
             if (currentPreviewMap.Size != new IntVec3(newMapSize.x, currentPreviewMap.Size.y, newMapSize.z))
             {
                 WorldInterfaceManager.RefreshPreview();
