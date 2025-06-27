@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <MapPreview.Title>Kartenvorschau</MapPreview.Title>
+
+  <MapPreview.Settings.Tab.Preview>Vorschau</MapPreview.Settings.Tab.Preview>
+  <MapPreview.Settings.Tab.Toolbar>Werkzeugleiste</MapPreview.Settings.Tab.Toolbar>
+  <MapPreview.Settings.EnableMapPreviewHeader>Kartenvorschauen anzeigen ...</MapPreview.Settings.EnableMapPreviewHeader>
+  <MapPreview.Settings.EnableMapPreviewInEntry>... beim Start eines neuen Spiels (beim Auswählen des Startfeldes)</MapPreview.Settings.EnableMapPreviewInEntry>
+  <MapPreview.Settings.EnableMapPreviewInPlay>... während des Spiels (auf der Weltkarte)</MapPreview.Settings.EnableMapPreviewInPlay>
+  <MapPreview.Settings.EnableToolbarHeader>Werkzeugleiste der Weltkarte anzeigen ...</MapPreview.Settings.EnableToolbarHeader>
+  <MapPreview.Settings.EnableToolbarInEntry>... beim Start eines neuen Spiels (beim Auswählen des Startfeldes)</MapPreview.Settings.EnableToolbarInEntry>
+  <MapPreview.Settings.EnableToolbarInPlay>... während des Spiels (auf der Weltkarte)</MapPreview.Settings.EnableToolbarInPlay>
+  <MapPreview.Settings.LockWindowPositions>Fensterpositionen sperren</MapPreview.Settings.LockWindowPositions>
+  <MapPreview.Settings.EnablePreviewAnimations>Animation bei abgeschlossener Vorschau aktivieren</MapPreview.Settings.EnablePreviewAnimations>
+  <MapPreview.Settings.AutoOpenPreviewOnWorldMap>Vorschaufenster automatisch öffnen beim Wechsel zur Weltkarte</MapPreview.Settings.AutoOpenPreviewOnWorldMap>
+  <MapPreview.Settings.TriggerPreviewOnWorldObjects>Kartenvorschau anzeigen, wenn eine Siedlung oder ein Quest-Ort ausgewählt wird</MapPreview.Settings.TriggerPreviewOnWorldObjects>
+  <MapPreview.Settings.EnableSeedRerollFeature>Schaltfläche zum Neue-Weltkarte-Seed anzeigen</MapPreview.Settings.EnableSeedRerollFeature>
+  <MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>Schaltfläche zum Neue-Weltkarte-Seed anzeigen (nicht verfügbar, da Mod "Map Reroll" installiert ist)</MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>
+  <MapPreview.Settings.EnableSeedRerollWindow>Reroll-Hilfsfenster verwenden (Shift gedrückt halten beim Klicken, um umzukehren)</MapPreview.Settings.EnableSeedRerollWindow>
+  <MapPreview.Settings.EnableWorldSeedRerollFeature>Schaltfläche zum Neue-Welt-Seed anzeigen</MapPreview.Settings.EnableWorldSeedRerollFeature>
+  <MapPreview.Settings.PreviewWindowSize>Größe des Vorschaufensters</MapPreview.Settings.PreviewWindowSize>
+  <MapPreview.Settings.IncludeCaves>Höhlen in Vorschau einbeziehen (deaktivieren für schnellere Vorschau)</MapPreview.Settings.IncludeCaves>
+  <MapPreview.Settings.EnableTrueTerrainColors>Echte Gelände-Farben verwenden (unterstützt modifiziertes Gelände, gilt auch für Map Reroll)</MapPreview.Settings.EnableTrueTerrainColors>
+  <MapPreview.Settings.SkipRiverFlowCalc>Optimierung für Flussgenerierung verwenden (schneller, aber leicht anders als im Originalspiel)</MapPreview.Settings.SkipRiverFlowCalc>
+  <MapPreview.Settings.CompatibilityMode>Kompatibilitätsmodus (erhöht Speicherverbrauch, kann aber bei Mod-Konflikten helfen)</MapPreview.Settings.CompatibilityMode>
+  <MapPreview.Settings.RefreshTerrainColors>Geländefarben aktualisieren</MapPreview.Settings.RefreshTerrainColors>
+
+  <MapPreview.World.WaitForPreview>Eine Kartenvorschau wird gerade erstellt, bitte warten ...</MapPreview.World.WaitForPreview>
+  <MapPreview.World.ShowHidePreview>Kartenvorschau ein-/ausblenden.</MapPreview.World.ShowHidePreview>
+  <MapPreview.World.RerollMapSeed>Seed für diese Karte neu würfeln.</MapPreview.World.RerollMapSeed>
+  <MapPreview.World.ResetMapSeed>Seed zurücksetzen und vorherige Würfelvorgänge rückgängig machen.</MapPreview.World.ResetMapSeed>
+  <MapPreview.World.RerollWorldSeed>Neue Welt mit zufälligem Seed generieren.</MapPreview.World.RerollWorldSeed>
+  <MapPreview.World.OpenSettings>Kartenvorschau-Einstellungen öffnen.</MapPreview.World.OpenSettings>
+
+  <MapPreview.World.RerollWindow.Title>Seed für Karte neu würfeln</MapPreview.World.RerollWindow.Title>
+  <MapPreview.World.RerollWindow.Close>Schließen</MapPreview.World.RerollWindow.Close>
+  <MapPreview.World.RerollWindow.RefreshSeeds>Seeds aktualisieren (Shift gedrückt halten zum Springen)</MapPreview.World.RerollWindow.RefreshSeeds>
+  <MapPreview.World.RerollWindow.ZoomOut>Rauszoomen</MapPreview.World.RerollWindow.ZoomOut>
+  <MapPreview.World.RerollWindow.ZoomIn>Reinzoomen</MapPreview.World.RerollWindow.ZoomIn>
+  <MapPreview.World.RerollWindow.Apply>Diesen Seed verwenden</MapPreview.World.RerollWindow.Apply>
+  <MapPreview.World.RerollWindow.Pin>Diesen Seed anheften</MapPreview.World.RerollWindow.Pin>
+  <MapPreview.World.RerollWindow.Unpin>Diesen Seed lösen</MapPreview.World.RerollWindow.Unpin>
+  <MapPreview.World.RerollWindow.GoTo.Label>Anzahl der Würfelvorgänge eingeben:</MapPreview.World.RerollWindow.GoTo.Label>
+  <MapPreview.World.RerollWindow.GoTo.Invalid>Ungültige Zahl, nur Ziffern und + erlaubt.</MapPreview.World.RerollWindow.GoTo.Invalid>
+
+  <MapPreview.PreviewGenerationFailed>Ein Konflikt mit einer deiner Mods hat dazu geführt, dass die Kartenvorschau nicht generiert werden konnte. Bitte melde das auf der Map Preview Workshop-Seite, damit ein Kompatibilitätspatch erstellt werden kann. Lade nach dem Schließen dieser Nachricht deine Logdatei hoch und füge den Link dem Fehlerbericht bei.</MapPreview.PreviewGenerationFailed>
+
+  <MapPreview.Integration.MapDesigner.OpenSettings>Map Designer öffnen.</MapPreview.Integration.MapDesigner.OpenSettings>
+  <MapPreview.Integration.MapDesigner.UnavailableForTile>Map Designer kann auf diesem Feld nicht verwendet werden.</MapPreview.Integration.MapDesigner.UnavailableForTile>
+  <MapPreview.Integration.MapDesigner.Enabled>Schaltfläche für Map Designer anzeigen</MapPreview.Integration.MapDesigner.Enabled>
+
+  <MapPreview.Integration.PrepareLanding.Open>Prepare Landing öffnen.</MapPreview.Integration.PrepareLanding.Open>
+  <MapPreview.Integration.PrepareLanding.Enabled>Schaltfläche für Prepare Landing anzeigen</MapPreview.Integration.PrepareLanding.Enabled>
+
+  <MapPreview.Integration.WorldEdit.Open>World Edit öffnen.</MapPreview.Integration.WorldEdit.Open>
+  <MapPreview.Integration.WorldEdit.Enabled>Schaltfläche für World Edit anzeigen</MapPreview.Integration.WorldEdit.Enabled>
+
+  <MapPreview.Integration.LandformSettings.Open>Gelände-Einstellungen öffnen.</MapPreview.Integration.LandformSettings.Open>
+  <MapPreview.Integration.LandformSettings.Enabled>Schaltfläche für Gelände-Einstellungen anzeigen</MapPreview.Integration.LandformSettings.Enabled>
+
+</LanguageData>

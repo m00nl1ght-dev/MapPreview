@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HugsLogPublisher.copy>Kopieren</HugsLogPublisher.copy>
+  <HugsLogPublisher.shareBtn>Logs teilen</HugsLogPublisher.shareBtn>
+  <HugsLogPublisher.shareConfirmTitle>Bestätigen</HugsLogPublisher.shareConfirmTitle>
+  <HugsLogPublisher.shareConfirmMessage>Spiel-Logs jetzt hochladen?\n\nDies wird deine Spiel-Logs auf einen öffentlichen Server hochladen und dir einen Link zum Teilen bereitstellen. Das ist nützlich, wenn du Hilfe bei einem Problem brauchst oder einen Fehler an einen Mod-Entwickler melden möchtest.\n\nEs werden keine privaten Informationen geteilt.</HugsLogPublisher.shareConfirmMessage>
+  <HugsLogPublisher.publisherTitle>Log-Veröffentlichung</HugsLogPublisher.publisherTitle>
+  <HugsLogPublisher.uploading>Hochladen{0}</HugsLogPublisher.uploading>
+  <HugsLogPublisher.shortening>Link wird erstellt{0}</HugsLogPublisher.shortening>
+  <HugsLogPublisher.uploaded>Upload abgeschlossen!</HugsLogPublisher.uploaded>
+  <HugsLogPublisher.uploadError>Fehler beim Hochladen: {0}</HugsLogPublisher.uploadError>
+  <HugsLogPublisher.copiedToClipboard>In die Zwischenablage kopiert.</HugsLogPublisher.copiedToClipboard>
+  <HugsLogPublisher.abortBtn>Abbrechen</HugsLogPublisher.abortBtn>
+  <HugsLogPublisher.retryBtn>Erneut versuchen</HugsLogPublisher.retryBtn>
+  <HugsLogPublisher.browseBtn>Im Browser öffnen</HugsLogPublisher.browseBtn>
+  <HugsLogPublisher.useRecommendedSettings>Empfohlene Einstellungen verwenden</HugsLogPublisher.useRecommendedSettings>
+  <HugsLogPublisher.shortUrls>Kurzlink verwenden</HugsLogPublisher.shortUrls>
+  <HugsLogPublisher.shortUrls_tip>Erstellt einen kürzeren Link beim Hochladen. Nicht empfohlen auf Steam – Kurzlinks werden dort automatisch entfernt.</HugsLogPublisher.shortUrls_tip>
+  <HugsLogPublisher.platformInfo>Plattforminformationen einbeziehen</HugsLogPublisher.platformInfo>
+  <HugsLogPublisher.platformInfo_tip>Fügt Informationen über CPU, Arbeitsspeicher und Grafikkarte in die Logdatei ein.</HugsLogPublisher.platformInfo_tip>
+  <HugsLogPublisher.unlimitedLogSize>Unbegrenzte Loggröße erlauben</HugsLogPublisher.unlimitedLogSize>
+  <HugsLogPublisher.unlimitedLogSize_tip>Wenn deaktiviert, ist die Loggröße auf 10.000 Zeilen begrenzt, um Probleme durch sehr große Logs zu vermeiden.</HugsLogPublisher.unlimitedLogSize_tip>
+  <HugsLogPublisher.toClipboardBtn>In Zwischenablage</HugsLogPublisher.toClipboardBtn>
+  <HugsLogPublisher.uploadBtn>Hochladen</HugsLogPublisher.uploadBtn>
+  <HugsLogPublisher.filesBtn>Dateien</HugsLogPublisher.filesBtn>
+  <HugsLogPublisher.openLogFile>Logdatei öffnen</HugsLogPublisher.openLogFile>
+  <HugsLogPublisher.openSaveDir>Speicherordner öffnen</HugsLogPublisher.openSaveDir>
+  <HugsLogPublisher.openModsDir>Mod-Ordner öffnen</HugsLogPublisher.openModsDir>
+</LanguageData>
