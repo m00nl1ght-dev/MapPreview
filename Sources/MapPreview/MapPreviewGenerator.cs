@@ -361,12 +361,7 @@ public class MapPreviewGenerator : IDisposable
             Find.SoundRoot.sustainerManager.EndAllInMap(map);
             Find.TickManager.RemoveAllFromMap(map);
 
-            #if RW_1_5_OR_GREATER
-
-            map.mapDrawer = null;
-            map.Dispose();
-
-            #endif
+            DisposeMap(map);
         }
         finally
         {
@@ -691,5 +686,37 @@ public class MapPreviewGenerator : IDisposable
 
         map.roadInfo = map.GetComponent<RoadInfo>();
         map.waterInfo = map.GetComponent<WaterInfo>();
+    }
+
+    private static void DisposeMap(Map map)
+    {
+        if (map.regionAndRoomUpdater != null)
+            map.regionAndRoomUpdater.Enabled = false;
+
+        #if RW_1_5_OR_GREATER
+
+        map.fogGrid?.Dispose();
+        map.snowGrid?.Dispose();
+
+        #endif
+
+        #if RW_1_6_OR_GREATER
+
+        map.pathFinder?.Dispose();
+        map.lordManager?.Dispose();
+        map.glowGrid?.Dispose();
+        map.sandGrid?.Dispose();
+        map.avoidGrid?.Dispose();
+        map.listerBuildings?.Dispose();
+        map.listerThings?.Clear();
+        map.regionGrid?.Dispose();
+        map.pathing?.Dispose();
+
+        if (map.mapDrawer?.sections != null)
+            map.mapDrawer?.Dispose();
+
+        MapGenerator.ClearDebugMode();
+
+        #endif
     }
 }

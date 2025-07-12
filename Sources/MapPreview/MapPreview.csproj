@@ -53,6 +53,7 @@
         <Publicize Include="Assembly-CSharp:RimWorld.Planet.WorldSelector.selectedTile" />
         <Publicize Include="Assembly-CSharp:RimWorld.Planet.Tile.biome" />
         <Publicize Include="Assembly-CSharp:Verse.Rand.iterations" />
+        <Publicize Include="Assembly-CSharp:Verse.MapDrawer.sections" />
     </ItemGroup>
 
     <ItemGroup>
