@@ -523,12 +523,23 @@ public class MapPreviewGenerator : IDisposable
 
         // Advanced Biomes and other old mods
         "ActiveTerrain.SpecialTerrainList",
+
+        #if RW_1_6_OR_GREATER
+
+        // Dubs Bad Hygiene
+        "DubsBadHygiene.MapComponent_Hygiene",
+
+        #endif
     };
 
     internal static readonly HashSet<string> IncludedMapComponentsFull = new(IncludedMapComponentsMinimal)
     {
+        #if !RW_1_6_OR_GREATER
+
         // Dubs Bad Hygiene
-        "DubsBadHygiene.MapComponent_Hygiene"
+        "DubsBadHygiene.MapComponent_Hygiene",
+
+        #endif
     };
 
     private static void ConstructMinimalMapComponents(Map map)
