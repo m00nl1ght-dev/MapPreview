@@ -1,4 +1,11 @@
 
+v1.12.19
+
+- Fixed compatibility with Dubs Bad Hygiene
+- Fixed compatibility with ReBuild Doors & Corners
+- Fixed an error that randomly caused previews to fail
+- Fixed some of the new DLC map features not being affected by seed rerolls
+
 v1.12.18
 
 - Support for RimWorld 1.6
