@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using LunarFramework.Patching;
@@ -16,6 +18,8 @@ internal class ModCompat_MapDesigner : ModCompat
 
     public override string TargetAssemblyName => "MapDesigner";
     public override string DisplayName => "Map Designer";
+
+    private const int DebounceTime = 200;
 
     private static Type _modType;
     private static Mod _mod;
@@ -42,8 +46,27 @@ internal class ModCompat_MapDesigner : ModCompat
         return true;
     }
 
+    private static readonly Stopwatch _debouncer = new();
+
     private void OnSettingsChanged()
     {
+        var running = _debouncer.IsRunning;
+
+        _debouncer.Restart();
+
+        if (!running)
+        {
+            MapPreviewMod.LunarAPI.LifecycleHooks.DoEnumerator(Debounce());
+        }
+    }
+
+    private IEnumerator Debounce()
+    {
+        while (_debouncer.IsRunning && _debouncer.ElapsedMilliseconds < DebounceTime)
+            yield return null;
+
+        _debouncer.Reset();
+
         MapPreviewAPI.NotifyWorldChanged();
     }
 
