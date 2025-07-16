@@ -1,4 +1,11 @@
 
+v1.12.20
+
+- Fixed compatibility with Vanilla Events Expanded
+- Fixed compatibility with some Alpha Biomes map features
+- Fixed preview error when clicking gravship in orbit
+- Added debouncing to Map Designer auto-preview integration
+
 v1.12.19
 
 - Fixed compatibility with Dubs Bad Hygiene
