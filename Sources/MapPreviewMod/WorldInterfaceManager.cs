@@ -1,4 +1,5 @@
 using LunarFramework.Patching;
+using RimWorld;
 using RimWorld.Planet;
 using Verse;
 
@@ -72,6 +73,10 @@ public static class WorldInterfaceManager
             var genDef = mapParent.MapGeneratorDef;
             if (genDef?.genSteps == null) return false;
             if (genDef.genSteps.Count(MapPreviewRequest.DefaultGenStepFilter) < 2) return false;
+
+            #if RW_1_6_OR_GREATER
+            if (genDef == MapGeneratorDefOf.Base_Player && tile.biome == BiomeDefOf.Orbit) return false;
+            #endif
         }
 
         return true;
