@@ -1,4 +1,9 @@
 
+v1.12.21
+
+- Added settings button that allows editing map size and starting season
+- Added compatibility patch for the 'RV with built-in PD' mod
+
 v1.12.20
 
 - Fixed compatibility with Vanilla Events Expanded
