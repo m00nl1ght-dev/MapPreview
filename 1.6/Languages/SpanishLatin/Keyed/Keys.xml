@@ -12,6 +12,7 @@
   <MapPreview.Settings.EnableToolbarInEntry>... al iniciar un nuevo juego (al elegir la casilla para establecerse)</MapPreview.Settings.EnableToolbarInEntry>
   <MapPreview.Settings.EnableToolbarInPlay>... mientras juegas (en la pantalla del mapa mundial)</MapPreview.Settings.EnableToolbarInPlay>
   <MapPreview.Settings.LockWindowPositions>Bloquear posiciones de ventana</MapPreview.Settings.LockWindowPositions>
+  <MapPreview.Settings.EnablePreviewAnimations>Activar animación al completar la previsualización</MapPreview.Settings.EnablePreviewAnimations>
   <MapPreview.Settings.AutoOpenPreviewOnWorldMap>Abrir automáticamente la ventana de vista previa al cambiar al mapa mundial</MapPreview.Settings.AutoOpenPreviewOnWorldMap>
   <MapPreview.Settings.TriggerPreviewOnWorldObjects>Mostrar vista previa del mapa al seleccionar un asentamiento o sitio de misión</MapPreview.Settings.TriggerPreviewOnWorldObjects>
   <MapPreview.Settings.EnableSeedRerollFeature>Mostrar botón para volver a generar la semilla del mapa</MapPreview.Settings.EnableSeedRerollFeature>
@@ -24,6 +25,7 @@
   <MapPreview.Settings.SkipRiverFlowCalc>Usar optimización del generador de ríos (más rápido, pero ligeramente diferente al vanilla)</MapPreview.Settings.SkipRiverFlowCalc>
   <MapPreview.Settings.CompatibilityMode>Modo de compatibilidad (aumenta el uso de memoria, pero puede ayudar si tienes problemas de compatibilidad con mods)</MapPreview.Settings.CompatibilityMode>
   <MapPreview.Settings.RefreshTerrainColors>Actualizar colores de terreno</MapPreview.Settings.RefreshTerrainColors>
+ <MapPreview.Settings.OpenAdvancedGameConfig>Cambiar tamaño del mapa o estación de inicio</MapPreview.Settings.OpenAdvancedGameConfig>
 
   <MapPreview.World.WaitForPreview>Actualmente se está generando una vista previa del mapa, por favor espera antes de continuar...</MapPreview.World.WaitForPreview>
   <MapPreview.World.ShowHidePreview>Alternar vista previa del mapa.</MapPreview.World.ShowHidePreview>
@@ -36,7 +38,7 @@
   <MapPreview.World.RerollWindow.Close>Cerrar</MapPreview.World.RerollWindow.Close>
   <MapPreview.World.RerollWindow.RefreshSeeds>Actualizar semillas (mantén presionada la tecla Shift para saltar)</MapPreview.World.RerollWindow.RefreshSeeds>
   <MapPreview.World.RerollWindow.ZoomOut>Alejar</MapPreview.World.RerollWindow.ZoomOut>
-  <MapPreview.World.RerollWindow.ZoomIn>Acerca de</MapPreview.World.RerollWindow.ZoomIn>
+  <MapPreview.World.RerollWindow.ZoomIn>Acercar</MapPreview.World.RerollWindow.ZoomIn>
   <MapPreview.World.RerollWindow.Apply>Aplicar esta semilla</MapPreview.World.RerollWindow.Apply>
   <MapPreview.World.RerollWindow.Pin>Fijar esta semilla</MapPreview.World.RerollWindow.Pin>
   <MapPreview.World.RerollWindow.Unpin>Desfijar esta semilla</MapPreview.World.RerollWindow.Unpin>
