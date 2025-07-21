@@ -251,7 +251,7 @@ public class MapPreviewToolbar : Window
 
             if (Prefs.DevMode && Input.GetKey(KeyCode.LeftShift))
             {
-                if (Input.GetKey(KeyCode.S))
+                if (Input.GetKey(KeyCode.B))
                 {
                     LunarGUI.OpenGenericWindow(MapPreviewMod.LunarAPI, new Vector2(500, 500), BiomeWorkerScoresDebugGUI);
                 }
@@ -280,7 +280,9 @@ public class MapPreviewToolbar : Window
 
             var tile = Find.WorldGrid[tileId];
             #if RW_1_6_OR_GREATER
-            var dict = DefDatabase<BiomeDef>.AllDefs.ToDictionary(b => b, b => b.Worker.GetScore(b, tile, tileId));
+            var dict = DefDatabase<BiomeDef>.AllDefs
+                .Where(d => d.workerClass != null)
+                .ToDictionary(b => b, b => b.Worker.GetScore(b, tile, tileId));
             #else
             var dict = DefDatabase<BiomeDef>.AllDefs.ToDictionary(b => b, b => b.Worker.GetScore(tile, tileId));
             #endif

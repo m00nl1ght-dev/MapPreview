@@ -25,6 +25,7 @@
   <MapPreview.Settings.SkipRiverFlowCalc>Use river generator optimization (faster, but slightly different from vanilla)</MapPreview.Settings.SkipRiverFlowCalc>
   <MapPreview.Settings.CompatibilityMode>Compatibility mode (increases memory usage, but can help if you have mod compatibility issues)</MapPreview.Settings.CompatibilityMode>
   <MapPreview.Settings.RefreshTerrainColors>Refresh terrain colors</MapPreview.Settings.RefreshTerrainColors>
+  <MapPreview.Settings.OpenAdvancedGameConfig>Change map size or starting season</MapPreview.Settings.OpenAdvancedGameConfig>
 
   <MapPreview.World.WaitForPreview>There is a map preview currently generating, please wait before continuing...</MapPreview.World.WaitForPreview>
   <MapPreview.World.ShowHidePreview>Toggle map preview.</MapPreview.World.ShowHidePreview>

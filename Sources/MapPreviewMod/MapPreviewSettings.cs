@@ -1,6 +1,7 @@
 using LunarFramework.GUI;
 using LunarFramework.Utility;
 using MapPreview.Compatibility;
+using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
 using Verse;
@@ -100,6 +101,15 @@ public class MapPreviewSettings : LunarModSettings
 
         layout.PopEnabled();
         layout.Abs(10f);
+
+        #if RW_1_6_OR_GREATER
+
+        if (Find.GameInitData != null && LunarGUI.Button(layout, Label("OpenAdvancedGameConfig")))
+        {
+            Find.WindowStack.Add(new Dialog_AdvancedGameConfig());
+        }
+
+        #endif
 
         if (LunarGUI.Button(layout, Label("RefreshTerrainColors")))
         {
