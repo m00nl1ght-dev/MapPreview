@@ -92,7 +92,7 @@ public class MapSeedRerollWindow : Window
         MapPreviewGenerator.Init();
         MapPreviewGenerator.Instance.ClearQueue();
 
-        _mapSize = MapPreviewWindow.DetermineMapSize(world, _mapParent);
+        _mapSize = MapSizeUtility.DetermineMapSize(world, _mapParent);
         _orgSeed = SeedRerollData.GetOriginalMapSeed(world, _tileId);
         _actSeed = _data.TryGet(_tileId, out var savedSeed) ? savedSeed : _orgSeed;
 

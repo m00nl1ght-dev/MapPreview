@@ -10,11 +10,6 @@ public class MapPreviewWindow : Window
 {
     public const int Timeout = 30 * 1000;
 
-    public static IntVec2 MinMapSize = new(10, 10);
-    public static IntVec2 MaxMapSize = new(500, 500);
-
-    public static Func<IntVec2> MapSizeOverride;
-
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
 
     #if RW_1_6_OR_GREATER
@@ -27,7 +22,7 @@ public class MapPreviewWindow : Window
     public override Vector2 InitialSize => new(MapPreviewMod.Settings.PreviewWindowSize, MapPreviewMod.Settings.PreviewWindowSize);
     protected override float Margin => 0f;
 
-    private readonly MapPreviewWidgetWithPreloader _previewWidget = new(MaxMapSize);
+    private readonly MapPreviewWidgetWithPreloader _previewWidget = new(MapSizeUtility.MaxMapSize);
 
     public Map CurrentPreviewMap => _previewWidget.PreviewMap;
 
@@ -74,9 +69,7 @@ public class MapPreviewWindow : Window
         }
 
         int seed = SeedRerollData.GetMapSeed(world, tileId);
-        var mapSize = DetermineMapSize(world, mapParent);
-
-        mapSize = new IntVec2(Mathf.Clamp(mapSize.x, MinMapSize.x, MaxMapSize.x), Mathf.Clamp(mapSize.z, MinMapSize.z, MaxMapSize.z));
+        var mapSize = MapSizeUtility.DetermineMapSize(world, mapParent);
 
         float desiredSize = MapPreviewMod.Settings.PreviewWindowSize;
         float largeSide = Math.Max(mapSize.x, mapSize.z);
@@ -106,38 +99,6 @@ public class MapPreviewWindow : Window
             MapPreviewMod.Settings.PreviewWindowPos.Value = pos;
             MapPreviewMod.Settings.Write();
         }
-    }
-
-    public static IntVec2 DetermineMapSize(World world, MapParent mapParent)
-    {
-        if (mapParent is Site site)
-        {
-            var fromSite = site.PreferredMapSize;
-            return new IntVec2(fromSite.x, fromSite.z);
-        }
-
-        if (Current.ProgramState != ProgramState.Entry)
-        {
-            var fromWorld = world.info.initialMapSize;
-            return new IntVec2(fromWorld.x, fromWorld.z);
-        }
-
-        if (MapSizeOverride != null)
-        {
-            var fromOverride = MapSizeOverride.Invoke();
-            if (fromOverride is { x: > 0, z: > 0 })
-            {
-                return new IntVec2(fromOverride.x, fromOverride.z);
-            }
-        }
-
-        var gameInitData = Find.GameInitData;
-        if (gameInitData != null)
-        {
-            return new IntVec2(gameInitData.mapSize, gameInitData.mapSize);
-        }
-
-        return new IntVec2(250, 250);
     }
 
     public void ResetPositionAndSize()
