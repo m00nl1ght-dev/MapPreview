@@ -1,3 +1,5 @@
+#if !RW_1_6_OR_GREATER
+
 using HarmonyLib;
 using LunarFramework.Patching;
 
@@ -20,3 +22,5 @@ internal class ModCompat_PerformanceOptimizer : ModCompat
         return !MapPreviewAPI.IsGeneratingPreview;
     }
 }
+
+#endif
