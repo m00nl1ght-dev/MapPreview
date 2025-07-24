@@ -1,4 +1,9 @@
 
+v1.12.22
+
+- Disabled obsolete compatibility patch for Performance Optimizer in 1.6
+- Updated Spanish translation (submitted by Ferchu)
+
 v1.12.21
 
 - Added settings button that allows editing map size and starting season
