@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HarmonyLib;
 using LunarFramework.Patching;
 
@@ -11,6 +12,7 @@ internal class ModCompat_BiomesCore : ModCompat
 
     protected override bool OnApply()
     {
+        MapPreviewRequest.AddDefaultGenStepPredicate(def => DefNames.Contains(def.defName));
         return AccessTools.Method("BiomesCore.Patches.WildPlantSpawner_GetBaseDesiredPlantsCountAt:UpdateCommonalityAt") != null;
     }
 
@@ -20,4 +22,9 @@ internal class ModCompat_BiomesCore : ModCompat
     {
         return !MapPreviewAPI.IsGeneratingPreview || !MapPreviewGenerator.IsGeneratingOnCurrentThread;
     }
+
+    private static readonly List<string> DefNames = new()
+    {
+        "BMT_GenstepOasisElevation", "BMT_GenstepOasisTerrain"
+    };
 }
