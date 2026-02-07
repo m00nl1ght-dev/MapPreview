@@ -29,7 +29,7 @@ public class MapPreviewWidgetWithPreloader : MapPreviewWidget
 
     protected override void HandleError(Exception ex)
     {
-        if (ex is ThreadAbortException) return;
+        if (ex is ThreadAbortException or NotSupportedException) return;
 
         if (ex is ArgumentNullException)
         {

@@ -288,7 +288,7 @@ public class MapPreviewGenerator : IDisposable
     private static void GenerateContentsIntoPreview(MapPreviewRequest request, MapPreviewResult result)
     {
         if (MapGenerator.mapBeingGenerated != null)
-            throw new Exception("Attempted to generate map preview while another map is generating!");
+            throw new NotSupportedException("Attempted to generate map preview while another map is generating!");
 
         #if RW_1_6_OR_GREATER
         MapGenerator.ClearWorkingData();
