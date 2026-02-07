@@ -1,4 +1,11 @@
 
+v1.12.23
+
+- Optimized terrain color algorithm (much faster startup and lower RAM usage)
+- Fixed compatibility issue with 'MultiFloors' causing inaccurate previews
+- Fixed compatibility issue with 'Zombieland' causing inaccurate previews
+- Added automatic detection and logging of some causes for inaccurate previews
+
 v1.12.22
 
 - Disabled obsolete compatibility patch for Performance Optimizer in 1.6
