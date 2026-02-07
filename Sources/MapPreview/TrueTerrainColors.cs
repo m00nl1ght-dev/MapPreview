@@ -81,31 +81,22 @@ public class TrueTerrainColors
 
     public static void CalculateTrueTerrainColors(bool clear = false)
     {
-        int maxW = 0, maxH = 0, count = 0;
-
         _trueColors ??= new Dictionary<string, Color>();
         if (clear) _trueColors.Clear();
 
         var missingDefs = DefDatabase<TerrainDef>.AllDefsListForReading
             .Where(def => !_trueColors.ContainsKey(def.defName) && !ExcludeList.Contains(def.modContentPack?.PackageId))
+            .Where(def => def.graphic?.MatSingle?.mainTexture is Texture2D)
             .ToList();
 
         if (missingDefs.Count <= 0) return;
 
-        foreach (var texture in missingDefs.Select(def => def.graphic?.MatSingle?.mainTexture).OfType<Texture2D>())
-        {
-            if (texture.width > maxW) maxW = texture.width;
-            if (texture.height > maxH) maxH = texture.height;
-            count++;
-        }
-
-        if (count <= 0 || maxW <= 0 || maxH <= 0) return;
-
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        var renderTex = RenderTexture.GetTemporary(maxW, maxH, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
-        var readableTex = new Texture2D(maxW, maxH);
+        var renderTex = RenderTexture.GetTemporary(1, 1, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Default);
+        var readableTex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+
         var previous = RenderTexture.active;
         RenderTexture.active = renderTex;
 
@@ -123,10 +114,13 @@ public class TrueTerrainColors
                 if (texture is Texture2D texture2D)
                 {
                     Graphics.Blit(texture2D, renderTex);
-                    readableTex.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
-                    readableTex.Apply();
-                    var rawColor = AverageColorFromTexture(readableTex);
+
+                    readableTex.ReadPixels(new Rect(0, 0, 1, 1), 0, 0);
+                    readableTex.Apply(false);
+
+                    var rawColor = readableTex.GetPixel(0, 0);
                     var combinedColor = rawColor * def.graphic.MatSingle.color * def.graphic.color;
+
                     _trueColors.Add(def.defName, combinedColor);
                 }
             }
@@ -143,7 +137,7 @@ public class TrueTerrainColors
         stopwatch.Stop();
 
         var time = Math.Round(stopwatch.Elapsed.TotalSeconds, 2);
-        Logger.Log($"Extracted true colors from {count} terrain defs in {time} seconds using a RenderTexture of size {maxW}x{maxH}.");
+        Logger.Log($"Extracted true colors from {missingDefs.Count} terrain defs in {time} seconds.");
 
         try
         {
@@ -156,25 +150,6 @@ public class TrueTerrainColors
         {
             Logger.Warn("Failed to write TrueTerrainColors cache to file", e);
         }
-    }
-
-    private static Color32 AverageColorFromTexture(Texture2D tex, int stepSize = 1)
-    {
-        var texColors = tex.GetPixels32();
-        int total = texColors.Length;
-
-        float r = 0;
-        float g = 0;
-        float b = 0;
-
-        for (int i = 0; i < total; i += stepSize)
-        {
-            r += texColors[i].r;
-            g += texColors[i].g;
-            b += texColors[i].b;
-        }
-
-        return new Color32((byte) (r / total), (byte) (g / total), (byte) (b / total), 0);
     }
 
     [Serializable]
