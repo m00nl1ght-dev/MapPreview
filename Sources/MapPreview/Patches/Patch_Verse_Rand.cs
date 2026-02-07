@@ -31,6 +31,11 @@ internal static class Patch_Verse_Rand
 
     private static readonly Stack<ulong> _stateStack = new();
 
+    internal static void SkipIterations(uint count)
+    {
+        _iterations += count;
+    }
+
     private static ulong StateCompressed
     {
         get => _seed | (ulong) _iterations << 32;

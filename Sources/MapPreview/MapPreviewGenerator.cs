@@ -33,6 +33,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using LunarFramework.Patching;
+using MapPreview.Patches;
 using MapPreview.Promises;
 using RimWorld;
 using RimWorld.Planet;
@@ -40,10 +41,6 @@ using UnityEngine;
 using Verse;
 using Verse.AI;
 using Verse.AI.Group;
-
-#if !RW_1_6_OR_GREATER
-using MapPreview.Patches;
-#endif
 
 namespace MapPreview;
 
@@ -336,7 +333,6 @@ public class MapPreviewGenerator : IDisposable
             if (request.UseMinimalMapComponents)
             {
                 ConstructMinimalMapComponents(map);
-                Rand.Range(0, 1); // compensate for GasGrid ctor
             }
             else
             {
@@ -503,6 +499,18 @@ public class MapPreviewGenerator : IDisposable
         }
     }
 
+    #if RW_1_6_OR_GREATER
+
+    internal const uint ExpectedRandIterationsInVanillaMapComponents = 1U; // GasGrid ctor does one Rand call
+
+    internal static readonly Dictionary<string, uint> ExpectedRandIterationsInMapComponents = new()
+    {
+        { "MultiFloors.MF_LevelMapComp", 1 },
+        { "ZombieLand.ZombieWeather", 8 },
+    };
+
+    #endif
+
     internal static readonly HashSet<string> IncludedMapComponentsMinimal = new()
     {
         // Vanilla
@@ -665,11 +673,24 @@ public class MapPreviewGenerator : IDisposable
         map.areaManager = new AreaManager(map);                                                             // light
         map.storageGroups = new StorageGroupManager(map);                                                   // light
 
+        // ##### Rand Iteration Compensation #####
+
+        #if RW_1_6_OR_GREATER
+        Patch_Verse_Rand.SkipIterations(ExpectedRandIterationsInVanillaMapComponents);
+        #endif
+
         // ##### Custom Components #####
 
         map.components.Clear();
 
-        foreach (var type in typeof(MapComponent).AllSubclassesNonAbstract())
+        var componentTypes = typeof(MapComponent).AllSubclassesNonAbstract()
+            #if RW_1_6_OR_GREATER
+            .Where(t => !typeof(CustomMapComponent).IsAssignableFrom(t))
+            .Concat(map.generatorDef.customMapComponents ?? [])
+            #endif
+            .ToList();
+
+        foreach (var type in componentTypes)
         {
             if (IncludedMapComponentsMinimal.Contains(type.FullName))
             {
@@ -682,6 +703,12 @@ public class MapPreviewGenerator : IDisposable
                     Log.Error("Could not instantiate a MapComponent of type " + type + ": " + ex);
                 }
             }
+            #if RW_1_6_OR_GREATER
+            else if (ExpectedRandIterationsInMapComponents.TryGetValue(type.FullName ?? type.Name, out var expectedIt))
+            {
+                Patch_Verse_Rand.SkipIterations(expectedIt);
+            }
+            #endif
         }
 
         map.roadInfo = map.GetComponent<RoadInfo>();
