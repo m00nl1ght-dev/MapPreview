@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using LunarFramework.Patching;
@@ -47,19 +48,24 @@ internal static class Patch_Verse_Map
 
     #if RW_1_6_OR_GREATER
 
+    private static uint _prevRandIt;
+
     [HarmonyPrefix]
     [HarmonyPatch("FillComponents")]
+    [HarmonyPriority(Priority.Low)]
     private static void FillComponents_Prefix(Map __instance)
     {
         if (MapPreviewAPI.IsGeneratingPreview && MapPreviewGenerator.IsGeneratingOnCurrentThread) return;
 
         const uint expectedIterations = MapPreviewGenerator.ExpectedRandIterationsInVanillaMapComponents;
 
-        if (MapGenerator.mapBeingGenerated == __instance && Rand.iterations != expectedIterations)
+        _prevRandIt = Rand.iterations;
+
+        if (MapGenerator.mapBeingGenerated == __instance && _prevRandIt != expectedIterations)
         {
             MapPreviewAPI.Logger.Error(
                 $"Map Preview has detected an issue causing previews to be inaccurate: " +
-                $"Vanilla map components have modified the RNG state by {Rand.iterations} in their constructors, " +
+                $"Vanilla map components have modified the RNG state by {_prevRandIt} in their constructors, " +
                 $"which does not match the expected amount of {expectedIterations} iterations." +
                 $"Please report this on the Map Preview workshop page, so this issue can be fixed."
             );
@@ -72,27 +78,27 @@ internal static class Patch_Verse_Map
     private static IEnumerable<CodeInstruction> FillComponents_CheckRand_Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         var pattern = TranspilerPattern.Build("FillComponents_CheckRand")
-            .MatchCall(typeof(Activator), nameof(Activator.CreateInstance), [typeof(Type), typeof(object[])])
-            .ReplaceOperandWithMethod(typeof(Patch_Verse_Map), nameof(CreateInstance_Wrapper_CheckRand))
+            .Match(ci => ci.opcode == OpCodes.Call && ci.operand is MethodInfo { Name: "CreateInstance" }).Keep()
+            .InsertCall(typeof(Patch_Verse_Map), nameof(FillComponents_CheckRand))
             .Greedy();
 
         return TranspilerPattern.Apply(instructions, pattern);
     }
 
-    private static object CreateInstance_Wrapper_CheckRand(Type type, object[] args)
+    private static object FillComponents_CheckRand(object component)
     {
         if (MapPreviewAPI.IsGeneratingPreview && MapPreviewGenerator.IsGeneratingOnCurrentThread)
         {
-            return Activator.CreateInstance(type, args);
+            return component;
         }
 
-        var randItBefore = Rand.iterations;
-        var instance = Activator.CreateInstance(type, args);
         var randItAfter = Rand.iterations;
 
-        if (randItBefore != randItAfter)
+        if (component != null && _prevRandIt != randItAfter)
         {
-            var actualIt = randItAfter - randItBefore;
+            var actualIt = randItAfter - _prevRandIt;
+
+            var type = component.GetType();
             var typeName = type.FullName ?? type.Name;
 
             var mcp = LoadedModManager.RunningMods.FirstOrDefault(m => m.assemblies.loadedAssemblies.Contains(type.Assembly));
@@ -123,7 +129,9 @@ internal static class Patch_Verse_Map
             }
         }
 
-        return instance;
+        _prevRandIt = randItAfter;
+
+        return component;
     }
 
     #endif
