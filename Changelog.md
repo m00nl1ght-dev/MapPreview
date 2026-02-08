@@ -1,4 +1,8 @@
 
+v1.12.24
+
+- Fixed compatibility with the 'Visual Exceptions' mod
+
 v1.12.23
 
 - Optimized terrain color algorithm (much faster startup and lower RAM usage)
