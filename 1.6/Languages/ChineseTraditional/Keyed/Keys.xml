@@ -5,34 +5,59 @@
 
   <MapPreview.Settings.Tab.Preview>預覽</MapPreview.Settings.Tab.Preview>
   <MapPreview.Settings.Tab.Toolbar>工具列</MapPreview.Settings.Tab.Toolbar>
-  <MapPreview.Settings.EnableMapPreview>啟用地圖預覽</MapPreview.Settings.EnableMapPreview>
-  <MapPreview.Settings.EnableToolbar>啟用世界地圖工具欄</MapPreview.Settings.EnableToolbar>
-  <MapPreview.Settings.LockWindowPositions>固定視窗位置</MapPreview.Settings.LockWindowPositions>
-  <MapPreview.Settings.AutoOpenPreviewOnWorldMap>切至世界地圖自動打開預覽視窗</MapPreview.Settings.AutoOpenPreviewOnWorldMap>
-  <MapPreview.Settings.EnableSeedRerollFeature>隨機生成功能已啟用</MapPreview.Settings.EnableSeedRerollFeature>
-  <MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>顯示地圖種子重置按鈕（因為安裝了Map Reroll模組，此功能不可用）</MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>
-  <MapPreview.Settings.EnableWorldSeedRerollFeature>顯示世界種子重置按鈕</MapPreview.Settings.EnableWorldSeedRerollFeature>
-  <MapPreview.Settings.PreviewWindowSize>預覽窗大小</MapPreview.Settings.PreviewWindowSize>
-  <MapPreview.Settings.IncludeCaves>預覽生成洞穴（關閉可加快速度）</MapPreview.Settings.IncludeCaves>
-  <MapPreview.Settings.EnableTrueTerrainColors>使用真實的地形顏色（啟用對mod添加的地形的支持，也適用於 Map Reroll）</MapPreview.Settings.EnableTrueTerrainColors>
-  <MapPreview.Settings.SkipRiverFlowCalc>使用河流生成器優化（更快，但與Core略有不同）</MapPreview.Settings.SkipRiverFlowCalc>
+  <MapPreview.Settings.EnableMapPreviewHeader>顯示地圖預覽...</MapPreview.Settings.EnableMapPreviewHeader>
+  <MapPreview.Settings.EnableMapPreviewInEntry>...在開始新遊戲時（選擇定居點）</MapPreview.Settings.EnableMapPreviewInEntry>
+  <MapPreview.Settings.EnableMapPreviewInPlay>...在遊戲進行中（在世界地圖介面）</MapPreview.Settings.EnableMapPreviewInPlay>
+  <MapPreview.Settings.EnableToolbarHeader>顯示世界地圖工具列...</MapPreview.Settings.EnableToolbarHeader>
+  <MapPreview.Settings.EnableToolbarInEntry>...在開始新遊戲時（選擇定居點）</MapPreview.Settings.EnableToolbarInEntry>
+  <MapPreview.Settings.EnableToolbarInPlay>...在遊戲進行中（在世界地圖介面）</MapPreview.Settings.EnableToolbarInPlay>
+  <MapPreview.Settings.LockWindowPositions>鎖定視窗位置</MapPreview.Settings.LockWindowPositions>
+  <MapPreview.Settings.EnablePreviewAnimations>預覽完成後啟用動畫</MapPreview.Settings.EnablePreviewAnimations>
+  <MapPreview.Settings.AutoOpenPreviewOnWorldMap>切換到世界地圖時自動開啟預覽視窗</MapPreview.Settings.AutoOpenPreviewOnWorldMap>
+  <MapPreview.Settings.TriggerPreviewOnWorldObjects>選擇定居點或任務地點時顯示地圖預覽</MapPreview.Settings.TriggerPreviewOnWorldObjects>
+  <MapPreview.Settings.EnableSeedRerollFeature>顯示地圖種子重擲按鈕</MapPreview.Settings.EnableSeedRerollFeature>
+  <MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>顯示地圖種子重擲按鈕（因已安裝Map Reroll模組而不可用）</MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>
+  <MapPreview.Settings.EnableSeedRerollWindow>使用重擲輔助視窗（按住Shift鍵點擊重擲按鈕可反轉）</MapPreview.Settings.EnableSeedRerollWindow>
+  <MapPreview.Settings.EnableWorldSeedRerollFeature>顯示世界種子重擲按鈕</MapPreview.Settings.EnableWorldSeedRerollFeature>
+  <MapPreview.Settings.PreviewWindowSize>預覽視窗大小</MapPreview.Settings.PreviewWindowSize>
+  <MapPreview.Settings.IncludeCaves>預覽中包含洞穴（關閉可加快生成速度）</MapPreview.Settings.IncludeCaves>
+  <MapPreview.Settings.EnableTrueTerrainColors>使用真實地形顏色（啟用對模組添加地形的支援，也適用於Map Reroll）</MapPreview.Settings.EnableTrueTerrainColors>
+  <MapPreview.Settings.SkipRiverFlowCalc>使用河流生成器最佳化（更快，但與原版略有不同）</MapPreview.Settings.SkipRiverFlowCalc>
+  <MapPreview.Settings.CompatibilityMode>相容模式（增加記憶體使用量，但可能有助於解決模組相容性問題）</MapPreview.Settings.CompatibilityMode>
+  <MapPreview.Settings.RefreshTerrainColors>重新整理地形顏色</MapPreview.Settings.RefreshTerrainColors>
+  <MapPreview.Settings.OpenAdvancedGameConfig>變更地圖大小或起始季節</MapPreview.Settings.OpenAdvancedGameConfig>
 
-  <MapPreview.World.WaitForPreview>當前正在生成地圖預覽，請稍候再繼續...</MapPreview.World.WaitForPreview>
+  <MapPreview.World.WaitForPreview>目前正在生成地圖預覽，請稍候再繼續...</MapPreview.World.WaitForPreview>
   <MapPreview.World.ShowHidePreview>切換地圖預覽。</MapPreview.World.ShowHidePreview>
-  <MapPreview.World.RerollMapSeed>重擲這張地圖的種子。</MapPreview.World.RerollMapSeed>
-  <MapPreview.World.ResetMapSeed>撤消並將重置為原始。</MapPreview.World.ResetMapSeed>
-  <MapPreview.World.RerollWorldSeed>用隨機種子生成一個新世界。</MapPreview.World.RerollWorldSeed>
-  <MapPreview.World.OpenSettings>打開設置。</MapPreview.World.OpenSettings>
+  <MapPreview.World.RerollMapSeed>重擲此地圖的種子。</MapPreview.World.RerollMapSeed>
+  <MapPreview.World.ResetMapSeed>撤銷重擲並將此地圖的種子重設為原始值。</MapPreview.World.ResetMapSeed>
+  <MapPreview.World.RerollWorldSeed>使用隨機種子生成新世界。</MapPreview.World.RerollWorldSeed>
+  <MapPreview.World.OpenSettings>開啟地圖預覽設定。</MapPreview.World.OpenSettings>
 
-  <MapPreview.PreviewGenerationFailed>與某個模組發生衝突，地圖預覽生成失敗。請到工作坊到回報此問題，以便創建兼容性修補程式。關閉後，請上傳您的日誌文件，並在錯誤報告中包含該鏈接。</MapPreview.PreviewGenerationFailed>
+  <MapPreview.World.RerollWindow.Title>重擲地圖種子</MapPreview.World.RerollWindow.Title>
+  <MapPreview.World.RerollWindow.Close>關閉</MapPreview.World.RerollWindow.Close>
+  <MapPreview.World.RerollWindow.RefreshSeeds>重新整理種子（按住Shift可跳轉）</MapPreview.World.RerollWindow.RefreshSeeds>
+  <MapPreview.World.RerollWindow.ZoomOut>縮小</MapPreview.World.RerollWindow.ZoomOut>
+  <MapPreview.World.RerollWindow.ZoomIn>放大</MapPreview.World.RerollWindow.ZoomIn>
+  <MapPreview.World.RerollWindow.Apply>套用此種子</MapPreview.World.RerollWindow.Apply>
+  <MapPreview.World.RerollWindow.Pin>固定此種子</MapPreview.World.RerollWindow.Pin>
+  <MapPreview.World.RerollWindow.Unpin>取消固定此種子</MapPreview.World.RerollWindow.Unpin>
+  <MapPreview.World.RerollWindow.GoTo.Label>輸入重擲次數：</MapPreview.World.RerollWindow.GoTo.Label>
+  <MapPreview.World.RerollWindow.GoTo.Invalid>無效數字，僅允許數字和「+」。</MapPreview.World.RerollWindow.GoTo.Invalid>
+
+  <MapPreview.PreviewGenerationFailed>與某個模組發生衝突，導致地圖預覽生成器失敗。請在地圖預覽的工坊頁面回報此問題，以便建立相容性修補程式。關閉此訊息後，請上傳您的日誌檔案，並在錯誤報告中包含該連結。</MapPreview.PreviewGenerationFailed>
 
   <MapPreview.Integration.MapDesigner.OpenSettings>開啟地圖設計器。</MapPreview.Integration.MapDesigner.OpenSettings>
-  <MapPreview.Integration.MapDesigner.Enabled>顯示「地圖設計器」按鈕</MapPreview.Integration.MapDesigner.Enabled>
+  <MapPreview.Integration.MapDesigner.UnavailableForTile>此地塊無法使用地圖設計器。</MapPreview.Integration.MapDesigner.UnavailableForTile>
+  <MapPreview.Integration.MapDesigner.Enabled>顯示地圖設計器按鈕</MapPreview.Integration.MapDesigner.Enabled>
 
-  <MapPreview.Integration.PrepareLanding.Open>開啟「準備著陸」</MapPreview.Integration.PrepareLanding.Open>
-  <MapPreview.Integration.PrepareLanding.Enabled>顯示「準備著陸」按鈕</MapPreview.Integration.PrepareLanding.Enabled>
+  <MapPreview.Integration.PrepareLanding.Open>開啟準備著陸。</MapPreview.Integration.PrepareLanding.Open>
+  <MapPreview.Integration.PrepareLanding.Enabled>顯示準備著陸按鈕</MapPreview.Integration.PrepareLanding.Enabled>
 
-  <MapPreview.Integration.WorldEdit.Open>開啟「世界編輯」</MapPreview.Integration.WorldEdit.Open>
-  <MapPreview.Integration.WorldEdit.Enabled>顯示「世界編輯」按鈕</MapPreview.Integration.WorldEdit.Enabled>
+  <MapPreview.Integration.WorldEdit.Open>開啟世界編輯。</MapPreview.Integration.WorldEdit.Open>
+  <MapPreview.Integration.WorldEdit.Enabled>顯示世界編輯按鈕</MapPreview.Integration.WorldEdit.Enabled>
+
+  <MapPreview.Integration.LandformSettings.Open>開啟地形設定。</MapPreview.Integration.LandformSettings.Open>
+  <MapPreview.Integration.LandformSettings.Enabled>顯示地形設定按鈕</MapPreview.Integration.LandformSettings.Enabled>
 
 </LanguageData>
