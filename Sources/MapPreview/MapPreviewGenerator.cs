@@ -330,7 +330,13 @@ public class MapPreviewGenerator : IDisposable
             map.info.Size = new IntVec3(request.MapSize.x, 1, request.MapSize.z);
             map.info.parent = mapParent;
 
+            #if RW_1_6_OR_GREATER
+            // SkipIterations(1) stands in for GasGrid, which stays commented out in the minimal list (trial).
+            // That skip is used only after the pre-fill count has been measured as that one call.
+            if (request.UseMinimalMapComponents && RandCompatCache.UseMinimalPreFillSkip)
+            #else
             if (request.UseMinimalMapComponents)
+            #endif
             {
                 ConstructMinimalMapComponents(map);
             }
@@ -662,6 +668,7 @@ public class MapPreviewGenerator : IDisposable
         map.storageGroups = new StorageGroupManager(map);                                                   // light
 
         // ##### Rand Iteration Compensation #####
+        // GasGrid above is trial and stays unconstructed. This method runs only when that one Rand call is the whole pre-fill count.
 
         #if RW_1_6_OR_GREATER
         Patch_Verse_Rand.SkipIterations(RandCompatCache.ExpectedRandIterationsInVanillaMapComponents);

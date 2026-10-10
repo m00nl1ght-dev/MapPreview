@@ -51,27 +51,28 @@ internal static class Patch_Verse_Map
     private static uint _prevRandIt;
     private static uint _prevRandCompIdx;
 
+    /// <summary>
+    /// Vanilla GasGrid.ctor calls Rand once. ConstructMinimalMapComponents leaves that object commented out (trial) and skips one iteration in its place.
+    /// Map.ConstructComponents can call Rand more times before FillComponents. The one-iteration skip then leaves the preview RNG behind the map, and comparing the live count to 1 logged that on every map.
+    /// Until a measured pre-fill count is that one call, the preview runs ConstructComponents so the same calls advance the preview RNG.
+    /// A later count of one does not switch back.
+    /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch("FillComponents")]
     [HarmonyPriority(-1)]
     private static void FillComponents_Prefix(Map __instance)
     {
-        if (MapPreviewAPI.IsGeneratingPreview && MapPreviewGenerator.IsGeneratingOnCurrentThread) return;
-
-        const uint expectedIterations = RandCompatCache.ExpectedRandIterationsInVanillaMapComponents;
+        if (MapPreviewAPI.IsGeneratingPreview && MapPreviewGenerator.IsGeneratingOnCurrentThread)
+        {
+            RandCompatCache.NotePreFillIterations(Patch_Verse_Rand.PreviewIterations);
+            return;
+        }
 
         _prevRandIt = Rand.iterations;
         _prevRandCompIdx = 0;
 
-        if (MapGenerator.mapBeingGenerated == __instance && _prevRandIt != expectedIterations)
-        {
-            MapPreviewAPI.Logger.Error(
-                $"Map Preview has detected an issue causing previews to be inaccurate: " +
-                $"Vanilla map components have modified the RNG state by {_prevRandIt} in their constructors, " +
-                $"which does not match the expected amount of {expectedIterations} iterations." +
-                $"Please report this on the Map Preview workshop page, so this issue can be fixed."
-            );
-        }
+        if (MapGenerator.mapBeingGenerated == __instance)
+            RandCompatCache.NotePreFillIterations(_prevRandIt);
     }
 
     [HarmonyTranspiler]
