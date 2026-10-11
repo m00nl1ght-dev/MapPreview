@@ -36,6 +36,8 @@ internal static class Patch_Verse_Rand
         _iterations += count;
     }
 
+    internal static uint PreviewIterations => _iterations;
+
     private static ulong StateCompressed
     {
         get => _seed | (ulong) _iterations << 32;
