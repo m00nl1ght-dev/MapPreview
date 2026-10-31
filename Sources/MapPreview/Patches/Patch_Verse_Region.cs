@@ -10,6 +10,7 @@ internal static class Patch_Verse_Region
 {
     [HarmonyPrefix]
     [HarmonyPatch("Map", MethodType.Getter)]
+    [PatchTargetPotentiallyInlined]
     private static bool Map(ref Map __result)
     {
         if (!MapPreviewAPI.IsGeneratingPreview) return true;

@@ -12,11 +12,20 @@ public static class MapSizeUtility
     public static IntVec2 MinMapSize = new(10, 10);
     public static IntVec2 MaxMapSize = new(500, 500);
 
+    public static Func<IntVec2> MapSizeOverride;
     public static Func<IntVec2> GameInitMapSizeOverride;
 
     #if RW_1_6_OR_GREATER
+
     public delegate IntVec2 MapSizeTransform(World world, PlanetTile tile, IntVec2 size);
+
     public static readonly List<MapSizeTransform> MapSizeTransforms = [];
+
+    public static IntVec2 DetermineMapSize(World world, MapParent mapParent)
+    {
+        return DetermineMapSize(world, PlanetTile.Invalid, mapParent);
+    }
+
     #endif
 
     #if RW_1_6_OR_GREATER
@@ -28,7 +37,12 @@ public static class MapSizeUtility
         var mapSize = DetermineMapSizeRaw(world, mapParent);
 
         #if RW_1_6_OR_GREATER
-        mapSize = MapSizeTransforms.Aggregate(mapSize, (v, func) => func(world, tile, v));
+
+        if (tile.Valid)
+        {
+            mapSize = MapSizeTransforms.Aggregate(mapSize, (v, func) => func(world, tile, v));
+        }
+
         #endif
 
         var sizeX = Mathf.Clamp(mapSize.x, MinMapSize.x, MaxMapSize.x);
@@ -51,9 +65,10 @@ public static class MapSizeUtility
             return new IntVec2(fromWorld.x, fromWorld.z);
         }
 
-        if (GameInitMapSizeOverride != null)
+        var mapSizeOverride = GameInitMapSizeOverride ?? MapSizeOverride;
+        if (mapSizeOverride != null)
         {
-            var fromOverride = GameInitMapSizeOverride.Invoke();
+            var fromOverride = mapSizeOverride.Invoke();
             if (fromOverride is { x: > 0, z: > 0 })
             {
                 return new IntVec2(fromOverride.x, fromOverride.z);

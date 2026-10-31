@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <MapPreview.Title>地图预览</MapPreview.Title>
+
+  <MapPreview.Settings.Tab.Preview>预览</MapPreview.Settings.Tab.Preview>
+  <MapPreview.Settings.Tab.Toolbar>工具栏</MapPreview.Settings.Tab.Toolbar>
+  <MapPreview.Settings.EnableMapPreviewHeader>显示地图预览...</MapPreview.Settings.EnableMapPreviewHeader>
+  <MapPreview.Settings.EnableMapPreviewInEntry>...在开始新游戏时（选择定居点）</MapPreview.Settings.EnableMapPreviewInEntry>
+  <MapPreview.Settings.EnableMapPreviewInPlay>...在游戏进行中（在世界地图界面）</MapPreview.Settings.EnableMapPreviewInPlay>
+  <MapPreview.Settings.EnableToolbarHeader>显示世界地图工具栏...</MapPreview.Settings.EnableToolbarHeader>
+  <MapPreview.Settings.EnableToolbarInEntry>...在开始新游戏时（选择定居点）</MapPreview.Settings.EnableToolbarInEntry>
+  <MapPreview.Settings.EnableToolbarInPlay>...在游戏进行中（在世界地图界面）</MapPreview.Settings.EnableToolbarInPlay>
+  <MapPreview.Settings.LockWindowPositions>锁定窗口位置</MapPreview.Settings.LockWindowPositions>
+  <MapPreview.Settings.EnablePreviewAnimations>预览完成后启用动画</MapPreview.Settings.EnablePreviewAnimations>
+  <MapPreview.Settings.AutoOpenPreviewOnWorldMap>切换到世界地图时自动打开预览窗口</MapPreview.Settings.AutoOpenPreviewOnWorldMap>
+  <MapPreview.Settings.TriggerPreviewOnWorldObjects>选择定居点或任务地点时显示地图预览</MapPreview.Settings.TriggerPreviewOnWorldObjects>
+  <MapPreview.Settings.EnableSeedRerollFeature>显示地图种子重掷按钮</MapPreview.Settings.EnableSeedRerollFeature>
+  <MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>显示地图种子重掷按钮（因已安装Map Reroll模组而不可用）</MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>
+  <MapPreview.Settings.EnableSeedRerollWindow>使用重掷辅助窗口（按住Shift键点击重掷按钮可反转）</MapPreview.Settings.EnableSeedRerollWindow>
+  <MapPreview.Settings.EnableWorldSeedRerollFeature>显示世界种子重掷按钮</MapPreview.Settings.EnableWorldSeedRerollFeature>
+  <MapPreview.Settings.PreviewWindowSize>预览窗口大小</MapPreview.Settings.PreviewWindowSize>
+  <MapPreview.Settings.IncludeCaves>预览中包含洞穴（关闭可加快生成速度）</MapPreview.Settings.IncludeCaves>
+  <MapPreview.Settings.EnableTrueTerrainColors>使用真实地形颜色（启用对模组添加地形的支持，也适用于Map Reroll）</MapPreview.Settings.EnableTrueTerrainColors>
+  <MapPreview.Settings.SkipRiverFlowCalc>使用河流生成器优化（更快，但与原版略有不同）</MapPreview.Settings.SkipRiverFlowCalc>
+  <MapPreview.Settings.CompatibilityMode>兼容模式（增加内存使用，但可能有助于解决模组兼容性问题）</MapPreview.Settings.CompatibilityMode>
+  <MapPreview.Settings.RefreshTerrainColors>刷新地形颜色</MapPreview.Settings.RefreshTerrainColors>
+  <MapPreview.Settings.OpenAdvancedGameConfig>更改地图大小或起始季节</MapPreview.Settings.OpenAdvancedGameConfig>
+
+  <MapPreview.World.WaitForPreview>当前正在生成地图预览，请稍候再继续...</MapPreview.World.WaitForPreview>
+  <MapPreview.World.ShowHidePreview>切换地图预览。</MapPreview.World.ShowHidePreview>
+  <MapPreview.World.RerollMapSeed>重掷此地图的种子。</MapPreview.World.RerollMapSeed>
+  <MapPreview.World.ResetMapSeed>撤销重掷并将此地图的种子重置为原始值。</MapPreview.World.ResetMapSeed>
+  <MapPreview.World.RerollWorldSeed>使用随机种子生成新世界。</MapPreview.World.RerollWorldSeed>
+  <MapPreview.World.OpenSettings>打开地图预览设置。</MapPreview.World.OpenSettings>
+
+  <MapPreview.World.RerollWindow.Title>重掷地图种子</MapPreview.World.RerollWindow.Title>
+  <MapPreview.World.RerollWindow.Close>关闭</MapPreview.World.RerollWindow.Close>
+  <MapPreview.World.RerollWindow.RefreshSeeds>刷新种子（按住Shift可跳转）</MapPreview.World.RerollWindow.RefreshSeeds>
+  <MapPreview.World.RerollWindow.ZoomOut>缩小</MapPreview.World.RerollWindow.ZoomOut>
+  <MapPreview.World.RerollWindow.ZoomIn>放大</MapPreview.World.RerollWindow.ZoomIn>
+  <MapPreview.World.RerollWindow.Apply>应用此种子</MapPreview.World.RerollWindow.Apply>
+  <MapPreview.World.RerollWindow.Pin>固定此种子</MapPreview.World.RerollWindow.Pin>
+  <MapPreview.World.RerollWindow.Unpin>取消固定此种子</MapPreview.World.RerollWindow.Unpin>
+  <MapPreview.World.RerollWindow.GoTo.Label>输入重掷次数：</MapPreview.World.RerollWindow.GoTo.Label>
+  <MapPreview.World.RerollWindow.GoTo.Invalid>无效数字，仅允许数字和“+”。</MapPreview.World.RerollWindow.GoTo.Invalid>
+
+  <MapPreview.PreviewGenerationFailed>与某个模组发生冲突，导致地图预览生成器失败。请在地图预览的工坊页面报告此问题，以便创建兼容性补丁。关闭此消息后，请上传您的日志文件，并在错误报告中包含该链接。</MapPreview.PreviewGenerationFailed>
+
+  <MapPreview.Integration.MapDesigner.OpenSettings>打开地图设计器。</MapPreview.Integration.MapDesigner.OpenSettings>
+  <MapPreview.Integration.MapDesigner.UnavailableForTile>此地块无法使用地图设计器。</MapPreview.Integration.MapDesigner.UnavailableForTile>
+  <MapPreview.Integration.MapDesigner.Enabled>显示地图设计器按钮</MapPreview.Integration.MapDesigner.Enabled>
+
+  <MapPreview.Integration.PrepareLanding.Open>打开准备着陆。</MapPreview.Integration.PrepareLanding.Open>
+  <MapPreview.Integration.PrepareLanding.Enabled>显示准备着陆按钮</MapPreview.Integration.PrepareLanding.Enabled>
+
+  <MapPreview.Integration.WorldEdit.Open>打开世界编辑。</MapPreview.Integration.WorldEdit.Open>
+  <MapPreview.Integration.WorldEdit.Enabled>显示世界编辑按钮</MapPreview.Integration.WorldEdit.Enabled>
+
+  <MapPreview.Integration.LandformSettings.Open>打开地形设置。</MapPreview.Integration.LandformSettings.Open>
+  <MapPreview.Integration.LandformSettings.Enabled>显示地形设置按钮</MapPreview.Integration.LandformSettings.Enabled>
+
+</LanguageData>

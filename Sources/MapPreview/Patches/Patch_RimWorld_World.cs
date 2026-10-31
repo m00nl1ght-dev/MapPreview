@@ -28,6 +28,7 @@ internal static class Patch_RimWorld_World
     [HarmonyPatch(nameof(World.CoastDirectionAt))]
     [HarmonyPriority(Priority.VeryLow)]
     [PatchExcludedFromConflictCheck]
+    [PatchTargetPotentiallyInlined]
     private static IEnumerable<CodeInstruction> CoastDirectionAt_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator) =>
         InjectThreadStatics(instructions, generator);
 
@@ -37,6 +38,7 @@ internal static class Patch_RimWorld_World
     [HarmonyPatch(nameof(World.LakeDirectionAt))]
     [HarmonyPriority(Priority.VeryLow)]
     [PatchExcludedFromConflictCheck]
+    [PatchTargetPotentiallyInlined]
     private static IEnumerable<CodeInstruction> LakeDirectionAt_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator) =>
         InjectThreadStatics(instructions, generator);
 
@@ -81,6 +83,7 @@ internal static class Patch_RimWorld_World
     [HarmonyPatch(nameof(World.NaturalRockTypesIn))]
     [HarmonyPriority(Priority.VeryLow)]
     [PatchExcludedFromConflictCheck]
+    [PatchTargetPotentiallyInlined]
     private static IEnumerable<CodeInstruction> NaturalRockTypesIn_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
         var begin = generator.DefineLabel();

@@ -200,6 +200,8 @@ public class MapPreviewGenerator : IDisposable
         }
     }
 
+    #if !RW_1_7_OR_GREATER
+
     public bool Abort()
     {
         try
@@ -215,6 +217,8 @@ public class MapPreviewGenerator : IDisposable
             return false;
         }
     }
+
+    #endif
 
     public void Dispose()
     {

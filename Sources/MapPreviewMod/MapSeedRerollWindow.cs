@@ -191,9 +191,16 @@ public class MapSeedRerollWindow : Window
             var buttonPos = _layout.Abs();
             TooltipHandler.TipRegion(buttonPos, tooltip);
             _layout.PushEnabled(enabled);
+            #if RW_1_7_OR_GREATER
+            var prevColor = GUI.color;
+            if (!enabled) GUI.color = Color.gray;
             var pressed = GUI.Button(buttonPos, icon);
+            GUI.color = prevColor;
+            #else
+            var pressed = GUI.Button(buttonPos, icon);
+            #endif
             _layout.PopEnabled();
-            return pressed;
+            return pressed && enabled;
         }
 
         _layout.BeginRoot(inRect, new LayoutParams { Margin = new(WindowMargin) });

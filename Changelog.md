@@ -1,4 +1,17 @@
 
+v1.13.1
+
+- Fixed inaccurate previews caused by JIT inlining of patch targets in 1.7
+- Fixed OnGUI hook breaking some custom UI components of other mods in 1.7
+
+v1.13.0
+
+- Added support for RimWorld 1.7
+
+v1.12.26.1
+
+- Fix backwards compatibility of API assembly
+
 v1.12.26
 
 - Fixed compatibility patch for Vanilla Events Expanded v2.x

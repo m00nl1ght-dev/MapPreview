@@ -1,3 +1,5 @@
+#if !RW_1_7_OR_GREATER
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,3 +63,5 @@ internal static class Patch_RimWorld_WorldGrid
     private static IEnumerable<CodeInstruction> GetTileNeighbor_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         => InjectThreadStatic(instructions, generator);
 }
+
+#endif

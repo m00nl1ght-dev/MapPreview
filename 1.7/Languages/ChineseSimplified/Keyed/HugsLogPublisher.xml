@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HugsLogPublisher.copy>复制</HugsLogPublisher.copy>
+  <HugsLogPublisher.shareBtn>分享日志</HugsLogPublisher.shareBtn>
+  <HugsLogPublisher.shareConfirmTitle>确认</HugsLogPublisher.shareConfirmTitle>
+  <HugsLogPublisher.shareConfirmMessage>现在上传游戏日志吗？\n\n这会将您的游戏日志发布到公共服务器，并给您一个可与他人分享的链接。如果您需要帮助修复问题或想向模组作者报告问题，这很有用。\n\n不会共享私人信息。</HugsLogPublisher.shareConfirmMessage>
+  <HugsLogPublisher.publisherTitle>日志发布器</HugsLogPublisher.publisherTitle>
+  <HugsLogPublisher.uploading>正在上传{0}</HugsLogPublisher.uploading>
+  <HugsLogPublisher.shortening>正在获取链接{0}</HugsLogPublisher.shortening>
+  <HugsLogPublisher.uploaded>上传完成！</HugsLogPublisher.uploaded>
+  <HugsLogPublisher.uploadError>上传错误：{0}</HugsLogPublisher.uploadError>
+  <HugsLogPublisher.copiedToClipboard>已复制到剪贴板。</HugsLogPublisher.copiedToClipboard>
+  <HugsLogPublisher.abortBtn>中止</HugsLogPublisher.abortBtn>
+  <HugsLogPublisher.retryBtn>重试</HugsLogPublisher.retryBtn>
+  <HugsLogPublisher.browseBtn>在浏览器中打开</HugsLogPublisher.browseBtn>
+  <HugsLogPublisher.useRecommendedSettings>使用推荐设置</HugsLogPublisher.useRecommendedSettings>
+  <HugsLogPublisher.shortUrls>使用短 URL</HugsLogPublisher.shortUrls>
+  <HugsLogPublisher.shortUrls_tip>上传时生成更短的链接。在Steam上不建议使用会被自动删除。</HugsLogPublisher.shortUrls_tip>
+  <HugsLogPublisher.platformInfo>包括电脑设备</HugsLogPublisher.platformInfo>
+  <HugsLogPublisher.platformInfo_tip>在日志中包括有关您的CPU、内存和显卡的信息。</HugsLogPublisher.platformInfo_tip>
+  <HugsLogPublisher.unlimitedLogSize>允许无限制日志大小</HugsLogPublisher.unlimitedLogSize>
+  <HugsLogPublisher.unlimitedLogSize_tip>禁用时，为防止过长的日志造成问题，日志大小会限制在10K行。</HugsLogPublisher.unlimitedLogSize_tip>
+  <HugsLogPublisher.toClipboardBtn>到剪贴板</HugsLogPublisher.toClipboardBtn>
+  <HugsLogPublisher.uploadBtn>上传</HugsLogPublisher.uploadBtn>
+  <HugsLogPublisher.filesBtn>文件</HugsLogPublisher.filesBtn>
+  <HugsLogPublisher.openLogFile>打开日志文件</HugsLogPublisher.openLogFile>
+  <HugsLogPublisher.openSaveDir>打开存档文件夹</HugsLogPublisher.openSaveDir>
+  <HugsLogPublisher.openModsDir>打开模组文件夹</HugsLogPublisher.openModsDir>
+
+</LanguageData>

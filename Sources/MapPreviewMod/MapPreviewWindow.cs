@@ -8,7 +8,9 @@ namespace MapPreview;
 
 public class MapPreviewWindow : Window
 {
+    #if !RW_1_7_OR_GREATER
     public const int Timeout = 30 * 1000;
+    #endif
 
     public static MapPreviewWindow Instance => Find.WindowStack?.WindowOfType<MapPreviewWindow>();
 
@@ -54,6 +56,8 @@ public class MapPreviewWindow : Window
             return;
         }
 
+        #if !RW_1_7_OR_GREATER
+
         if (MapPreviewGenerator.CurrentRequest is { Pending: true } && MapPreviewGenerator.CurrentRequest.Timer.ElapsedMilliseconds > Timeout)
         {
             MapPreviewMod.Logger.Error("Map preview generation timed out! Stopping preview thread...");
@@ -67,6 +71,8 @@ public class MapPreviewWindow : Window
                 return;
             }
         }
+
+        #endif
 
         int seed = SeedRerollData.GetMapSeed(world, tileId);
 

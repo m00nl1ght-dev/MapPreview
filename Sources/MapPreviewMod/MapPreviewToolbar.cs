@@ -118,7 +118,14 @@ public class MapPreviewToolbar : Window
                 var buttonPos = _layout.Abs();
                 TooltipHandler.TipRegion(buttonPos, button.Tooltip);
                 GUI.enabled = button.IsInteractable;
-                if (GUI.Button(buttonPos, button.Icon)) button.OnAction();
+                #if RW_1_7_OR_GREATER
+                var prevColor = GUI.color;
+                if (!button.IsInteractable) GUI.color = Color.gray;
+                if (GUI.Button(buttonPos, button.Icon) && button.IsInteractable) button.OnAction();
+                GUI.color = prevColor;
+                #else
+                if (GUI.Button(buttonPos, button.Icon) && button.IsInteractable) button.OnAction();
+                #endif
             }
         }
 

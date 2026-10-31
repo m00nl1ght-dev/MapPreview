@@ -51,6 +51,7 @@ internal static class Patch_Verse_Rand
 
     [HarmonyPrefix]
     [HarmonyPatch("Seed", MethodType.Setter)]
+    [PatchTargetPotentiallyInlined]
     private static bool Seed(int value)
     {
         #if DEBUG
@@ -65,6 +66,7 @@ internal static class Patch_Verse_Rand
 
     [HarmonyPrefix]
     [HarmonyPatch("Value", MethodType.Getter)]
+    [PatchTargetPotentiallyInlined]
     private static bool Value(ref float __result)
     {
         #if DEBUG
@@ -78,6 +80,7 @@ internal static class Patch_Verse_Rand
 
     [HarmonyPrefix]
     [HarmonyPatch("Int", MethodType.Getter)]
+    [PatchTargetPotentiallyInlined]
     private static bool Int(ref int __result)
     {
         #if DEBUG
@@ -91,6 +94,7 @@ internal static class Patch_Verse_Rand
 
     [HarmonyPrefix]
     [HarmonyPatch("PushState", new Type[0])]
+    [PatchTargetPotentiallyInlined]
     private static bool PushState()
     {
         #if DEBUG
@@ -104,6 +108,7 @@ internal static class Patch_Verse_Rand
 
     [HarmonyPrefix]
     [HarmonyPatch("PushState", typeof(int))]
+    [PatchTargetPotentiallyInlined]
     private static bool PushState(int replacementSeed)
     {
         #if DEBUG
@@ -119,6 +124,7 @@ internal static class Patch_Verse_Rand
 
     [HarmonyPrefix]
     [HarmonyPatch("PopState")]
+    [PatchTargetPotentiallyInlined]
     private static bool PopState()
     {
         #if DEBUG
