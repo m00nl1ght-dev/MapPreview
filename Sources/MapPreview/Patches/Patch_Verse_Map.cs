@@ -21,7 +21,7 @@ internal static class Patch_Verse_Map
         var pattern = TranspilerPattern.Build("FillComponents_Filter")
             .MatchCall(typeof(Map), nameof(Map.GetComponent), [typeof(Type)])
             .ReplaceOperandWithMethod(typeof(Patch_Verse_Map), nameof(CheckSkipComponent))
-            .Match(OpCodes.Brtrue_S).Keep()
+            .Match(ci => ci.opcode == OpCodes.Brtrue_S || ci.opcode == OpCodes.Brtrue).Keep()
             .Greedy();
 
         return TranspilerPattern.Apply(instructions, pattern);
