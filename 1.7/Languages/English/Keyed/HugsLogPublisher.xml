@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <HugsLogPublisher.copy>Copy</HugsLogPublisher.copy>
-  <HugsLogPublisher.shareBtn>Share logs</HugsLogPublisher.shareBtn>
+  <HugsLogPublisher.shareBtn>Share log</HugsLogPublisher.shareBtn>
+  <HugsLogPublisher.shareBtnDescr>Upload log file and get a link that you can share with others</HugsLogPublisher.shareBtnDescr>
   <HugsLogPublisher.shareConfirmTitle>Confirm</HugsLogPublisher.shareConfirmTitle>
-  <HugsLogPublisher.shareConfirmMessage>Upload game logs now?\n\nThis will post your game logs to a public server and give you the link to share with others. This is useful if you need help fixing a problem or would like to report an issue to a mod author.\n\nNo private information will be shared.</HugsLogPublisher.shareConfirmMessage>
+  <HugsLogPublisher.shareConfirmMessage>Upload game logs now?\n\nThis will post your game logs to a public server and give you the link to share with others. This is useful if you need help fixing a problem or would like to report an issue to a mod author.\n\nNote that a RimWorld log file includes information about your computer hardware and operating system. Your username and game installation directory will be redacted from the log before uploading.</HugsLogPublisher.shareConfirmMessage>
   <HugsLogPublisher.publisherTitle>Log publisher</HugsLogPublisher.publisherTitle>
   <HugsLogPublisher.uploading>Uploading{0}</HugsLogPublisher.uploading>
   <HugsLogPublisher.shortening>Getting link{0}</HugsLogPublisher.shortening>
@@ -17,9 +18,18 @@
   <HugsLogPublisher.shortUrls>Use URL shortener</HugsLogPublisher.shortUrls>
   <HugsLogPublisher.shortUrls_tip>Produces a shorter link when uploading. Not recommended on Steam- short links are automatically removed.</HugsLogPublisher.shortUrls_tip>
   <HugsLogPublisher.platformInfo>Include platform information</HugsLogPublisher.platformInfo>
-  <HugsLogPublisher.platformInfo_tip>Includes information about your CPU, memory and video card in the log.</HugsLogPublisher.platformInfo_tip>
+  <HugsLogPublisher.platformInfo_tip>If you disable this option, the log publisher will attempt to redact information about your computer hardware and operating system from the log file. Note that this can make troubleshooting certain issues more difficult for the person you are sharing your log with.</HugsLogPublisher.platformInfo_tip>
+  <HugsLogPublisher.compactLogMessageStacktraces>Compact message stacktraces</HugsLogPublisher.compactLogMessageStacktraces>
+  <HugsLogPublisher.compactLogMessageStacktraces_tip>[Experimental] When enabled, the publisher will attempt to trim the stacktrace of every log message, leaving only the call site of the log method. Significantly reduces log file size.</HugsLogPublisher.compactLogMessageStacktraces_tip>
   <HugsLogPublisher.unlimitedLogSize>Allow unlimited log size</HugsLogPublisher.unlimitedLogSize>
   <HugsLogPublisher.unlimitedLogSize_tip>When disabled, log size is limited to 10K lines to prevent very long logs from causing issues.</HugsLogPublisher.unlimitedLogSize_tip>
+  <HugsLogPublisher.alternativePlatform>Use alternative sharing service</HugsLogPublisher.alternativePlatform>
+  <HugsLogPublisher.alternativePlatform_tip>Use an alternative online platform (paste.gg) as the upload destination. Useful if GitHub is not working.</HugsLogPublisher.alternativePlatform_tip>
+  <HugsLogPublisher.usePreviousLog>Use previous log file</HugsLogPublisher.usePreviousLog>
+  <HugsLogPublisher.usePreviousLog_tip>Instead of uploading the current log file, upload the one from the previous game session. Useful if the game closed / crashed to desktop.</HugsLogPublisher.usePreviousLog_tip>
+  <HugsLogPublisher.errorTryAlternativePlatformHint>Upload failed. Looks like sharing via GitHub is currently unavailable. You can try again using an alternative sharing service (paste.gg) by clicking "Retry" below.</HugsLogPublisher.errorTryAlternativePlatformHint>
+  <HugsLogPublisher.githubToken>GitHub access token</HugsLogPublisher.githubToken>
+  <HugsLogPublisher.githubToken_tip>Publishes logs to your own GitHub account when set. Paste a token from GitHub > Settings > Developer Settings > Personal access tokens. Leave blank to publish to the public HugsLib account.\n\nLogs published to your account can only be viewed by others using a link.</HugsLogPublisher.githubToken_tip>
   <HugsLogPublisher.toClipboardBtn>To clipboard</HugsLogPublisher.toClipboardBtn>
   <HugsLogPublisher.uploadBtn>Upload</HugsLogPublisher.uploadBtn>
   <HugsLogPublisher.filesBtn>Files</HugsLogPublisher.filesBtn>
