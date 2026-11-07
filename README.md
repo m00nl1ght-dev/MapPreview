@@ -63,12 +63,13 @@ Idea for mod concept by orbittwz#2340
 
 Included translations:
 - Korean submitted by Seanggag
-- Russian submitted by Dmitry6
+- Russian submitted by Dmitry6 and Antyhc
 - Chinese Traditional by shiuanyue and ylc395
 - Chinese Simplified by ylc395
 - Turkish submitted by penu1881
 - Spanish submitted by Ferchu
 - Portuguese-Brazilian by Digoloker
+- French submitted by XtaZiiy
 
 
 # Links

@@ -1,4 +1,11 @@
 
+v1.13.2
+
+- Added XML extension that allows overriding the preview color of terrains
+- Fixed compatibility with Waylith's new map component field injection feature
+- Added French translation (thanks to XtaZiiy for submitting)
+- Updated Russian translation (thanks to Antyhc for submitting)
+
 v1.13.1
 
 - Fixed inaccurate previews caused by JIT inlining of patch targets in 1.7
