@@ -77,6 +77,18 @@ public class TrueTerrainColors
             _trueColors = null;
             Logger.Error("Unknown error occured while extracting colors from terrain textures. Using default colors as fallback.", e);
         }
+
+        if (_trueColors != null)
+        {
+            foreach (var terrainDef in DefDatabase<TerrainDef>.AllDefsListForReading)
+            {
+                var properties = terrainDef.GetModExtension<TerrainProperties>();
+                if (properties != null)
+                {
+                    _trueColors[terrainDef.defName] = properties.colorInPreview;
+                }
+            }
+        }
     }
 
     public static void CalculateTrueTerrainColors(bool clear = false)
