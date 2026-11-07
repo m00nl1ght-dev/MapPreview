@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HugsLogPublisher.copy>Copier</HugsLogPublisher.copy>
+  <HugsLogPublisher.shareBtn>Partager les logs</HugsLogPublisher.shareBtn>
+  <HugsLogPublisher.shareConfirmTitle>Confirmer</HugsLogPublisher.shareConfirmTitle>
+  <HugsLogPublisher.shareConfirmMessage>Téléverser les logs de jeu maintenant ?\n\nCela publiera vos logs de jeu sur un serveur public et vous donnera le lien à partager avec d'autres. C'est utile si vous avez besoin d'aide pour résoudre un problème ou si vous souhaitez signaler un bug à un auteur de mod.\n\nAucune information privée ne sera partagée.</HugsLogPublisher.shareConfirmMessage>
+  <HugsLogPublisher.publisherTitle>Publication des logs</HugsLogPublisher.publisherTitle>
+  <HugsLogPublisher.uploading>Téléversement{0}</HugsLogPublisher.uploading>
+  <HugsLogPublisher.shortening>Obtention du lien{0}</HugsLogPublisher.shortening>
+  <HugsLogPublisher.uploaded>Téléversement terminé !</HugsLogPublisher.uploaded>
+  <HugsLogPublisher.uploadError>Erreur de téléversement : {0}</HugsLogPublisher.uploadError>
+  <HugsLogPublisher.copiedToClipboard>Copié dans le presse-papiers.</HugsLogPublisher.copiedToClipboard>
+  <HugsLogPublisher.abortBtn>Annuler</HugsLogPublisher.abortBtn>
+  <HugsLogPublisher.retryBtn>Réessayer</HugsLogPublisher.retryBtn>
+  <HugsLogPublisher.browseBtn>Ouvrir dans le navigateur</HugsLogPublisher.browseBtn>
+  <HugsLogPublisher.useRecommendedSettings>Utiliser les paramètres recommandés</HugsLogPublisher.useRecommendedSettings>
+  <HugsLogPublisher.shortUrls>Utiliser un raccourcisseur d'URL</HugsLogPublisher.shortUrls>
+  <HugsLogPublisher.shortUrls_tip>Produit un lien plus court lors du téléversement. Non recommandé sur Steam – les liens courts sont automatiquement supprimés.</HugsLogPublisher.shortUrls_tip>
+  <HugsLogPublisher.platformInfo>Inclure les informations de la plateforme</HugsLogPublisher.platformInfo>
+  <HugsLogPublisher.platformInfo_tip>Inclut des informations sur votre processeur, mémoire et carte graphique dans le log.</HugsLogPublisher.platformInfo_tip>
+  <HugsLogPublisher.unlimitedLogSize>Autoriser une taille de log illimitée</HugsLogPublisher.unlimitedLogSize>
+  <HugsLogPublisher.unlimitedLogSize_tip>Lorsque désactivé, la taille du log est limitée à 10 000 lignes pour éviter que des logs très longs ne causent des problèmes.</HugsLogPublisher.unlimitedLogSize_tip>
+  <HugsLogPublisher.toClipboardBtn>Vers le presse-papiers</HugsLogPublisher.toClipboardBtn>
+  <HugsLogPublisher.uploadBtn>Téléverser</HugsLogPublisher.uploadBtn>
+  <HugsLogPublisher.filesBtn>Fichiers</HugsLogPublisher.filesBtn>
+  <HugsLogPublisher.openLogFile>Ouvrir le fichier de log</HugsLogPublisher.openLogFile>
+  <HugsLogPublisher.openSaveDir>Ouvrir le dossier des sauvegardes</HugsLogPublisher.openSaveDir>
+  <HugsLogPublisher.openModsDir>Ouvrir le dossier des mods</HugsLogPublisher.openModsDir>
+</LanguageData>
