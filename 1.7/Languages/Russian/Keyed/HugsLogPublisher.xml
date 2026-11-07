@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HugsLogPublisher.abortBtn>Прервать</HugsLogPublisher.abortBtn>
+  <HugsLogPublisher.browseBtn>Открыть в браузере</HugsLogPublisher.browseBtn>
+  <HugsLogPublisher.copiedToClipboard>Скопировано в буфер обмена.</HugsLogPublisher.copiedToClipboard>
+  <HugsLogPublisher.copy>Копировать</HugsLogPublisher.copy>
+  <HugsLogPublisher.filesBtn>Файлы</HugsLogPublisher.filesBtn>
+  <HugsLogPublisher.openLogFile>Открыть файл журнала</HugsLogPublisher.openLogFile>
+  <HugsLogPublisher.openModsDir>Открыть папку модов</HugsLogPublisher.openModsDir>
+  <HugsLogPublisher.openSaveDir>Открыть папку сохранений</HugsLogPublisher.openSaveDir>
+  <HugsLogPublisher.platformInfo>Добавить сведения о компьютере</HugsLogPublisher.platformInfo>
+  <HugsLogPublisher.platformInfo_tip>Добавляет в журнал сведения о процессоре, оперативной памяти и видеокарте.</HugsLogPublisher.platformInfo_tip>
+  <HugsLogPublisher.publisherTitle>Публикация журнала</HugsLogPublisher.publisherTitle>
+  <HugsLogPublisher.retryBtn>Повторить</HugsLogPublisher.retryBtn>
+  <HugsLogPublisher.shareBtn>Поделиться журналами</HugsLogPublisher.shareBtn>
+  <HugsLogPublisher.shareConfirmMessage>Загрузить журналы игры сейчас?\n\nЖурналы будут опубликованы на общедоступном сервере. Вы получите ссылку, которой можно поделиться с другими. Это пригодится, если вам нужна помощь с устранением неполадки или вы хотите сообщить об ошибке автору мода.\n\nЛичные данные не будут переданы.</HugsLogPublisher.shareConfirmMessage>
+  <HugsLogPublisher.shareConfirmTitle>Подтверждение</HugsLogPublisher.shareConfirmTitle>
+  <HugsLogPublisher.shortUrls>Сокращать ссылки</HugsLogPublisher.shortUrls>
+  <HugsLogPublisher.shortUrls_tip>Создаёт короткую ссылку после загрузки. Не рекомендуется для Steam: сокращённые ссылки там автоматически удаляются.</HugsLogPublisher.shortUrls_tip>
+  <HugsLogPublisher.shortening>Получение ссылки{0}</HugsLogPublisher.shortening>
+  <HugsLogPublisher.toClipboardBtn>В буфер обмена</HugsLogPublisher.toClipboardBtn>
+  <HugsLogPublisher.unlimitedLogSize>Не ограничивать размер журнала</HugsLogPublisher.unlimitedLogSize>
+  <HugsLogPublisher.unlimitedLogSize_tip>Если выключено, размер журнала ограничен 10 тысячами строк, чтобы слишком большие журналы не вызывали неполадок.</HugsLogPublisher.unlimitedLogSize_tip>
+  <HugsLogPublisher.uploadBtn>Загрузить</HugsLogPublisher.uploadBtn>
+  <HugsLogPublisher.uploadError>Ошибка загрузки: {0}</HugsLogPublisher.uploadError>
+  <HugsLogPublisher.uploaded>Загрузка завершена!</HugsLogPublisher.uploaded>
+  <HugsLogPublisher.uploading>Загрузка{0}</HugsLogPublisher.uploading>
+  <HugsLogPublisher.useRecommendedSettings>Использовать рекомендуемые настройки</HugsLogPublisher.useRecommendedSettings>
+</LanguageData>

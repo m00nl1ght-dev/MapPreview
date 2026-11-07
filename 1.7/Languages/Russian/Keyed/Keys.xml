@@ -12,4 +12,50 @@
   <MapPreview.World.WaitForPreview>В настоящее время создается предварительный просмотр карты, пожалуйста, подождите, прежде чем продолжить...</MapPreview.World.WaitForPreview>
   <MapPreview.World.ShowHidePreview>Включен предпросмотр карты.</MapPreview.World.ShowHidePreview>
 
+  <MapPreview.Integration.LandformSettings.Enabled>Показывать кнопку настроек рельефа</MapPreview.Integration.LandformSettings.Enabled>
+  <MapPreview.Integration.LandformSettings.Open>Открыть настройки рельефа.</MapPreview.Integration.LandformSettings.Open>
+  <MapPreview.Integration.MapDesigner.Enabled>Показывать кнопку Map Designer</MapPreview.Integration.MapDesigner.Enabled>
+  <MapPreview.Integration.MapDesigner.OpenSettings>Открыть Map Designer.</MapPreview.Integration.MapDesigner.OpenSettings>
+  <MapPreview.Integration.MapDesigner.UnavailableForTile>Map Designer недоступен для этой клетки мира.</MapPreview.Integration.MapDesigner.UnavailableForTile>
+  <MapPreview.Integration.PrepareLanding.Enabled>Показывать кнопку Prepare Landing</MapPreview.Integration.PrepareLanding.Enabled>
+  <MapPreview.Integration.PrepareLanding.Open>Открыть Prepare Landing.</MapPreview.Integration.PrepareLanding.Open>
+  <MapPreview.Integration.WorldEdit.Enabled>Показывать кнопку World Edit</MapPreview.Integration.WorldEdit.Enabled>
+  <MapPreview.Integration.WorldEdit.Open>Открыть World Edit.</MapPreview.Integration.WorldEdit.Open>
+  <MapPreview.PreviewGenerationFailed>Из-за конфликта с одним из модов не удалось создать предварительный просмотр карты. Сообщите об этом на странице Map Preview в мастерской Steam, чтобы автор мог выпустить исправление совместимости. Закрыв это сообщение, загрузите файл журнала и приложите ссылку к сообщению об ошибке.</MapPreview.PreviewGenerationFailed>
+  <MapPreview.Settings.AutoOpenPreviewOnWorldMap>Автоматически открывать предварительный просмотр при переходе на карту мира</MapPreview.Settings.AutoOpenPreviewOnWorldMap>
+  <MapPreview.Settings.CompatibilityMode>Режим совместимости (расходует больше памяти, но может помочь при конфликтах модов)</MapPreview.Settings.CompatibilityMode>
+  <MapPreview.Settings.EnableMapPreviewHeader>Показывать предварительный просмотр карты...</MapPreview.Settings.EnableMapPreviewHeader>
+  <MapPreview.Settings.EnableMapPreviewInEntry>...при начале новой игры (выборе места для поселения)</MapPreview.Settings.EnableMapPreviewInEntry>
+  <MapPreview.Settings.EnableMapPreviewInPlay>...во время игры (на экране карты мира)</MapPreview.Settings.EnableMapPreviewInPlay>
+  <MapPreview.Settings.EnablePreviewAnimations>Включить анимацию по завершении предварительного просмотра</MapPreview.Settings.EnablePreviewAnimations>
+  <MapPreview.Settings.EnableSeedRerollFeature>Показывать кнопку смены зерна карты</MapPreview.Settings.EnableSeedRerollFeature>
+  <MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>Показывать кнопку смены зерна карты (недоступно, поскольку установлен мод Map Reroll)</MapPreview.Settings.EnableSeedRerollFeature.MapRerollConflict>
+  <MapPreview.Settings.EnableSeedRerollWindow>Использовать окно выбора зерна (удерживайте Shift при нажатии кнопки, чтобы временно изменить этот режим)</MapPreview.Settings.EnableSeedRerollWindow>
+  <MapPreview.Settings.EnableToolbarHeader>Показывать панель инструментов карты мира...</MapPreview.Settings.EnableToolbarHeader>
+  <MapPreview.Settings.EnableToolbarInEntry>...при начале новой игры (выборе места для поселения)</MapPreview.Settings.EnableToolbarInEntry>
+  <MapPreview.Settings.EnableToolbarInPlay>...во время игры (на экране карты мира)</MapPreview.Settings.EnableToolbarInPlay>
+  <MapPreview.Settings.EnableWorldSeedRerollFeature>Показывать кнопку смены зерна мира</MapPreview.Settings.EnableWorldSeedRerollFeature>
+  <MapPreview.Settings.IncludeCaves>Показывать пещеры (отключите для ускорения предварительного просмотра)</MapPreview.Settings.IncludeCaves>
+  <MapPreview.Settings.LockWindowPositions>Закрепить положение окон</MapPreview.Settings.LockWindowPositions>
+  <MapPreview.Settings.OpenAdvancedGameConfig>Изменить размер карты или начальное время года</MapPreview.Settings.OpenAdvancedGameConfig>
+  <MapPreview.Settings.RefreshTerrainColors>Обновить цвета местности</MapPreview.Settings.RefreshTerrainColors>
+  <MapPreview.Settings.SkipRiverFlowCalc>Оптимизировать генерацию рек (быстрее, но результат немного отличается от базовой игры)</MapPreview.Settings.SkipRiverFlowCalc>
+  <MapPreview.Settings.Tab.Preview>Предпросмотр</MapPreview.Settings.Tab.Preview>
+  <MapPreview.Settings.Tab.Toolbar>Панель инструментов</MapPreview.Settings.Tab.Toolbar>
+  <MapPreview.Settings.TriggerPreviewOnWorldObjects>Показывать предварительный просмотр выбранного поселения или места задания</MapPreview.Settings.TriggerPreviewOnWorldObjects>
+  <MapPreview.World.OpenSettings>Открыть настройки Map Preview.</MapPreview.World.OpenSettings>
+  <MapPreview.World.RerollMapSeed>Выбрать новое случайное зерно для этой карты.</MapPreview.World.RerollMapSeed>
+  <MapPreview.World.RerollWindow.Apply>Применить это зерно</MapPreview.World.RerollWindow.Apply>
+  <MapPreview.World.RerollWindow.Close>Закрыть</MapPreview.World.RerollWindow.Close>
+  <MapPreview.World.RerollWindow.GoTo.Invalid>Недопустимое число. Разрешены только цифры и знак +.</MapPreview.World.RerollWindow.GoTo.Invalid>
+  <MapPreview.World.RerollWindow.GoTo.Label>Введите число смен зерна:</MapPreview.World.RerollWindow.GoTo.Label>
+  <MapPreview.World.RerollWindow.Pin>Закрепить это зерно</MapPreview.World.RerollWindow.Pin>
+  <MapPreview.World.RerollWindow.RefreshSeeds>Обновить зёрна (удерживайте Shift для перехода)</MapPreview.World.RerollWindow.RefreshSeeds>
+  <MapPreview.World.RerollWindow.Title>Выбор зерна карты</MapPreview.World.RerollWindow.Title>
+  <MapPreview.World.RerollWindow.Unpin>Открепить это зерно</MapPreview.World.RerollWindow.Unpin>
+  <MapPreview.World.RerollWindow.ZoomIn>Приблизить</MapPreview.World.RerollWindow.ZoomIn>
+  <MapPreview.World.RerollWindow.ZoomOut>Отдалить</MapPreview.World.RerollWindow.ZoomOut>
+  <MapPreview.World.RerollWorldSeed>Создать новый мир со случайным зерном.</MapPreview.World.RerollWorldSeed>
+  <MapPreview.World.ResetMapSeed>Отменить смены зерна и восстановить исходное зерно этой карты.</MapPreview.World.ResetMapSeed>
+
 </LanguageData>
