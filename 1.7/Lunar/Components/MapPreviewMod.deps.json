@@ -6,31 +6,31 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v10.0": {
-      "MapPreviewMod/1.13.2": {
+      "MapPreviewMod/1.13.3": {
         "dependencies": {
-          "MapPreview": "1.13.1"
+          "MapPreview": "1.13.2"
         },
         "runtime": {
           "MapPreviewMod.dll": {}
         }
       },
-      "MapPreview/1.13.1": {
+      "MapPreview/1.13.2": {
         "runtime": {
           "MapPreview.dll": {
-            "assemblyVersion": "1.13.2.0",
-            "fileVersion": "1.13.2.0"
+            "assemblyVersion": "1.13.3.0",
+            "fileVersion": "1.13.3.0"
           }
         }
       }
     }
   },
   "libraries": {
-    "MapPreviewMod/1.13.2": {
+    "MapPreviewMod/1.13.3": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "MapPreview/1.13.1": {
+    "MapPreview/1.13.2": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

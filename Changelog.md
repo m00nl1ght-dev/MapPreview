@@ -1,4 +1,8 @@
 
+v1.13.3
+
+- Fixed compatibility with Harmony 3.0
+
 v1.13.2
 
 - Added XML extension that allows overriding the preview color of terrains
